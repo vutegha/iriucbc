@@ -1,0 +1,30 @@
+@extends('layouts.admin')
+
+@section('content')
+@section('title', 'IRI UCBC | Enregistrement Nouvelle Auteur')
+@if(session('alert'))
+    <div class="mb-4">{!! session('alert') !!}</div>
+@endif
+
+@if($errors->any())
+    <div class="mb-4">
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <ul class="list-disc pl-5">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+@endif
+
+<div class="max-w-3xl mx-auto p-6 bg-white rounded shadow">
+    <h1 class="text-xl font-semibold mb-4">Créer un auteur</h1>
+        
+
+        @php
+        $formAction = route('admin.auteur.store');
+@endphp
+        @include('admin.auteur._form')
+</div>
+@endsection

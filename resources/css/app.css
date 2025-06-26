@@ -1,0 +1,85 @@
+@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom CSS variables can be defined in :root or a selector if needed */
+:root {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+  .modal-bg {
+                                        display: none;
+                                        position: fixed;
+                                        z-index: 50;
+                                        left: 0; top: 0; width: 100vw; height: 100vh;
+                                        background: rgba(0,0,0,0.5);
+                                        align-items: center; justify-content: center;
+                                }
+                                .modal-bg.active { display: flex; }
+                                .modal-content {
+                                        background: #fff;
+                                        border-radius: 0.5rem;
+                                        max-width: 600px;
+                                        width: 90vw;
+                                        padding: 2rem;
+                                        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                                        position: relative;
+                                }
+                                .modal-close {
+                                        position: absolute;
+                                        top: 1rem; right: 1rem;
+                                        background: none;
+                                        border: none;
+                                        font-size: 1.5rem;
+                                        cursor: pointer;
+                                }
+
+                                 /* Ajout de classes personnalisées anciennement Notus/Creative Tim */
+  .ease-soft-in-out {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shadow-blur {
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  .fill-white {
+    fill: white;
+  }
+
+  @media (min-width: 640px) {
+    #dropdownMenu a {
+      min-width: 352px; /* plus petit pour les petits écrans */
+    }
+  }
+
+  @media (min-width: 1024px) {
+    #dropdownMenu a {
+      min-width: 352px; /* deux fois plus large que le parent */
+    }
+  }
+  #dropdownMenu::-webkit-scrollbar {
+  height: 6px;
+}
+#dropdownMenu::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.btn-ci {
+  background-color: #ee6751;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-ci:hover {
+  background-color: white;
+  color: #ee6751;
+  border: 1px solid #ee6751;
+}
+
+.ci-color {
+  color: #ee6751;
+}

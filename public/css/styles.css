@@ -1,0 +1,76 @@
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.hero-section {
+  height: 60vh;
+  background: linear-gradient(to right, #0d6efd, #0a58ca);
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+
+/* Start of modal styles for sector of intervention */
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #004a9f;
+}
+  .modal-bg {
+                                        display: none;
+                                        position: fixed;
+                                        z-index: 50;
+                                        left: 0; top: 0; width: 100vw; height: 100vh;
+                                        background: rgba(0,0,0,0.5);
+                                        align-items: center; justify-content: center;
+                                }
+                                .modal-bg.active { display: flex; }
+                                .modal-content {
+                                        background: #fff;
+                                        border-radius: 0.5rem;
+                                        max-width: 600px;
+                                        width: 90vw;
+                                        padding: 2rem;
+                                        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                                        position: relative;
+                                }
+                                .modal-close {
+                                        position: absolute;
+                                        top: 1rem; right: 1rem;
+                                        background: none;
+                                        border: none;
+                                        font-size: 1.5rem;
+                                        cursor: pointer;
+                                }
+
+                @media (max-width: 640px) {
+                    .motto h1 { font-size: 1.5rem !important; }
+                }
+                @media (min-width: 641px) and (max-width: 768px) {
+                    .motto h1 { font-size: 2rem !important; }
+                }
+                @media (min-width: 769px) and (max-width: 1024px) {
+                    .motto h1 { font-size: 2.5rem !important; }
+                }
+                @media (min-width: 1025px) {
+                    .motto h1 { font-size: 3rem !important; }
+                }
+ 
+ /* End  of modal styles for sector of intervention */
+
+ .btn-ci {
+  background-color: #ee6751;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-ci:hover {
+  background-color: white;
+  color: #ee6751;
+  border: 1px solid #ee6751;
+}
+
+.ci-color {
+   background-color: #ee6751;
+  color: white;
+  transition: all 0.3s ease;
+}
