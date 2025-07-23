@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.iri')
 @section('content')
 <!-- Project Cards-->
 <div class="ease-soft-in-out xl:ml-68.5 relative h-full max-h-screen bg-gray-50 transition-all duration-200">

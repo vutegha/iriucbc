@@ -27,11 +27,9 @@
     <link href="{{ asset('assets/css/argon-dashboard-tailwind.css?v=1.0.1') }}" rel="stylesheet" />
     <link href="../assets/css/soft-ui-dashboard-tailwind.css?v=1.0.5" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
-            <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
-<script defer data-site="YOUR_DOMAIN_HERE" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
-<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     
 <!-- Google Maps -->
 
@@ -47,10 +45,10 @@
 </body>
 @yield('scripts')
 <!-- plugin for scrollbar  -->
-  <!-- <script src="{{ asset('assets/js/plugins/perfect-scrollbar.min.js') }}" async></script> -->
+  <script src="{{ asset('assets/js/plugins/perfect-scrollbar.min.js') }}" async></script>
   <!-- main script file  -->
-     <!-- <script async defer src="https://buttons.github.io/buttons.js"></script> -->
-  <!-- <script src="{{ asset('assets/js/argon-dashboard-tailwind.js?v=1.0.1') }}" async></script> -->
-  <!-- <script src="../assets/js/soft-ui-dashboard-tailwind.js?v=1.0.5" async></script> -->
+     <script async defer src="https://buttons.github.io/buttons.js"></script>
+  <script src="{{ asset('assets/js/argon-dashboard-tailwind.js?v=1.0.1') }}" async></script>
+  <script src="../assets/js/soft-ui-dashboard-tailwind.js?v=1.0.5" async></script>
     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </html>

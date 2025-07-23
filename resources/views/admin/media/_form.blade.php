@@ -16,6 +16,24 @@
         @enderror
     </div>
 
+    {{-- Projet --}}
+    <div class="mb-4">
+        <label for="projet_id" class="block text-gray-700">Projet</label>
+        <select name="projet_id" id="projet_id"
+                class="w-full border rounded px-3 py-2 @error('projet_id') border-red-500 @enderror">
+            <option value="" disabled {{ old('projet_id', $media->projet_id ?? '') === '' ? 'selected' : '' }}>Choisir un projet</option>
+            @foreach($projets as $projet)
+                <option value="{{ $projet->id }}"
+                    {{ old('projet_id', $media->projet_id ?? '') == $projet->id ? 'selected' : '' }}>
+                    {{ $projet->nom }}
+                </option>
+            @endforeach
+        </select>
+        @error('projet_id')
+            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+        @enderror
+    </div>
+
     {{-- Type --}}
     <div class="mb-4">
         <label for="type" class="block text-gray-700">Type de média</label>
@@ -58,7 +76,7 @@
 
     {{-- Bouton --}}
     <div class="mt-6">
-        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        <button type="submit" class="bg-iri-primary text-white px-4 py-2 rounded hover:bg-iri-secondary">
             {{ $media ? 'Mettre à jour' : 'Enregistrer' }}
         </button>
     </div>

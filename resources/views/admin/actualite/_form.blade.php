@@ -15,17 +15,20 @@
 
     {{-- Résumé --}}
     <div>
-        <label for="resume" class="block text-sm font-medium text-gray-700">Résumé</label>
-        <input type="text" id="resume" name="resume" value="{{ old('resume', $actualite->resume ?? '') }}"
-               class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        <label for="resume" class="form-label">Résumé</label>
+        <textarea name="resume" id="resume" class="form-input" rows="3" placeholder="Résumé de l'actualité...">{{ old('resume', $actualite->resume ?? '') }}</textarea>
+        @error('resume')
+            <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+        @enderror
     </div>
 
     {{-- Texte --}}
     <div>
-        <label for="texte" class="block text-sm font-medium text-gray-700">Texte</label>
-        <textarea id="texte" name="texte" rows="5"
-                  class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  required>{{ old('texte', $actualite->texte ?? '') }}</textarea>
+        <label for="texte" class="form-label">Texte</label>
+        <textarea name="texte" id="texte" class="form-input" rows="6" placeholder="Contenu principal de l'actualité...">{{ old('texte', $actualite->texte ?? '') }}</textarea>
+        @error('texte')
+            <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+        @enderror
         <p class="text-red-500 text-sm mt-1 hidden" id="error-texte">Ce champ est requis.</p>
     </div>
 
@@ -55,7 +58,7 @@
 
     {{-- Bouton de soumission --}}
     <div>
-        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        <button type="submit" class="bg-iri-primary text-white px-4 py-2 rounded hover:bg-iri-secondary">
             {{ isset($actualite) ? 'Mettre à jour' : 'Enregistrer' }}
         </button>
     </div>

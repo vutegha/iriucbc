@@ -15,29 +15,19 @@
 
     {{-- Résumé --}}
     <div class="mb-4">
-        <label for="resume" class="block text-gray-700">Résumé</label>
-        <textarea name="resume" id="resume" rows="3" class="w-full border rounded px-3 py-2 @error('resume') border-red-500 @enderror"
-            required>{{ old('resume', $publication->resume ?? '') }}</textarea>
+        <label for="resume" class="form-label">Résumé</label>
+        <textarea name="resume" id="resume" class="form-input @error('resume') border-red-500 @enderror" rows="3" placeholder="Résumé de la publication...">{{ old('resume', $publication->resume ?? '') }}</textarea>
         @error('resume')
             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
         @enderror
     </div>
 
-    {{-- Contenu --}}
-    <div class="mb-4">
-        <label for="contenu" class="block text-gray-700">Contenu</label>
-        <textarea name="contenu" id="contenu" rows="6" class="w-full border rounded px-3 py-2 @error('contenu') border-red-500 @enderror"
-            required>{{ old('contenu', $publication->contenu ?? '') }}</textarea>
-        @error('contenu')
-            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-        @enderror
-    </div>
+    
 
     {{-- Citation --}}
     <div class="mb-4">
-        <label for="citation" class="block text-gray-700">Citation</label>
-        <input type="text" name="citation" id="citation" class="w-full border rounded px-3 py-2 @error('citation') border-red-500 @enderror"
-            value="{{ old('citation', $publication->citation ?? '') }}" maxlength="255">
+        <label for="citation" class="form-label">Citation</label>
+        <textarea name="citation" id="citation" class="form-input @error('citation') border-red-500 @enderror" rows="2" placeholder="Citation de la publication...">{{ old('citation', $publication->citation ?? '') }}</textarea>
         @error('citation')
             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
         @enderror
@@ -59,18 +49,24 @@
         <label for="en_vedette" class="text-gray-700">En vedette</label>
     </div>
 
-    {{-- Auteur --}}
+    {{-- Auteurs (sélection multiple) --}}
     <div class="mb-4">
-        <label for="auteur_id" class="block text-gray-700">Auteur</label>
-        <select name="auteur_id" id="auteur_id" class="w-full border rounded px-3 py-2 @error('auteur_id') border-red-500 @enderror" required>
-            <option value="" disabled {{ old('auteur_id', $publication->auteur_id ?? '') == '' ? 'selected' : '' }}>Sélectionner un auteur</option>
+        <label for="auteurs" class="block text-gray-700 text-sm font-medium mb-2">Auteurs</label>
+        <select name="auteurs[]" id="auteurs" multiple 
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('auteurs') border-red-500 @enderror" 
+                required>
             @foreach($auteurs as $auteur)
-                <option value="{{ $auteur->id }}" {{ old('auteur_id', $publication->auteur_id ?? '') == $auteur->id ? 'selected' : '' }}>
+                <option value="{{ $auteur->id }}" 
+                    {{ in_array($auteur->id, old('auteurs', isset($publication) ? $publication->auteurs->pluck('id')->toArray() : [])) ? 'selected' : '' }}>
                     {{ $auteur->nom }}
                 </option>
             @endforeach
         </select>
-        @error('auteur_id')
+        <p class="text-xs text-gray-500 mt-1">Maintenez Ctrl (Windows) ou Cmd (Mac) pour sélectionner plusieurs auteurs</p>
+        @error('auteurs')
+            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+        @enderror
+        @error('auteurs.*')
             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
         @enderror
     </div>
@@ -112,8 +108,43 @@
 
     {{-- Boutons --}}
     <div class="mt-6">
-        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        <button type="submit" class="bg-iri-primary text-white px-4 py-2 rounded hover:bg-iri-secondary">
             {{ isset($publication) ? 'Mettre à jour' : 'Enregistrer' }}
         </button>
     </div>
 </form>
+
+{{-- Script pour améliorer le select multiple --}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectElement = document.getElementById('auteurs');
+    
+    // Améliorer le style du select multiple
+    selectElement.style.minHeight = '120px';
+    
+    // Ajouter des boutons de sélection rapide
+    const selectContainer = selectElement.parentNode;
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'mt-2 space-x-2';
+    
+    const selectAllBtn = document.createElement('button');
+    selectAllBtn.type = 'button';
+    selectAllBtn.textContent = 'Tout sélectionner';
+    selectAllBtn.className = 'text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600';
+    selectAllBtn.addEventListener('click', function() {
+        Array.from(selectElement.options).forEach(option => option.selected = true);
+    });
+    
+    const clearAllBtn = document.createElement('button');
+    clearAllBtn.type = 'button';
+    clearAllBtn.textContent = 'Tout désélectionner';
+    clearAllBtn.className = 'text-xs bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-600';
+    clearAllBtn.addEventListener('click', function() {
+        Array.from(selectElement.options).forEach(option => option.selected = false);
+    });
+    
+    buttonContainer.appendChild(selectAllBtn);
+    buttonContainer.appendChild(clearAllBtn);
+    selectContainer.appendChild(buttonContainer);
+});
+</script>

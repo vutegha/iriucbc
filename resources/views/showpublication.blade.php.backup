@@ -1,0 +1,958 @@
+@extends('layouts.iri')
+
+@section('title', 'Publication - ' . $publication->titre)
+
+@push('styles')
+<style>
+    /* Styles optimisés pour la vue publication */
+    .publication-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        display: grid;
+        grid-template-columns: 1fr 3fr;
+        gap: 24px;
+        min-height: calc(100vh - 120px);
+    }
+    
+    @media (max-width: 1024px) {
+        .publication-container {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+    }
+    
+    .sidebar {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        height: fit-content;
+        position: sticky;
+        top: 20px;
+    }
+    
+    .main-content {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .publication-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #505c10;
+        line-height: 1.2;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+    
+    @media (max-width: 768px) {
+        .publication-title {
+            font-size: 2rem;
+        }
+    }
+    
+    .publication-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding: 16px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #ee6751;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .meta-item i {
+        color: #505c10;
+    }
+    
+    .toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: white;
+        padding: 12px 16px;
+        border-bottom: 1px solid #e9ecef;
+        border-radius: 8px 8px 0 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .search-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        min-width: 300px;
+    }
+    
+    .search-input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: #ee6751;
+        box-shadow: 0 0 0 3px rgba(238, 103, 81, 0.1);
+    }
+    
+    .toolbar-btn {
+        padding: 8px 12px;
+        background: #505c10;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .toolbar-btn:hover {
+        background: #ee6751;
+        transform: translateY(-1px);
+    }
+    
+    .toolbar-btn.secondary {
+        background: #6c757d;
+    }
+    
+    .toolbar-btn.secondary:hover {
+        background: #5a6268;
+    }
+    
+    .toolbar-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .progress-container {
+        width: 100%;
+        background: #e9ecef;
+        border-radius: 4px;
+        height: 6px;
+        margin: 16px 0;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #505c10, #ee6751);
+        transition: width 0.3s ease;
+        border-radius: 4px;
+    }
+    
+    .progress-text {
+        font-size: 14px;
+        color: #6c757d;
+        text-align: center;
+        margin-bottom: 8px;
+    }
+    
+    .pdf-viewer {
+        padding: 20px 0;
+    }
+    
+    .pdf-viewer canvas {
+        display: block;
+        margin: 0 auto 20px auto;
+        width: 100% !important;
+        height: auto !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        border-radius: 8px;
+    }
+    
+    .resume-modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        z-index: 1000;
+        overflow: hidden;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .resume-modal.show {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .modal-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        background: #f8f9fa;
+    }
+    
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #505c10;
+        margin: 0;
+    }
+    
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #6c757d;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        transition: color 0.3s ease;
+    }
+    
+    .modal-close:hover {
+        color: #ee6751;
+    }
+    
+    .modal-body {
+        padding: 24px;
+        overflow-y: auto;
+        max-height: calc(80vh - 140px);
+    }
+    
+    .resume-text {
+        line-height: 1.6;
+        color: #333;
+        font-size: 16px;
+    }
+    
+    .floating-btn {
+        position: fixed;
+        bottom: 24px;
+        left: 24px;
+        width: 56px;
+        height: 56px;
+        background: #505c10;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(80, 92, 16, 0.3);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        z-index: 998;
+    }
+    
+    .floating-btn:hover {
+        background: #ee6751;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 24px rgba(238, 103, 81, 0.4);
+    }
+    
+    .sidebar-section {
+        margin-bottom: 24px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .sidebar-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .sidebar-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #505c10;
+        margin-bottom: 12px;
+    }
+    
+    .publication-quote {
+        padding: 16px;
+        background: #f8f9fa;
+        border-left: 4px solid #ee6751;
+        border-radius: 0 8px 8px 0;
+        font-style: italic;
+        color: #6c757d;
+        margin-bottom: 16px;
+    }
+    
+    .quote-text {
+        margin-bottom: 8px;
+        font-size: 15px;
+        line-height: 1.5;
+    }
+    
+    .quote-date {
+        font-size: 13px;
+        color: #868e96;
+    }
+    
+    .related-publications {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .related-item {
+        margin-bottom: 12px;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        transition: background-color 0.3s ease;
+    }
+    
+    .related-item:hover {
+        background: #e9ecef;
+    }
+    
+    .related-link {
+        color: #505c10;
+        text-decoration: none;
+        font-weight: 500;
+        display: block;
+        margin-bottom: 4px;
+    }
+    
+    .related-link:hover {
+        color: #ee6751;
+    }
+    
+    .file-badge {
+        background: #6c757d;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    
+    .btn-primary {
+        background: #505c10;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .btn-primary:hover {
+        background: #ee6751;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .btn-secondary:hover {
+        background: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .download-section {
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 24px;
+    }
+    
+    .citation {
+        margin-top: 12px;
+        padding: 12px;
+        background: white;
+        border-radius: 6px;
+        font-size: 14px;
+        color: #6c757d;
+        line-height: 1.5;
+    }
+    
+    .highlighted {
+        background-color: rgba(255, 255, 0, 0.4) !important;
+        color: inherit !important;
+        padding: 1px 2px;
+        border-radius: 2px;
+    }
+    
+    .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+        text-align: center;
+    }
+    
+    .loading-spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #e9ecef;
+        border-top: 4px solid #505c10;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 16px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+        color: #6c757d;
+        font-size: 16px;
+        font-weight: 500;
+    }
+</style>
+@endpush
+
+@section('content')
+<div class="publication-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <!-- Citation de la publication -->
+        <div class="sidebar-section">
+            @if($publication->titre)
+                <div class="publication-quote">
+                    <div class="quote-text">"{{ Str::limit($publication->titre, 100) }}"</div>
+                    <div class="quote-date">Publié le {{ $publication->created_at->format('d/m/Y') }}</div>
+                </div>
+            @endif
+            
+            <button onclick="showResumeModal()" class="btn-primary w-100" style="width: 100%;">
+                <i class="fas fa-file-text"></i>
+                Lire le résumé
+            </button>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="sidebar-section">
+            <a href="{{ route('site.publications') }}" class="btn-secondary" style="width: 100%;">
+                <i class="fas fa-arrow-left"></i>
+                Retour aux publications
+            </a>
+        </div>
+        
+        <!-- Publications similaires -->
+        @if($autresPublications->count())
+            <div class="sidebar-section">
+                <h4 class="sidebar-title">Publications similaires</h4>
+                <ul class="related-publications">
+                    @foreach($autresPublications as $otherPub)
+                        @php
+                            $fileUrl = Storage::url($otherPub->fichier_pdf ?? '');
+                            $ext = strtolower(pathinfo($fileUrl, PATHINFO_EXTENSION));
+                        @endphp
+                        <li class="related-item">
+                            <a href="{{ route('publication.show', $otherPub->slug) }}" class="related-link">
+                                {{ Str::limit($otherPub->titre, 60) }}
+                            </a>
+                            @if($ext)
+                                <span class="file-badge">{{ strtoupper($ext) }}</span>
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+    </aside>
+
+    <!-- Contenu principal -->
+    <main class="main-content">
+        <div class="publication-header">
+            <h1 class="publication-title">{{ $publication->titre }}</h1>
+            
+            <!-- Métadonnées -->
+            <div class="publication-meta">
+                <div class="meta-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>{{ $publication->created_at->format('d/m/Y') }}</span>
+                </div>
+                @if($publication->auteur)
+                    <div class="meta-item">
+                        <i class="fas fa-user"></i>
+                        <span>{{ $publication->auteur->nom }}</span>
+                    </div>
+                @endif
+                @if($publication->categorie)
+                    <div class="meta-item">
+                        <i class="fas fa-tag"></i>
+                        <span>{{ $publication->categorie->nom }}</span>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        @if ($extension === 'pdf')
+            @php
+                $file = Storage::url($publication->fichier_pdf ?? '');
+            @endphp
+            
+            <!-- Barre d'outils PDF -->
+            <div class="toolbar">
+                <div class="search-container">
+                    <input type="text" id="searchText" placeholder="Rechercher dans le document..." class="search-input">
+                    <button id="searchBtn" class="toolbar-btn">
+                        <i class="fas fa-search"></i>
+                        Rechercher
+                    </button>
+                    <button id="resetBtn" class="toolbar-btn secondary hidden">
+                        <i class="fas fa-times"></i>
+                        Effacer
+                    </button>
+                </div>
+                
+                <div style="display: flex; gap: 8px;">
+                    <button id="prevMatch" class="toolbar-btn hidden">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button id="nextMatch" class="toolbar-btn hidden">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <span id="matchCount" class="hidden" style="color: #6c757d; font-size: 14px; align-self: center;"></span>
+                </div>
+                
+                <div style="display: flex; gap: 8px;">
+                    <span id="pageCount" style="color: #6c757d; font-size: 14px; align-self: center;"></span>
+                    <button id="fullscreenBtn" class="toolbar-btn">
+                        <i class="fas fa-expand"></i>
+                        Plein écran
+                    </button>
+                    <button id="downloadBtn" class="toolbar-btn">
+                        <i class="fas fa-download"></i>
+                        Télécharger
+                    </button>
+                </div>
+            </div>
+
+            <!-- Indicateur de chargement -->
+            <div id="pdfLoader" class="loading-container">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Chargement du document PDF...</div>
+            </div>
+            
+            <!-- Barre de progression -->
+            <div id="pdfProgressContainer" class="progress-container" style="display: none;">
+                <div class="progress-text" id="pdfProgressText">Chargement : 0%</div>
+                <div class="progress-bar" id="pdfProgressBar" style="width: 0%;"></div>
+            </div>
+
+            <!-- Visionneuse PDF -->
+            <div id="pdfViewer" class="pdf-viewer"></div>
+        @else
+            <div style="padding: 40px; text-align: center; color: #dc3545;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <p style="font-size: 18px; margin-bottom: 8px;">Type de fichier non supporté</p>
+                <p style="color: #6c757d;">Ce type de fichier ne peut pas être prévisualisé.</p>
+            </div>
+        @endif
+
+        <!-- Section téléchargement et citation -->
+        @if($publication->fichier_pdf)
+            <div class="download-section">
+                <a href="{{ Storage::url($publication->fichier_pdf) }}" class="btn-primary" target="_blank">
+                    <i class="fas fa-download"></i>
+                    Télécharger le document complet
+                </a>
+                
+                @if($publication->citation)
+                    <div class="citation">
+                        <strong>Comment citer cette ressource :</strong><br>
+                        {{ $publication->citation }}
+                    </div>
+                @endif
+            </div>
+        @endif
+    </main>
+</div>
+
+<!-- Modal résumé -->
+<div id="modalOverlay" class="modal-overlay" onclick="closeResumeModal()"></div>
+<div id="resumeModal" class="resume-modal">
+    <div class="modal-header">
+        <h4 class="modal-title">Résumé du document</h4>
+        <button onclick="closeResumeModal()" class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+        <div class="resume-text">
+            {{ $publication->resume ?? 'Aucun résumé disponible pour cette publication.' }}
+        </div>
+    </div>
+</div>
+
+<!-- Bouton flottant pour rouvrir le résumé -->
+<button id="floatingResumeBtn" class="floating-btn" onclick="showResumeModal()" title="Afficher le résumé">
+    <i class="fas fa-file-text"></i>
+</button>
+
+@push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+// Configuration PDF.js
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// Variables globales
+const pdfUrl = "{{ $file ?? '' }}";
+const container = document.getElementById('pdfViewer');
+const pageCountDisplay = document.getElementById('pageCount');
+const matchCountDisplay = document.getElementById('matchCount');
+const prevBtn = document.getElementById('prevMatch');
+const nextBtn = document.getElementById('nextMatch');
+const resetBtn = document.getElementById('resetBtn');
+
+let pdfDoc = null;
+let searchText = '';
+let matches = [];
+let currentMatch = 0;
+let scaleNormal = 1.2;
+let scaleFullscreen = 2.5;
+let scale = scaleNormal;
+
+// Gestion des modales
+function showResumeModal() {
+    document.getElementById('modalOverlay').classList.add('show');
+    document.getElementById('resumeModal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeResumeModal() {
+    document.getElementById('modalOverlay').classList.remove('show');
+    document.getElementById('resumeModal').classList.remove('show');
+    document.body.style.overflow = 'auto';
+}
+
+// Rendu du PDF avec lazy loading optimisé
+function renderPDF() {
+    if (!pdfUrl) return;
+    
+    container.innerHTML = '';
+    matches = [];
+    currentMatch = 0;
+    updateSearchUI();
+
+    const loadingTask = pdfjsLib.getDocument(pdfUrl);
+
+    // Barre de progression
+    loadingTask.onProgress = function (progressData) {
+        if (progressData.total) {
+            const percent = Math.round((progressData.loaded / progressData.total) * 100);
+            document.getElementById('pdfProgressContainer').style.display = 'block';
+            document.getElementById('pdfProgressBar').style.width = percent + '%';
+            document.getElementById('pdfProgressText').textContent = `Chargement : ${percent}%`;
+        }
+    };
+
+    loadingTask.promise.then(pdf => {
+        pdfDoc = pdf;
+        pageCountDisplay.textContent = `${pdf.numPages} pages`;
+
+        // Créer les conteneurs de pages
+        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+            const pageDiv = document.createElement('div');
+            pageDiv.classList.add('pdf-page');
+            pageDiv.dataset.pageNumber = pageNumber;
+            pageDiv.style.minHeight = '600px';
+            pageDiv.style.marginBottom = '20px';
+            pageDiv.style.display = 'flex';
+            pageDiv.style.justifyContent = 'center';
+            pageDiv.style.alignItems = 'center';
+            pageDiv.style.backgroundColor = '#f8f9fa';
+            pageDiv.style.borderRadius = '8px';
+            pageDiv.innerHTML = `<div style="color: #6c757d;">Chargement de la page ${pageNumber}...</div>`;
+            container.appendChild(pageDiv);
+        }
+
+        // Masquer les indicateurs de chargement
+        document.getElementById('pdfLoader').style.display = 'none';
+        document.getElementById('pdfProgressContainer').style.display = 'none';
+
+        // Démarrer l'observation lazy loading
+        observePages();
+    }).catch(error => {
+        console.error('Erreur lors du chargement du PDF:', error);
+        document.getElementById('pdfLoader').innerHTML = `
+            <div style="color: #dc3545; text-align: center;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <div>Erreur lors du chargement du PDF</div>
+                <div style="font-size: 14px; margin-top: 8px; color: #6c757d;">Veuillez réessayer ou télécharger le fichier directement.</div>
+            </div>
+        `;
+    });
+}
+
+// Observation lazy loading optimisée
+function observePages() {
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const pageDiv = entry.target;
+                const pageNumber = parseInt(pageDiv.dataset.pageNumber);
+                if (!pageDiv.dataset.rendered) {
+                    renderPage(pageNumber, pageDiv);
+                    pageDiv.dataset.rendered = 'true';
+                }
+            }
+        });
+    }, {
+        root: null,
+        rootMargin: '300px',
+        threshold: 0.1
+    });
+
+    document.querySelectorAll('.pdf-page').forEach(div => observer.observe(div));
+}
+
+// Rendu d'une page avec gestion des erreurs
+function renderPage(pageNumber, pageDiv) {
+    pdfDoc.getPage(pageNumber).then(page => {
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        const renderContext = { canvasContext: context, viewport };
+        
+        page.render(renderContext).promise.then(() => {
+            // Gestion du texte pour la recherche
+            page.getTextContent().then(textContent => {
+                const wrapper = document.createElement('div');
+                wrapper.style.position = 'relative';
+                wrapper.appendChild(canvas);
+
+                // Couche de texte pour la recherche
+                if (searchText) {
+                    const textLayer = createTextLayer(textContent, canvas, searchText);
+                    wrapper.appendChild(textLayer);
+                }
+
+                pageDiv.innerHTML = '';
+                pageDiv.appendChild(wrapper);
+                updateSearchUI();
+            });
+        });
+    }).catch(error => {
+        console.error(`Erreur lors du rendu de la page ${pageNumber}:`, error);
+        pageDiv.innerHTML = `
+            <div style="color: #dc3545; padding: 20px; text-align: center;">
+                Erreur lors du chargement de la page ${pageNumber}
+            </div>
+        `;
+    });
+}
+
+// Création de la couche de texte pour la recherche
+function createTextLayer(textContent, canvas, searchQuery) {
+    const textLayer = document.createElement('div');
+    textLayer.style.position = 'absolute';
+    textLayer.style.top = 0;
+    textLayer.style.left = 0;
+    textLayer.style.width = canvas.width + 'px';
+    textLayer.style.height = canvas.height + 'px';
+    textLayer.style.pointerEvents = 'none';
+
+    textContent.items.forEach(item => {
+        const div = document.createElement('div');
+        div.textContent = item.str;
+        div.style.position = 'absolute';
+        div.style.left = item.transform[4] + 'px';
+        div.style.top = (canvas.height - item.transform[5]) + 'px';
+        div.style.fontSize = item.height + 'px';
+        div.style.whiteSpace = 'pre';
+        div.style.backgroundColor = 'transparent';
+        div.style.color = 'transparent';
+
+        if (item.str.toLowerCase().includes(searchQuery.toLowerCase())) {
+            div.classList.add('highlighted');
+            div.style.color = 'inherit';
+            matches.push(div);
+        }
+
+        textLayer.appendChild(div);
+    });
+
+    return textLayer;
+}
+
+// Mise à jour de l'interface de recherche
+function updateSearchUI() {
+    if (matches.length > 0) {
+        prevBtn.classList.remove('hidden');
+        nextBtn.classList.remove('hidden');
+        resetBtn.classList.remove('hidden');
+        matchCountDisplay.classList.remove('hidden');
+        matchCountDisplay.textContent = `${matches.length} résultat(s)`;
+    } else {
+        prevBtn.classList.add('hidden');
+        nextBtn.classList.add('hidden');
+        if (searchText) {
+            resetBtn.classList.remove('hidden');
+            matchCountDisplay.classList.remove('hidden');
+            matchCountDisplay.textContent = 'Aucun résultat';
+        } else {
+            resetBtn.classList.add('hidden');
+            matchCountDisplay.classList.add('hidden');
+        }
+    }
+}
+
+// Navigation dans les résultats de recherche
+function highlightMatch() {
+    if (matches.length === 0) return;
+    
+    matches.forEach((el, idx) => {
+        el.style.outline = idx === currentMatch ? '2px solid #007bff' : 'none';
+        el.style.backgroundColor = idx === currentMatch ? 'rgba(0, 123, 255, 0.3)' : 'rgba(255, 255, 0, 0.4)';
+    });
+    
+    matches[currentMatch].scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+    });
+}
+
+// Event listeners
+document.getElementById('searchBtn').addEventListener('click', function () {
+    const newSearchText = document.getElementById('searchText').value.trim();
+    if (newSearchText.length > 0) {
+        searchText = newSearchText.toLowerCase();
+        renderPDF();
+    }
+});
+
+document.getElementById('searchText').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        document.getElementById('searchBtn').click();
+    }
+});
+
+resetBtn.addEventListener('click', function () {
+    document.getElementById('searchText').value = '';
+    searchText = '';
+    renderPDF();
+});
+
+prevBtn.addEventListener('click', () => {
+    if (matches.length > 0 && currentMatch > 0) {
+        currentMatch--;
+        highlightMatch();
+    }
+});
+
+nextBtn.addEventListener('click', () => {
+    if (matches.length > 0 && currentMatch < matches.length - 1) {
+        currentMatch++;
+        highlightMatch();
+    }
+});
+
+document.getElementById('fullscreenBtn').addEventListener('click', function () {
+    const elem = container;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+    }
+});
+
+document.getElementById('downloadBtn').addEventListener('click', function() {
+    const a = document.createElement('a');
+    a.href = "{{ Storage::url($publication->fichier_pdf ?? '') }}";
+    a.setAttribute('download', '');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+});
+
+// Gestion du changement d'échelle en plein écran
+document.addEventListener('fullscreenchange', () => {
+    scale = document.fullscreenElement ? scaleFullscreen : scaleNormal;
+    renderPDF();
+});
+
+// Affichage automatique du résumé après 3 secondes
+document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(showResumeModal, 3000);
+    
+    // Initialiser le PDF si disponible
+    if (pdfUrl) {
+        renderPDF();
+    }
+});
+
+// Fermeture du modal avec Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeResumeModal();
+    }
+});
+</script>
+@endpush
+@endsection

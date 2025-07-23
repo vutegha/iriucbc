@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.iri')
 
 @section('content')
 
@@ -26,14 +26,15 @@
                                 <h3 class="font-semibold leading-normal text-sm text-2xl mb-8 text-gray-700 drop-shadow-[0_2px_8px_rgba(255,255,255,0.7)]"></h3>
                                 <!-- Badge "Actualité" -->
                                 <div class="flex justify-start mb-2">
-                                    <span class="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider btn-ci rounded shadow">
-                                        Actualité
+                                    <span class="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider badge-iri rounded shadow">
+                                        Actualité en vedette
                                     </span>
                                 </div>
                                 <!-- Vertical News Carousel -->
                                 <div id="vertical-news-carousel" class="relative w-full max-w-xl mx-auto overflow-hidden rounded-xl shadow-lg bg-white">
                                     <ul id="news-carousel-list" class="flex flex-col transition-transform duration-700 ease-in-out will-change-transform">
                                         @php
+                                        
                                             $news = [
                                                 [
                                                     'id' => 1,
@@ -62,21 +63,21 @@
                                             ];
                                         @endphp
 
-                                        @foreach($news as $item)
+                                        @foreach($actualites as $item)
                                             <li class="flex flex-row items-center p-4 min-h-[6.5rem]">
-                                                <img src="{{ $item['img'] }}" alt="News image" class="w-24 h-24 object-cover rounded-lg flex-shrink-0 mr-4 shadow-md" />
+                                                <img src="{{ asset('storage/'.$item->image) }}" alt="News image" class="w-24 h-24 object-cover rounded-lg flex-shrink-0 mr-4 shadow-md" />
                                                 <div class="flex flex-col flex-1">
                                                     <!-- Titre cliquable -->
-                                                    <a href="/actualites/{{ $item['id'] }}" class="font-semibold text-lg text-gray-900 mb-1 hover:underline">
-                                                        {{ $item['title'] }}
+                                                    <a href="{{ route('site.actualite.show', ['slug' => $item->slug]) }}" class="font-semibold text-lg text-gray-900 mb-1 hover:underline">
+                                                        {{ $item->titre }}
                                                     </a>
                                                     <!-- Texte descriptif (masqué sur petits écrans) -->
                                                     <p class="text-gray-600 text-sm" data-role="desc">
-                                                        {{ \Illuminate\Support\Str::limit($item['desc'], 150) }}
+                                                        {{ \Illuminate\Support\Str::limit($item->resume, 150) }}
                                                     </p>
                                                     <!-- Bouton (masqué sur petits écrans) -->
                                                     <div class="mt-2 " data-role="btn">
-                                                        <a href="/actualites/{{ $item['id'] }}" class="px-3 py-1 text-xs font-semibold btn-ci rounded hover:bg-pink-700 transition-colors duration-200 shadow">
+                                                        <a href="{{ route('site.actualite.show', ['slug' => $item->slug]) }}" class="btn-iri-secondary text-xs">
                                                             Lire plus
                                                         </a>
                                                     </div>
@@ -103,7 +104,7 @@
                                         réels que vivent les communautés en R.D.Congo.
                                     </h5>
                                     <a id="openModalBtn"
-                                    class="inline-flex items-center px-4 py-2 mt-4 text-sm font-semibold text-white bg-red-600 rounded-lg shadow hover:bg-red-700 transition-colors duration-200 cursor-pointer">
+                                    class="btn-iri-primary inline-flex items-center cursor-pointer">
                                         <!-- YouTube favicon SVG -->
                                         <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                                             <g>
@@ -121,7 +122,7 @@
                                 </div>
                                 <ul class="relative flex flex-col p-1 list-none bg-transparent rounded-xl space-y-2" nav-pills role="tablist">   
                                     <li class="z-30 text-center">
-                                        <a class="z-30 block w-full px-0 py-3 mb-0 transition-all border-0 rounded-lg ease-soft-in-out bg-inherit text-slate-700 btn-ci"
+                                        <a class="z-30 block w-full px-0 py-3 mb-0 transition-all border-0 rounded-lg ease-soft-in-out bg-inherit text-slate-700 btn-iri-primary"
                                            nav-link active href="javascript:;" role="tab" aria-selected="true">
                                             <!-- Publications Icon -->
                                             <svg class="inline-block align-middle mr-2 text-white" width="16px" height="16px" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
@@ -141,7 +142,7 @@
                                             </svg>
                                             <span class="ml-1 align-middle ">
                                                 Nos Publications 
-                                                <span class="inline-block px-2 py-0.5 ml-2 text-xs font-semibold text-white btn-ci rounded-full align-middle">76</span>
+                                                <span class="badge-iri inline-block rounded-full align-middle">76</span>
                                             </span>
                                         </a>
                                     </li>
@@ -338,38 +339,28 @@
             <div class="relative flex flex-col min-w-0 mb-6 break-words bg-white border-0 shadow-soft-xl rounded-2xl bg-clip-border">
               <div class="flex justify-start mb-2">
                 <span class="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider btn-ci rounded shadow">
-                  Projets et articles à la une...
+                  Publications et Articles à la une...
                 </span>
               </div>
               <div class="flex-auto p-4">
-                @php
-                  $slides = [
-                    ['img' => '../assets/img/home-decor-1.jpg', 'title' => 'Modern', 'desc' => 'As Uber works through a huge amount of internal management turmoil.', 'project' => 'Project #1'],
-                    ['img' => '../assets/img/home-decor-2.jpg', 'title' => 'Scandinavian', 'desc' => 'Music is something that every person has his or her own specific opinion about.', 'project' => 'Project #2'],
-                    ['img' => '../assets/img/home-decor-3.jpg', 'title' => 'Minimalist', 'desc' => 'Different people have different taste, and various types of music.', 'project' => 'Project #3'],
-                    ['img' => '../assets/img/bruce-mars.jpg', 'title' => 'Classic', 'desc' => 'Classic design never goes out of style.', 'project' => 'Project #4'],
-                    ['img' => '../assets/img/iri.jpg', 'title' => 'Industrial', 'desc' => 'Industrial style with a modern twist.', 'project' => 'Project #5'],
-                    ['img' => '../assets/img/home-decor-2.jpg', 'title' => 'Bohemian', 'desc' => 'Bohemian vibes for creative minds.', 'project' => 'Project #6'],
-                    ['img' => '../assets/img/home-decor-3.jpg', 'title' => 'Coastal', 'desc' => 'Bring the beach to you', 'project' => 'Project #7'],
-                    ['img' => '../assets/img/home-decor-2.jpg', 'title' => 'Rustic', 'desc' => 'Rustic charm and warmth.', 'project' => 'Project #8'],
-                  ];
-                @endphp
+                
+             
 
                 <div class="splide" id="project-carousel">
                   <div class="splide__track">
                     <ul class="splide__list">
-                      @foreach($slides as $slide)
+                      @foreach($publications as $slide)
                       <li class="splide__slide">
                         <div class="relative flex flex-col w-full h-full min-w-0 break-words bg-transparent border-0 shadow-none rounded-2xl bg-clip-border">
                           <div class="relative w-full group overflow-hidden rounded-2xl">
                             <a class="block w-full overflow-hidden">
-                              <img src="{{ $slide['img'] }}" alt="img"
+                              <img src="'../assets/img/iri.jpg" alt="thundernail"
                                    class="transition-transform duration-500 ease-in-out transform group-hover:scale-105 w-full h-[250px] sm:h-[300px] object-cover rounded-2xl" />
                                     <div class="absolute bottom-0 left-0 w-full z-20 rounded-b-2xl"
                                                             style="background: rgba(0, 0, 0, 0.6);">
                                                             <a href="#"
                                                                 class="block text-white text-sm px-4 py-2 hover:underline">
-                                                                {{ $slide['title'] }}
+                                                                {{ $slide['titre'] }}
                                                             </a>
                                                         </div>
                             </a>
@@ -377,10 +368,10 @@
                           <div class="flex-auto pt-4 w-full">
                             <!-- <p class="relative z-10 mb-2 leading-normal text-transparent bg-gradient-to-tl from-gray-900 to-slate-800 text-sm bg-clip-text">
                               {{ $slide['project'] }}
-                            </p>
-                            <p class="mb-4 leading-normal text-sm">
-                              {{ Str::limit($slide['desc'], 100) }}
-                            </p> -->
+                            </p>-->
+                             <p class="mb-4 leading-normal text-sm">
+                              {{ Str::limit($slide['resume'], 100) }}
+                            </p> 
                           </div>
                         </div>
                       </li>
@@ -428,7 +419,7 @@
     <div class="bg-white shadow rounded-xl h-full">
         <div class="flex justify-start mb-2">
                 <span class="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider btn-ci rounded shadow">
-                  Articles en Vedettes
+                  Evenements en vedette
                 </span>
               </div>
         <ul class="space-y-4">

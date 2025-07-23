@@ -4,71 +4,96 @@
         @method('PUT')
     @endif
 
-    <div id="projet-form" class="space-y-6">
+    <div id="projet-form" class="space-y-6 bg-block">
 
         {{-- Nom --}}
         <div>
-            <label for="nom" class="block text-sm font-medium text-gray-700">Nom</label>
+            <label for="nom" class="block text-sm font-semibold text-olive">Nom</label>
             <input type="text" name="nom" id="nom"
-                value="{{ old('nom', $projet->nom ?? '') }}"
-                class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-            <p id="nom-error" class="text-sm text-red-500 mt-1"></p>
+                   value="{{ old('nom', $projet->nom ?? '') }}"
+                   class="mt-1 block w-full rounded border border-gray-300 focus:ring-coral focus:border-coral shadow-sm transition duration-300">
+            <p id="nom-error" class="text-sm text-coral mt-1"></p>
             @error('nom')
-                <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+                <p class="text-sm text-coral mt-1">{{ $message }}</p>
             @enderror
         </div>
 
         {{-- Description --}}
         <div>
-            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-            <textarea name="description" id="description" rows="4"
-                class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">{{ old('description', $projet->description ?? '') }}</textarea>
-            <p id="description-error" class="text-sm text-red-500 mt-1"></p>
+            <label for="description" class="form-label">Description</label>
+            <textarea name="description" id="description" class="form-input" rows="4" placeholder="Description détaillée du projet...">{{ old('description', $projet->description ?? '') }}</textarea>
+            <p id="description-error" class="text-sm text-coral mt-1"></p>
             @error('description')
-                <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+                <p class="text-sm text-coral mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        {{-- Résumé --}}
+        <div>
+            <label for="resume" class="form-label">Résumé</label>
+            <textarea name="resume" id="resume" class="form-input" rows="3" placeholder="Résumé court du projet...">{{ old('resume', $projet->resume ?? '') }}</textarea>
+            @error('resume')
+                <p class="text-sm text-coral mt-1">{{ $message }}</p>
             @enderror
         </div>
 
         {{-- Image --}}
         <div>
-            <label for="image" class="block text-sm font-medium text-gray-700">Image (optionnelle)</label>
+            <label for="image" class="block text-sm font-semibold text-olive">Image (optionnelle)</label>
             <input type="file" name="image" id="image" accept="image/*"
-                class="mt-1 block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4 file:rounded file:border-0
-                    file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                   class="mt-1 block w-full text-sm text-olive
+                          file:mr-4 file:py-2 file:px-4 file:rounded file:border-0
+                          file:bg-light-green file:text-olive hover:file:bg-light-gray">
             @error('image')
-                <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+                <p class="text-sm text-coral mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        {{-- Service --}}
+        <div>
+            <label for="service_id" class="block text-sm font-semibold text-olive">Service associé</label>
+            <select name="service_id" id="service_id"
+                    class="mt-1 block w-full rounded border border-gray-300 focus:ring-coral focus:border-coral shadow-sm transition duration-300">
+                <option value="">-- Sélectionner un service --</option>
+                @foreach($services as $service)
+                    <option value="{{ $service->id }}" {{ old('service_id', $projet->service_id ?? '') == $service->id ? 'selected' : '' }}>
+                        {{ $service->nom }}
+                    </option>
+                @endforeach
+            </select>
+            @error('service_id')
+                <p class="text-sm text-coral mt-1">{{ $message }}</p>
             @enderror
         </div>
 
         {{-- Dates --}}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-                <label for="date_debut" class="block text-sm font-medium text-gray-700">Date de début</label>
+                <label for="date_debut" class="block text-sm font-semibold text-olive">Date de début</label>
                 <input type="date" name="date_debut" id="date_debut"
-                    value="{{ old('date_debut', $projet->date_debut ?? '') }}"
-                    class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                       value="{{ old('date_debut', $projet->date_debut ?? '') }}"
+                       class="mt-1 block w-full rounded border border-gray-300 focus:ring-coral focus:border-coral shadow-sm transition duration-300">
                 @error('date_debut')
-                    <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+                    <p class="text-sm text-coral mt-1">{{ $message }}</p>
                 @enderror
             </div>
 
             <div>
-                <label for="date_fin" class="block text-sm font-medium text-gray-700">Date de fin</label>
+                <label for="date_fin" class="block text-sm font-semibold text-olive">Date de fin</label>
                 <input type="date" name="date_fin" id="date_fin"
-                    value="{{ old('date_fin', $projet->date_fin ?? '') }}"
-                    class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                       value="{{ old('date_fin', $projet->date_fin ?? '') }}"
+                       class="mt-1 block w-full rounded border border-gray-300 focus:ring-coral focus:border-coral shadow-sm transition duration-300">
                 @error('date_fin')
-                    <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+                    <p class="text-sm text-coral mt-1">{{ $message }}</p>
                 @enderror
             </div>
         </div>
 
         {{-- État --}}
         <div>
-            <label for="etat" class="block text-sm font-medium text-gray-700">État</label>
+            <label for="etat" class="block text-sm font-semibold text-olive">État</label>
             <select name="etat" id="etat"
-                class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    class="mt-1 block w-full rounded border border-gray-300 focus:ring-coral focus:border-coral shadow-sm transition duration-300">
                 @php $etatOptions = ['en cours', 'terminé', 'suspendu']; @endphp
                 @foreach($etatOptions as $option)
                     <option value="{{ $option }}" {{ old('etat', $projet->etat ?? '') === $option ? 'selected' : '' }}>
@@ -77,14 +102,51 @@
                 @endforeach
             </select>
             @error('etat')
-                <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+                <p class="text-sm text-coral mt-1">{{ $message }}</p>
             @enderror
+        </div>
+
+        {{-- Statistiques des bénéficiaires --}}
+        <div class="bg-gray-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-olive mb-4">Statistiques des bénéficiaires</h3>
+            <p class="text-sm text-gray-600 mb-4">Ces informations peuvent être mises à jour après la création du projet.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="beneficiaires_hommes" class="block text-sm font-semibold text-olive">Bénéficiaires hommes</label>
+                    <input type="number" name="beneficiaires_hommes" id="beneficiaires_hommes" min="0"
+                           value="{{ old('beneficiaires_hommes', $projet->beneficiaires_hommes ?? '') }}"
+                           class="mt-1 block w-full rounded border border-gray-300 focus:ring-coral focus:border-coral shadow-sm transition duration-300">
+                    @error('beneficiaires_hommes')
+                        <p class="text-sm text-coral mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="beneficiaires_femmes" class="block text-sm font-semibold text-olive">Bénéficiaires femmes</label>
+                    <input type="number" name="beneficiaires_femmes" id="beneficiaires_femmes" min="0"
+                           value="{{ old('beneficiaires_femmes', $projet->beneficiaires_femmes ?? '') }}"
+                           class="mt-1 block w-full rounded border border-gray-300 focus:ring-coral focus:border-coral shadow-sm transition duration-300">
+                    @error('beneficiaires_femmes')
+                        <p class="text-sm text-coral mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="beneficiaires_total" class="block text-sm font-semibold text-olive">Total bénéficiaires</label>
+                    <input type="number" name="beneficiaires_total" id="beneficiaires_total" min="0"
+                           value="{{ old('beneficiaires_total', $projet->beneficiaires_total ?? '') }}"
+                           class="mt-1 block w-full rounded border border-gray-300 focus:ring-coral focus:border-coral shadow-sm transition duration-300">
+                    @error('beneficiaires_total')
+                        <p class="text-sm text-coral mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
         </div>
 
         {{-- Bouton --}}
         <div>
-            <button type="submit"
-                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            <button type="submit" class="btn-ci">
                 {{ isset($projet) ? 'Mettre à jour' : 'Enregistrer' }}
             </button>
         </div>

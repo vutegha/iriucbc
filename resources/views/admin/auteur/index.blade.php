@@ -1,10 +1,28 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
+
+@section('breadcrumbs')
+<nav class="text-sm" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{{ route('admin.dashboard') }}" class="text-white/70 hover:text-white">
+                <i class="fas fa-home mr-2"></i>Tableau de bord
+            </a>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right mx-2 text-white/50"></i>
+                <span class="text-white">auteur</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+@endsection
 
 @section('content')
 @section('title', 'IRI UCBC | Liste des Auteurs')
 <div class="max-w-6xl mx-auto p-6">
     <h1 class="text-2xl font-semibold mb-4">Liste des Auteurs</h1>
-    <a href="{{ route('admin.auteur.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Créer un nouvel auteur</a>
+    <a href="{{ route('admin.auteur.create') }}" class="bg-iri-primary text-white px-4 py-2 rounded hover:bg-iri-secondary">CrÃ©er un nouvel auteur</a>
 
     <table class="min-w-full mt-6 bg-white border">
         <thead>
@@ -30,12 +48,12 @@
                     <td class="border px-4 py-2 space-x-2">
     <a href="{{ route('admin.auteur.show', $auteur) }}"
        class="inline-block bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
-        👁️ Voir
+        ðŸ‘ï¸ Voir
     </a>
 
     <a href="{{ route('admin.auteur.edit', $auteur) }}"
        class="inline-block bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
-        ✏️ Modifier
+        âœï¸ Modifier
     </a>
 
     <form action="{{ route('admin.auteur.destroy', $auteur) }}" method="POST" class="inline-block"
@@ -44,7 +62,7 @@
         @method('DELETE')
         <button type="submit"
                 class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">
-            🗑️ Supprimer
+            ðŸ—‘ï¸ Supprimer
         </button>
     </form>
 </td>
@@ -55,3 +73,4 @@
     </table>
 </div>
 @endsection
+

@@ -229,5 +229,80 @@ public function show( $id)
         return '<p>Erreur lors de la lecture du fichier Word : ' . $e->getMessage() . '</p>';
     }
 }
+
+    public function toggleUne(Publication $publication)
+    {
+        try {
+            $publication->a_la_une = !$publication->a_la_une;
+            $publication->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => $publication->a_la_une ? 'Publication mise à la une' : 'Publication retirée de la une',
+                'status' => $publication->a_la_une
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la mise à jour'
+            ], 500);
+        }
+    }
+
+    /**
+     * Publier une publication
+     */
+    public function publish(Request $request, Publication $publication)
+    {
+        try {
+            $publication->publish(auth()->user(), $request->input('comment'));
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Publication publiée avec succès',
+                'status' => $publication->publication_status,
+                'published_at' => $publication->published_at ? $publication->published_at->format('d/m/Y H:i') : null
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la publication : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Dépublier une publication
+     */
+    public function unpublish(Request $request, Publication $publication)
+    {
+        try {
+            $publication->unpublish($request->input('comment'));
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Publication dépubliée avec succès',
+                'status' => $publication->publication_status
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la dépublication : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Voir les éléments en attente de modération
+     */
+    public function pendingModeration()
+    {
+        $publications = Publication::pendingModeration()
+                                  ->with(['auteurs', 'categorie'])
+                                  ->latest()
+                                  ->paginate(10);
+
+        return view('admin.publication.pending', compact('publications'));
+    }
    
 }

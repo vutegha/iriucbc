@@ -24,7 +24,8 @@ public function index(Request $request)
 
     public function create()
     {
-        return view('admin.media.create');
+        $projets = \App\Models\Projet::all();
+        return view('admin.media.create', compact('projets'));
     }
 
 public function store(Request $request)
@@ -33,6 +34,7 @@ public function store(Request $request)
         'type' => 'nullable|string|max:255',
         'titre' => 'nullable|string|max:255',
         'medias' => 'nullable|file|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg,video/mp4,video/quicktime,video/webm|max:40480',
+        'projet_id' => 'nullable|integer|exists:projets,id',
     ]);
 
     try {
@@ -56,7 +58,8 @@ public function store(Request $request)
 
     public function edit(Media $media)
     {
-        return view('admin.media.edit', ['media' => $media]);
+        $projets = \App\Models\Projet::all();
+        return view('admin.media.edit', ['media' => $media, 'projets' => $projets]);
     }
 
 public function update(Request $request, Media $media)
@@ -65,6 +68,7 @@ public function update(Request $request, Media $media)
         'type' => 'nullable|string|max:255',
         'titre' => 'nullable|string|max:255',
         'medias' => 'nullable|file|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg,video/mp4,video/quicktime,video/webm|max:40480',
+        'projet_id' => 'nullable|integer|exists:projets,id',
     ]);
 
     try {

@@ -1,13 +1,31 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
+
+@section('breadcrumbs')
+<nav class="text-sm" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{{ route('admin.dashboard') }}" class="text-white/70 hover:text-white">
+                <i class="fas fa-home mr-2"></i>Tableau de bord
+            </a>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right mx-2 text-white/50"></i>
+                <span class="text-white">media</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+@endsection
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-10">
+<div class="max-w-7xl mx-auto px-4 py-10 bg-gray-100 ">
 
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Médiathèque</h2>
+        <h2 class="text-2xl font-bold text-gray-800">MÃ©diathÃ¨que</h2>
         <a href="{{ route('admin.media.create') }}"
-           class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow">
-            + Ajouter un média
+           class="bg-iri-primary hover:bg-iri-secondary text-white px-4 py-2 rounded shadow">
+            + Ajouter un mÃ©dia
         </a>
     </div>
 
@@ -17,12 +35,12 @@
             <select name="type" onchange="this.form.submit()" class="border rounded px-3 py-2">
                 <option value="">Tous les types</option>
                 <option value="image" {{ request('type') == 'image' ? 'selected' : '' }}>Images</option>
-                <option value="video" {{ request('type') == 'video' ? 'selected' : '' }}>Vidéos</option>
+                <option value="video" {{ request('type') == 'video' ? 'selected' : '' }}>VidÃ©os</option>
             </select>
         </form>
     </div>
 
-    {{-- Grille de médias --}}
+    {{-- Grille de mÃ©dias --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         @foreach ($medias as $item)
             <div class="relative group">
@@ -63,14 +81,14 @@
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-                                onclick="return confirm('Supprimer ce média ?')">
+                                onclick="return confirm('Supprimer ce mÃ©dia ?')">
                             Supprimer
                         </button>
                     </form>
                 </div>
                 <a id="modalDownload" href="#" download
-                   class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                    Télécharger
+                   class="bg-iri-primary text-white px-4 py-2 rounded hover:bg-iri-secondary">
+                    TÃ©lÃ©charger
                 </a>
             </div>
         </div>
@@ -91,9 +109,9 @@
         if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(ext)) {
             content = `<img src="${fileUrl}" class="w-full rounded">`;
         } else if (['mp4', 'webm', 'mov'].includes(ext)) {
-            content = `<video controls class="w-full rounded"><source src="${fileUrl}" type="video/mp4">Votre navigateur ne prend pas en charge la vidéo.</video>`;
+            content = `<video controls class="w-full rounded"><source src="${fileUrl}" type="video/mp4">Votre navigateur ne prend pas en charge la vidÃ©o.</video>`;
         } else {
-            content = `<p>Fichier non supporté.</p>`;
+            content = `<p>Fichier non supportÃ©.</p>`;
         }
 
         document.getElementById('modalContent').innerHTML = content;
@@ -106,6 +124,8 @@
         document.getElementById('mediaModal').classList.add('hidden');
     }
 </script>
+
 @endsection
+
 
 

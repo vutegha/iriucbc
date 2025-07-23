@@ -1,7 +1,31 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
+
+@section('breadcrumbs')
+<nav class="text-sm" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{{ route('admin.dashboard') }}" class="text-white/70 hover:text-white">
+                <i class="fas fa-home mr-2"></i>Tableau de bord
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right mx-2 text-white/50"></i>
+                <a href="{{ route('admin.actualite.index') }}" class="text-white/70 hover:text-white">actualite</a>
+            </div>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right mx-2 text-white/50"></i>
+                <span class="text-white">Nouveau</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+@endsection
 
 @section('content')
-@section('title', 'IRI UCBC | Nouvelle Actualité')
+@section('title', 'IRI UCBC | Nouvelle ActualitÃ©')
 
 
 <div class="max-w-4xl mx-auto mt-10 bg-white p-6 rounded-xl shadow-md">
@@ -23,12 +47,13 @@
     </div>
 @endif
     <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
-    <h1 class="text-2xl font-semibold text-gray-800 mb-6">Créer une actualité</h1>
+    <h1 class="text-2xl font-semibold text-gray-800 mb-6">CrÃ©er une actualitÃ©</h1>
     <form action="{{ route('admin.actualite.store') }}" method="POST" enctype="multipart/form-data">
         @include('admin.actualite._form')
     </form>
 </div>
 </div>
 @endsection
+
 
 

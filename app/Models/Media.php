@@ -12,7 +12,9 @@ class Media extends Model
     protected $fillable = [
         'medias', // Chemin de stockage du fichier
         'titre',
+        'description', // Description détaillée du média
         'type', // Type de média (image, vidéo, etc.)
+        'projet_id', // Lien vers le projet associé
         
 
     ];
@@ -24,6 +26,7 @@ class Media extends Model
         'type' => 'nullable|string|max:255', // Exemple : image, vidéo, etc.
         'titre' => 'nullable|string|max:255',
         'medias' => 'nullable|file|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg,video/mp4,video/quicktime,video/webm|max:40480',
+        'projet_id' => 'nullable|exists:projets,id', // Lien vers le projet associé
 
     ];
 
@@ -42,6 +45,11 @@ class Media extends Model
     public function isVideo()
     {
         return $this->type === 'video';
+    }
+
+    public function projet()
+    {
+        return $this->belongsTo(Projet::class);
     }
     
 }

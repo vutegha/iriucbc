@@ -1,15 +1,33 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
+
+@section('breadcrumbs')
+<nav class="text-sm" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{{ route('admin.dashboard') }}" class="text-white/70 hover:text-white">
+                <i class="fas fa-home mr-2"></i>Tableau de bord
+            </a>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right mx-2 text-white/50"></i>
+                <span class="text-white">categorie</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+@endsection
 
 @section('content')
-@section('title', 'IRI UCBC | Catégories')
+@section('title', 'IRI UCBC | CatÃ©gories')
 
 {{-- Main content --}}
 <div class="max-w-6xl mx-auto p-6 bg-white rounded shadow">
     <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-semibold text-gray-800">Liste des entités</h1>
+        <h1 class="text-2xl font-semibold text-gray-800">Liste des entitÃ©s</h1>
         <a href="{{ route('admin.categorie.create') }}"
-           class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-            + Nouvelle entité
+           class="bg-iri-primary text-white px-4 py-2 rounded hover:bg-iri-secondary">
+            + Nouvelle entitÃ©
         </a>
     </div>
 
@@ -49,7 +67,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="3" class="text-center text-gray-500 py-4">Aucune entité trouvée.</td>
+                        <td colspan="3" class="text-center text-gray-500 py-4">Aucune entitÃ© trouvÃ©e.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -62,3 +80,4 @@
     </div>
 </div>
 @endsection
+

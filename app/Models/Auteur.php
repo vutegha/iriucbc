@@ -18,8 +18,9 @@ class Auteur extends Model
         'photo' => 'nullable|string|max:255',
     ];
 
+    // Relation many-to-many avec Publication
     public function publications()
     {
-        return $this->hasMany(Publication::class);
+        return $this->belongsToMany(Publication::class);
     }
 }

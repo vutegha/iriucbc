@@ -9,56 +9,107 @@ use Illuminate\Validation\Rule;
 
 class NewsletterController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $newsletters = Newsletter::latest()->paginate(20);
-        return view('admin.newsletter.index', compact('newsletters'));
+        $query = Newsletter::with('preferences');
+        
+        // Filtres
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function($q) use ($search) {
+                $q->where('email', 'like', "%{$search}%")
+                  ->orWhere('nom', 'like', "%{$search}%");
+            });
+        }
+        
+        if ($request->filled('statut')) {
+            $statut = $request->get('statut');
+            if ($statut === 'actif') {
+                $query->where('actif', true);
+            } elseif ($statut === 'inactif') {
+                $query->where('actif', false);
+            }
+        }
+        
+        $newsletters = $query->orderBy('created_at', 'desc')->paginate(20);
+        
+        // Statistiques
+        $stats = [
+            'total' => Newsletter::count(),
+            'actifs' => Newsletter::where('actif', true)->count(),
+            'inactifs' => Newsletter::where('actif', false)->count(),
+            'confirmes' => Newsletter::whereNotNull('confirme_a')->count(),
+        ];
+        
+        return view('admin.newsletter.index', compact('newsletters', 'stats'));
     }
 
-    public function create()
+    public function show(Newsletter $newsletter)
     {
-        return view('admin.newsletter.create');
+        $newsletter->load('preferences');
+        return view('admin.newsletter.show', compact('newsletter'));
     }
-
-    public function store(Request $request)
+    
+    public function toggle(Newsletter $newsletter)
     {
-        $validated = $request->validate([
-            'email' => 'required|email|max:255|unique:newsletters,email',
-        ]);
-
-        Newsletter::create($validated);
-
-        return redirect()->route('admin.newsletter.index')
-            ->with('alert', '<span class="alert alert-success">Email inscrit avec succès.</span>');
+        $newsletter->update(['actif' => !$newsletter->actif]);
+        
+        $status = $newsletter->actif ? 'activé' : 'désactivé';
+        return redirect()->back()
+                        ->with('success', "Abonné {$status} avec succès.");
     }
-
-    public function edit(Newsletter $newsletter)
+    
+    public function export(Request $request)
     {
-        return view('admin.newsletter.edit', compact('newsletter'));
-    }
-
-    public function update(Request $request, Newsletter $newsletter)
-    {
-        $validated = $request->validate([
-            'email' => ['required', 'email', 'max:255', Rule::unique('newsletters')->ignore($newsletter->id)],
-        ]);
-
-        $newsletter->update($validated);
-
-        return redirect()->route('admin.newsletter.index')
-            ->with('alert', '<span class="alert alert-success">Email mis à jour avec succès.</span>');
+        $query = Newsletter::with('preferences');
+        
+        // Appliquer les mêmes filtres que l'index
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function($q) use ($search) {
+                $q->where('email', 'like', "%{$search}%")
+                  ->orWhere('nom', 'like', "%{$search}%");
+            });
+        }
+        
+        if ($request->filled('statut')) {
+            $statut = $request->get('statut');
+            if ($statut === 'actif') {
+                $query->where('actif', true);
+            } elseif ($statut === 'inactif') {
+                $query->where('actif', false);
+            }
+        }
+        
+        $newsletters = $query->get();
+        
+        $csv = "Email,Nom,Statut,Date d'inscription,Publications,Actualités,Projets\n";
+        
+        foreach ($newsletters as $newsletter) {
+            $preferences = $newsletter->preferences->pluck('type')->toArray();
+            $csv .= sprintf(
+                "%s,%s,%s,%s,%s,%s,%s\n",
+                $newsletter->email,
+                $newsletter->nom ?? '',
+                $newsletter->actif ? 'Actif' : 'Inactif',
+                $newsletter->created_at->format('d/m/Y'),
+                in_array('publications', $preferences) ? 'Oui' : 'Non',
+                in_array('actualites', $preferences) ? 'Oui' : 'Non',
+                in_array('projets', $preferences) ? 'Oui' : 'Non'
+            );
+        }
+        
+        return response($csv)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', 'attachment; filename="newsletters_' . date('Y-m-d') . '.csv"');
     }
 
     public function destroy(Newsletter $newsletter)
     {
-        try {
-            $newsletter->delete();
-
-            return redirect()->route('admin.newsletter.index')
-                ->with('alert', '<span class="alert alert-success">Inscription supprimée avec succès.</span>');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('alert', '<span class="alert alert-danger">Erreur lors de la suppression : ' . e($e->getMessage()) . '</span>');
-        }
+        $newsletter->preferences()->delete();
+        $newsletter->delete();
+        
+        return redirect()->route('admin.newsletter.index')
+                        ->with('success', 'Abonné supprimé avec succès.');
     }
 }

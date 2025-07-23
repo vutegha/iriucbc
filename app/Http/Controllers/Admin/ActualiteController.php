@@ -8,6 +8,7 @@ use App\Models\Categorie;
 use App\Models\Auteur;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Events\ActualiteFeaturedCreated;
 use Illuminate\Support\Facades\Storage;
 
 class ActualiteController extends Controller
@@ -58,7 +59,12 @@ public function index(Request $request)
                 $validated['image'] = $path;
             }
 
-            Actualite::create($validated);
+            $actualite = Actualite::create($validated);
+
+            // Déclencher l'événement si l'actualité est en vedette ET à la une
+            if ($actualite->en_vedette && $actualite->a_la_une) {
+                ActualiteFeaturedCreated::dispatch($actualite);
+            }
 
             return redirect()->route('admin.actualite.index')
                 ->with('alert', '<span class="alert alert-success">Actualité enregistrée avec succès.</span>');
@@ -114,6 +120,25 @@ public function index(Request $request)
         return view('admin.actualite.show', compact('actualite'));
     }
 
+    public function toggleUne(Actualite $actualite)
+    {
+        try {
+            $actualite->a_la_une = !$actualite->a_la_une;
+            $actualite->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => $actualite->a_la_une ? 'Actualité mise à la une' : 'Actualité retirée de la une',
+                'status' => $actualite->a_la_une
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la mise à jour'
+            ], 500);
+        }
+    }
+
     public function destroy(Actualite $actualite)
     {
         try {
@@ -128,5 +153,61 @@ public function index(Request $request)
         } catch (\Exception $e) {
             return back()->with('alert', '<span class="alert alert-danger">Erreur : ' . e($e->getMessage()) . '</span>');
         }
+    }
+
+    /**
+     * Publier une actualité
+     */
+    public function publish(Request $request, Actualite $actualite)
+    {
+        try {
+            $actualite->publish(auth()->user(), $request->input('comment'));
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Actualité publiée avec succès',
+                'status' => $actualite->publication_status,
+                'published_at' => $actualite->published_at ? $actualite->published_at->format('d/m/Y H:i') : null
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la publication : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Dépublier une actualité
+     */
+    public function unpublish(Request $request, Actualite $actualite)
+    {
+        try {
+            $actualite->unpublish($request->input('comment'));
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Actualité dépubliée avec succès',
+                'status' => $actualite->publication_status
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la dépublication : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Voir les éléments en attente de modération
+     */
+    public function pendingModeration()
+    {
+        $actualites = Actualite::pendingModeration()
+                              ->with(['categorie'])
+                              ->latest()
+                              ->paginate(10);
+
+        return view('admin.actualite.pending', compact('actualites'));
     }
 }

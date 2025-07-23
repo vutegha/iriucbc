@@ -1,30 +1,79 @@
 @extends('layouts.admin')
 
+@section('breadcrumbs')
+<nav class="text-sm" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{{ route('admin.dashboard') }}" class="text-white/70 hover:text-white">
+                <i class="fas fa-home mr-2"></i>Tableau de bord
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right mx-2 text-white/50"></i>
+                <a href="{{ route('admin.publication.index') }}" class="text-white/70 hover:text-white">Publications</a>
+            </div>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right mx-2 text-white/50"></i>
+                <span class="text-white">{{ Str::limit($publication->titre, 30) }}</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+@endsection
+
 @section('content')
-@section('title', 'IRI UCBC | Modifier une Publication')
-@if ($errors->any())
-    <div class="mb-6 rounded-lg bg-red-100 border border-red-400 text-red-700 px-4 py-3">
-        <strong class="font-semibold">Une erreur est survenue :</strong>
-        <ul class="mt-2 list-disc list-inside text-sm">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    @if ($errors->any())
+        <div class="mb-6 rounded-lg bg-red-50 border border-red-200 text-red-700 px-4 py-3">
+            <strong class="font-semibold">Une erreur est survenue :</strong>
+            <ul class="mt-2 list-disc list-inside text-sm">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-@if (session('alert'))
-    <div class="mb-6">
-        {!! session('alert') !!}
-    </div>
-@endif
+    @if (session('alert'))
+        <div class="mb-6">
+            {!! session('alert') !!}
+        </div>
+    @endif
 
-<div class="max-w-4xl mx-auto p-6 bg-white rounded shadow">
-    <h1 class="text-2xl font-semibold mb-4">Modifier la publication</h1>
-@php
-    $formAction = route('admin.publication.update', $publication->id);
+    <!-- En-tête -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+        <div class="px-6 py-4 bg-gradient-to-r from-iri-primary to-iri-secondary">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-white flex items-center">
+                        <i class="fas fa-file-alt mr-3"></i>
+                        Modifier la Publication
+                    </h1>
+                    <p class="text-white/80 mt-1">Modification de "{{ $publication->titre }}"</p>
+                </div>
+                <div class="flex space-x-3">
+                    <a href="{{ route('admin.publication.show', $publication) }}" 
+                       class="inline-flex items-center px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-200">
+                        <i class="fas fa-eye mr-2"></i>
+                        Voir
+                    </a>
+                    <a href="{{ route('admin.publication.index') }}" 
+                       class="inline-flex items-center px-4 py-2 bg-white text-iri-primary rounded-lg hover:bg-gray-50 transition-all duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @php
+        $formAction = route('admin.publication.update', $publication->id);
     @endphp
-    @include('admin.publication._form');
+    @include('admin.publication._form')
 </div>
 @endsection
 

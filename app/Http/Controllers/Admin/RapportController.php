@@ -14,7 +14,7 @@ class RapportController extends Controller
     public function index(Request $request)
     {
         $categories = Categorie::all();
-        $annees = Rapport::selectRaw('YEAR(date_publication) as annee')->distinct()->orderByDesc('annee')->pluck('annee');
+        $annees = Rapport::selectRaw('YEAR(date_publication) as annee')->distinct()->orderByDesc('annee')->pluck('annee')->toArray();
 
         $rapports = Rapport::query()
                             ->when($request->categorie, fn($q) => $q->where('categorie_id', $request->categorie))
@@ -114,5 +114,61 @@ class RapportController extends Controller
 
         return redirect()->route('admin.rapports.index')
             ->with('alert', '<span class="alert alert-success">Rapport supprimé avec succès.</span>');
+    }
+
+    /**
+     * Publier un rapport
+     */
+    public function publish(Request $request, Rapport $rapport)
+    {
+        try {
+            $rapport->publish(auth()->user(), $request->input('comment'));
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Rapport publié avec succès',
+                'status' => $rapport->publication_status,
+                'published_at' => $rapport->published_at ? $rapport->published_at->format('d/m/Y H:i') : null
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la publication : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Dépublier un rapport
+     */
+    public function unpublish(Request $request, Rapport $rapport)
+    {
+        try {
+            $rapport->unpublish($request->input('comment'));
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Rapport dépublié avec succès',
+                'status' => $rapport->publication_status
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la dépublication : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Voir les éléments en attente de modération
+     */
+    public function pendingModeration()
+    {
+        $rapports = Rapport::pendingModeration()
+                          ->with(['categorie'])
+                          ->latest()
+                          ->paginate(10);
+
+        return view('admin.rapports.pending', compact('rapports'));
     }
 }

@@ -15,15 +15,17 @@
 
     {{-- Champ: Description --}}
     <div class="mb-4">
-        <label for="description" class="block text-gray-700 font-medium mb-1">Description</label>
-        <textarea name="description" id="description" rows="4"
-            class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">{{ old('description', $categorie->description ?? '') }}</textarea>
+        <label for="description" class="form-label">Description</label>
+        <textarea name="description" id="description" class="wysiwyg form-input" rows="4">{{ old('description', $categorie->description ?? '') }}</textarea>
+        @error('description')
+            <p class="text-sm text-coral mt-1">{{ $message }}</p>
+        @enderror
     </div>
 
     {{-- Bouton --}}
     <div class="mt-6">
         <button type="submit"
-            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+            class="bg-iri-primary text-white px-4 py-2 rounded hover:bg-iri-secondary transition">
             {{ $submitLabel ?? 'Enregistrer' }}
         </button>
     </div>

@@ -3,146 +3,624 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - @yield('title', 'Dashboard')</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <!-- Trix Editor CSS -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/trix/2.0.0/trix.min.css">
-
-
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.0/dist/cdn.min.js" defer></script>
+    <title>Admin IRI-UCBC - @yield('title', 'Dashboard')</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- TailwindCSS Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        coral: '#ee6751',
+                        olive: '#505c10',
+                        'light-green': '#dde3da',
+                        beige: '#f5f1eb',
+                        grayish: '#e8e8e8',
+                        // Couleurs IRI Charte Graphique
+                        'iri-primary': '#1e472f',
+                        'iri-secondary': '#2d5a3f',
+                        'iri-accent': '#d2691e',
+                        'iri-light': '#f0f9f4',
+                        'iri-gold': '#b8860b',
+                        'iri-gray': '#64748b',
+                        'iri-dark': '#1a1a1a',
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Custom scrollbar */
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: #374151;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #6b7280;
+            border-radius: 3px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+        
+        /* Custom scrollbar for dark sidebar */
+        .scrollbar-track-gray-800::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        
+        .scrollbar-thumb-gray-600::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 3px;
+        }
+        
+        .scrollbar-thumb-gray-600:hover::-webkit-scrollbar-thumb,
+        .hover\:scrollbar-thumb-gray-500:hover::-webkit-scrollbar-thumb {
+            background: #6b7280;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
-
-<!-- Navbar fixe -->
-<nav class="bg-white shadow fixed top-0 left-0 right-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-        <div class="text-xl font-bold text-gray-700">Admin Panel</div>
-        <div class="hidden md:flex items-center space-x-4">
-            <span class="text-gray-600">{{ auth()->user()->name ?? 'Utilisateur' }}</span>
-            <form method="POST" action="3">
-                @csrf
-                <button class="text-red-600 hover:underline">Se déconnecter</button>
-            </form>
-        </div>
-    </div>
-</nav>
-
-<div class="flex pt-20 min-h-screen">
-
-    <!-- Sidebar -->
-    <aside class="w-64 bg-white shadow-lg hidden md:block">
-        <div class="px-6 py-4 border-b">
-            <div class="text-center">
-                <div class="w-20 h-20 mx-auto rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold text-white">
-                    {{ strtoupper(auth()->user()->name[0] ?? '?') }}
+<body class="bg-gray-100 font-inter">
+    
+    <div class="flex h-screen overflow-hidden" x-data="{ sidebarOpen: false }">
+        
+        <!-- Sidebar -->
+        <div class="fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 flex flex-col"
+             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+            
+            <!-- Sidebar Header -->
+            <div class="flex items-center justify-between h-16 px-4 bg-gray-800 border-b border-gray-700 flex-shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-coral to-olive rounded-lg flex items-center justify-center">
+                        <i class="bi bi-building text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-white font-semibold text-lg">IRI-UCBC</h1>
+                        <p class="text-gray-400 text-xs">Administration</p>
+                    </div>
                 </div>
-                <h2 class="mt-2 font-semibold text-gray-700">{{ auth()->user()->name ?? 'Utilisateur' }}</h2>
-                <p class="text-sm text-gray-500">{{ auth()->user()->email ?? '' }}</p>
+                <button @click="sidebarOpen = false" class="lg:hidden text-gray-400 hover:text-white">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <!-- Profile Section -->
+            <div class="px-4 py-4 bg-gradient-to-r from-coral to-olive border-b border-gray-700 flex-shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <span class="text-white font-semibold">
+                            {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
+                        </span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-white font-medium truncate">{{ auth()->user()->name ?? 'Administrateur' }}</p>
+                        <p class="text-white text-opacity-80 text-sm truncate">{{ auth()->user()->email ?? 'iri@ucbc.org' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Menu with improved scrolling -->
+            <div class="flex-1 relative overflow-hidden">
+                <!-- Gradient fade at top -->
+                <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-gray-900 to-transparent z-10 pointer-events-none"></div>
+                
+                <!-- Scrollable Navigation -->
+                <nav class="h-full px-2 py-4 space-y-1 overflow-y-auto scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 hover:scrollbar-thumb-gray-500" style="scroll-behavior: smooth;">
+                    
+                    <!-- Menu Principal -->
+                    <div class="px-3 py-2">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Menu Principal</p>
+                    </div>
+                    
+                    <a href="{{ route('admin.dashboard') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-speedometer2 mr-3 text-lg"></i>
+                        Dashboard
+                    </a>
+                    
+                    <a href="{{ route('admin.service.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.service.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-gear mr-3 text-lg"></i>
+                        Services
+                    </a>
+                    
+                    <a href="{{ route('admin.actualite.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.actualite.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-newspaper mr-3 text-lg"></i>
+                        Actualités
+                    </a>
+                    
+                    <a href="{{ route('admin.publication.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.publication.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-file-earmark-text mr-3 text-lg"></i>
+                        Publications
+                    </a>
+                    
+                    <a href="{{ route('admin.projets.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.projets.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-diagram-3 mr-3 text-lg"></i>
+                        Projets
+                    </a>
+                    
+                    <a href="{{ route('admin.evenements.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.evenements.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-calendar-event mr-3 text-lg"></i>
+                        Événements
+                    </a>
+
+                    <!-- Gestion -->
+                    <div class="px-3 py-2 mt-6">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Gestion</p>
+                    </div>
+                    
+                    <a href="{{ route('admin.auteur.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.auteur.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-people mr-3 text-lg"></i>
+                        Auteurs
+                    </a>
+                    
+                    <a href="{{ route('admin.categorie.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.categorie.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-tags mr-3 text-lg"></i>
+                        Catégories
+                    </a>
+                    
+                    <a href="{{ route('admin.media.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.media.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-images mr-3 text-lg"></i>
+                        Médias
+                    </a>
+                    
+                    <a href="{{ route('admin.rapports.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.rapports.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-bar-chart mr-3 text-lg"></i>
+                        Rapports
+                    </a>
+
+                    <!-- Communication -->
+                    <div class="px-3 py-2 mt-6">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Communication</p>
+                    </div>
+                    
+                    <a href="{{ route('admin.contacts.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.contacts.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-envelope mr-3 text-lg"></i>
+                        Messages
+                    </a>
+                    
+                    <a href="{{ route('admin.newsletter.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.newsletter.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-mailbox mr-3 text-lg"></i>
+                        Newsletter
+                    </a>
+
+                    <!-- Ressources Humaines -->
+                    <div class="px-3 py-2 mt-6">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Ressources Humaines</p>
+                    </div>
+                    
+                    <a href="{{ route('admin.job-offers.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.job-offers.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-briefcase mr-3 text-lg"></i>
+                        Offres d'emploi
+                    </a>
+                    
+                    <a href="{{ route('admin.job-applications.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.job-applications.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-person-check mr-3 text-lg"></i>
+                        Candidatures
+                    </a>
+
+                    <!-- Déconnexion -->
+                    <div class="px-3 py-2 mt-6">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Compte</p>
+                    </div>
+                    
+                    <form method="POST" action="{{ route('admin.logout') }}" class="m-0">
+                        @csrf
+                        <button type="submit" 
+                                class="group flex items-center w-full px-3 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-800 hover:text-white transition-colors duration-200">
+                            <i class="bi bi-box-arrow-right mr-3 text-lg"></i>
+                            Se déconnecter
+                        </button>
+                    </form>
+
+                    <!-- Padding bottom pour assurer que le dernier élément soit visible -->
+                    <div class="h-8"></div>
+
+                </nav>
+                
+                <!-- Gradient fade at bottom -->
+                <div class="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-gray-900 to-transparent z-10 pointer-events-none"></div>
+                
+                <!-- Scroll indicator (visible when content overflows) -->
+                <div class="absolute right-2 top-1/2 transform -translate-y-1/2 opacity-40 hover:opacity-80 transition-opacity duration-200 group">
+                    <div class="w-1 h-12 bg-gradient-to-b from-transparent via-coral to-transparent rounded-full group-hover:via-orange-400"></div>
+                    <div class="absolute -right-1 top-0 w-3 h-3 bg-coral bg-opacity-60 rounded-full animate-pulse"></div>
+                    <div class="absolute -right-1 bottom-0 w-3 h-3 bg-coral bg-opacity-60 rounded-full animate-pulse" style="animation-delay: 0.5s;"></div>
+                </div>
             </div>
         </div>
 
-       <nav class="mt-4 px-4 text-sm" x-data="{ openMenu: '' }">
-    <h3 class="text-xs text-gray-500 uppercase tracking-wide mb-2">Contenu</h3>
-
-    {{-- Liste des menus avec sous-menus --}}
-    @php
-        $menus = [
-            'publications' => ['label' => '📚 Publications', 'routes' => ['Lister' => route('admin.publication.index'), 'Ajouter' => route('admin.publication.create')]],
-            'actualites' => ['label' => '📰 Actualités', 'routes' => ['Lister' => route('admin.actualite.index'), 'Ajouter' => route('admin.actualite.create')]],
-            'auteurs' => ['label' => '👤 Auteurs', 'routes' => ['Lister' => route('admin.auteur.index'), 'Ajouter' => route('admin.auteur.create')]],
-            'newsletters' => ['label' => '📧 Newsletters', 'routes' => ['Lister' => route('admin.newsletter.index')]],
-            'projets' => ['label' => '📁 Projets', 'routes' => ['Lister' => route('admin.projets.index'), 'Ajouter' => route('admin.projets.create')]],
-            'rapports' => ['label' => '📄 Rapports', 'routes' => ['Lister' => route('admin.rapports.index'), 'Ajouter' => route('admin.rapports.create')]],
-            'Mediathèque' => ['label' => '📄 Mediathèque', 'routes' => ['Lister' => route('admin.media.index'), 'Ajouter' => route('admin.media.create')]],
-            'services' => ['label' => '🛠️ Services', 'routes' => ['Lister' =>  route('admin.service.index'), 'Ajouter' => route('admin.service.create')]],
-        ];
-    @endphp
-
-    @foreach($menus as $key => $menu)
-        <div class="mb-2">
-            <button
-                @click="openMenu === '{{ $key }}' ? openMenu = '' : openMenu = '{{ $key }}'"
-                class="w-full flex justify-between items-center px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 font-medium">
-                {{ $menu['label'] }}
-                <svg class="w-4 h-4 ml-1 transform"
-                     :class="openMenu === '{{ $key }}' ? 'rotate-180' : 'rotate-0'"
-                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M19 9l-7 7-7-7"/>
-                </svg>
-            </button>
-            <div x-show="openMenu === '{{ $key }}'" class="mt-1 ml-4 pl-2 border-l border-gray-300 space-y-1">
-                @foreach($menu['routes'] as $label => $link)
-                    <a href="{{ $link }}" class="block text-gray-700 hover:underline">{{ $label }}</a>
-                @endforeach
-            </div>
+        <!-- Mobile sidebar overlay -->
+        <div x-show="sidebarOpen" 
+             x-transition:enter="transition-opacity ease-linear duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-linear duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="sidebarOpen = false"
+             class="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+             style="display: none;">
         </div>
-    @endforeach
 
-    {{-- Configurations --}}
-    <h3 class="text-xs text-gray-500 uppercase tracking-wide mt-6 mb-2">Configurations</h3>
-    <div class="mb-2">
-        <button
-            @click="openMenu === 'config' ? openMenu = '' : openMenu = 'config'"
-            class="w-full flex justify-between items-center px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 font-medium">
-            ⚙️ Configurations
-            <svg class="w-4 h-4 ml-1 transform"
-                 :class="openMenu === 'config' ? 'rotate-180' : 'rotate-0'"
-                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M19 9l-7 7-7-7"/>
-            </svg>
-        </button>
-        <div x-show="openMenu === 'config'" class="mt-1 ml-4 pl-2 border-l border-gray-300 space-y-1">
-            <a href="{{ route('admin.categorie.index') }}" class="block text-gray-700 hover:underline">📂 Catégories</a>
-            <a href="#" class="block text-gray-700 hover:underline">👥 Gestion des utilisateurs</a>
-            <a href="#" class="block text-gray-700 hover:underline">🔑 Gestion des rôles</a>
+        <!-- Main Content -->
+        <div class="flex-1 overflow-hidden">
+            
+            <!-- Top Navbar Horizontal -->
+            <header class="bg-white shadow-sm border-b border-gray-200" x-data="{ profileOpen: false }">
+                <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+                    <div class="flex items-center space-x-4">
+                        <button @click="sidebarOpen = true" 
+                                class="text-gray-500 hover:text-gray-600 lg:hidden">
+                            <i class="bi bi-list text-xl"></i>
+                        </button>
+                        <div>
+                            <h1 class="text-2xl font-semibold text-gray-900">@yield('title', 'Dashboard')</h1>
+                            <p class="text-sm text-gray-500">@yield('subtitle', 'Panneau d\'administration IRI-UCBC')</p>
+                        </div>
+                    </div>
+
+                    <!-- Navbar Links (Desktop) -->
+                    <div class="hidden md:flex items-center space-x-4">
+                        
+                        <!-- Links rapides -->
+                        <a href="{{ route('admin.actualite.index') }}" 
+                           class="text-gray-600 hover:text-coral px-3 py-2 text-sm font-medium transition-colors duration-200">
+                            <i class="bi bi-newspaper mr-1"></i>
+                            Actualités
+                        </a>
+                        <a href="{{ route('admin.publication.index') }}" 
+                           class="text-gray-600 hover:text-coral px-3 py-2 text-sm font-medium transition-colors duration-200">
+                            <i class="bi bi-file-earmark-text mr-1"></i>
+                            Publications
+                        </a>
+                        <a href="{{ route('admin.newsletter.index') }}" 
+                           class="text-gray-600 hover:text-coral px-3 py-2 text-sm font-medium transition-colors duration-200">
+                            <i class="bi bi-mailbox mr-1"></i>
+                            Newsletter
+                        </a>
+                        <a href="{{ route('admin.contacts.index') }}" 
+                           class="text-gray-600 hover:text-coral px-3 py-2 text-sm font-medium transition-colors duration-200">
+                            <i class="bi bi-envelope mr-1"></i>
+                            Messages
+                        </a>
+
+                        <!-- Voir le site -->
+                        <a href="{{ url('/') }}" 
+                           target="_blank" 
+                           class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                            <i class="bi bi-box-arrow-up-right mr-1"></i>
+                            Site
+                        </a>
+
+                        <!-- Profile Dropdown -->
+                        <div class="relative">
+                            <button @click="profileOpen = !profileOpen" 
+                                    class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                <div class="w-8 h-8 bg-gradient-to-br from-coral to-olive rounded-full flex items-center justify-center">
+                                    <span class="text-white text-sm font-semibold">
+                                        {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
+                                    </span>
+                                </div>
+                                <span class="hidden lg:block text-sm font-medium">{{ auth()->user()->name ?? 'Admin' }}</span>
+                                <i class="bi bi-chevron-down text-xs" :class="profileOpen ? 'rotate-180' : ''"></i>
+                            </button>
+
+                            <!-- Profile Dropdown Menu -->
+                            <div x-show="profileOpen" 
+                                 @click.away="profileOpen = false"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-150"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
+                                 style="display: none;">
+                                <div class="p-4 border-b border-gray-200">
+                                    <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name ?? 'Administrateur' }}</p>
+                                    <p class="text-xs text-gray-500">{{ auth()->user()->email ?? 'iri@ucbc.org' }}</p>
+                                </div>
+                                <div class="py-1">
+                                    <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                        <i class="bi bi-person mr-2"></i>
+                                        Mon Profil
+                                    </a>
+                                    <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                        <i class="bi bi-gear mr-2"></i>
+                                        Paramètres
+                                    </a>
+                                    <div class="border-t border-gray-200 my-1"></div>
+                                    <form method="POST" action="{{ route('admin.logout') }}" class="m-0">
+                                        @csrf
+                                        <button type="submit" class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                            <i class="bi bi-box-arrow-right mr-2"></i>
+                                            Se déconnecter
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile menu button -->
+                    <div class="md:hidden">
+                        <button @click="profileOpen = !profileOpen" 
+                                class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 p-2">
+                            <div class="w-8 h-8 bg-gradient-to-br from-coral to-olive rounded-full flex items-center justify-center">
+                                <span class="text-white text-sm font-semibold">
+                                    {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
+                                </span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mobile navbar menu -->
+                <div x-show="profileOpen" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="-translate-y-1 opacity-0"
+                     x-transition:enter-end="translate-y-0 opacity-100"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="translate-y-0 opacity-100"
+                     x-transition:leave-end="-translate-y-1 opacity-0"
+                     class="md:hidden bg-white border-t border-gray-200"
+                     style="display: none;">
+                    <div class="px-4 py-2 space-y-1">
+                        <a href="{{ route('admin.actualite.index') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
+                            <i class="bi bi-newspaper mr-2"></i>Actualités
+                        </a>
+                        <a href="{{ route('admin.publication.index') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
+                            <i class="bi bi-file-earmark-text mr-2"></i>Publications
+                        </a>
+                        <a href="{{ route('admin.newsletter.index') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
+                            <i class="bi bi-mailbox mr-2"></i>Newsletter
+                        </a>
+                        <a href="{{ route('admin.contacts.index') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
+                            <i class="bi bi-envelope mr-2"></i>Messages
+                        </a>
+                        <div class="border-t border-gray-200 my-2"></div>
+                        <a href="{{ url('/') }}" target="_blank" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">
+                            <i class="bi bi-box-arrow-up-right mr-2"></i>Voir le site
+                        </a>
+                        <form method="POST" action="{{ route('admin.logout') }}" class="m-0">
+                            @csrf
+                            <button type="submit" class="block w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md">
+                                <i class="bi bi-box-arrow-right mr-2"></i>Se déconnecter
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="flex-1 overflow-y-auto scrollbar-thin h-[calc(100vh-4rem)]">
+                <div class="p-4 sm:p-6 lg:p-8 min-h-full">
+                    <!-- Success/Error Messages -->
+                    @if(session('success'))
+                        <div x-data="{ show: true }" 
+                             x-show="show"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 transform scale-90"
+                             x-transition:enter-end="opacity-100 transform scale-100"
+                             x-transition:leave="transition ease-in duration-200"
+                             x-transition:leave-start="opacity-100 transform scale-100"
+                             x-transition:leave-end="opacity-0 transform scale-90"
+                             class="bg-green-50 border border-green-200 rounded-md p-4 mb-6">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-check-circle-fill text-green-400"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-green-800">
+                                        {{ session('success') }}
+                                    </p>
+                                </div>
+                                <div class="ml-auto pl-3">
+                                    <button @click="show = false" 
+                                            class="inline-flex text-green-400 hover:text-green-600">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                    
+                    @if(session('error'))
+                        <div x-data="{ show: true }" 
+                             x-show="show"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 transform scale-90"
+                             x-transition:enter-end="opacity-100 transform scale-100"
+                             x-transition:leave="transition ease-in duration-200"
+                             x-transition:leave-start="opacity-100 transform scale-100"
+                             x-transition:leave-end="opacity-0 transform scale-90"
+                             class="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-exclamation-circle-fill text-red-400"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-red-800">
+                                        {{ session('error') }}
+                                    </p>
+                                </div>
+                                <div class="ml-auto pl-3">
+                                    <button @click="show = false" 
+                                            class="inline-flex text-red-400 hover:text-red-600">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($errors->any())
+                        <div x-data="{ show: true }" 
+                             x-show="show"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0 transform scale-90"
+                             x-transition:enter-end="opacity-100 transform scale-100"
+                             x-transition:leave="transition ease-in duration-200"
+                             x-transition:leave-start="opacity-100 transform scale-100"
+                             x-transition:leave-end="opacity-0 transform scale-90"
+                             class="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-exclamation-triangle-fill text-red-400"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800">
+                                        Erreurs de validation :
+                                    </h3>
+                                    <div class="mt-2 text-sm text-red-700">
+                                        <ul class="list-disc pl-5 space-y-1">
+                                            @foreach($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="ml-auto pl-3">
+                                    <button @click="show = false" 
+                                            class="inline-flex text-red-400 hover:text-red-600">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Breadcrumbs -->
+                    @hasSection('breadcrumbs')
+                        <nav class="flex mb-6" aria-label="Breadcrumb">
+                            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                                <li class="inline-flex items-center">
+                                    <a href="{{ route('admin.dashboard') }}" 
+                                       class="inline-flex items-center text-iri-gray hover:text-iri-primary transition-colors duration-200">
+                                        <i class="fas fa-home mr-2"></i>
+                                        Accueil
+                                    </a>
+                                </li>
+                                @yield('breadcrumbs')
+                            </ol>
+                        </nav>
+                    @endif
+
+                    <!-- Main Content Area -->
+                    @yield('content')
+                </div>
+            </main>
         </div>
     </div>
-</nav>
 
+    <!-- CKEditor 5 -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
 
-        <div class="px-6 py-4 border-t mt-auto text-xs text-gray-400 text-center">
-            Powered by Led Initiatives Sarl
-        </div>
-    </aside>
-
-    <!-- Contenu principal -->
-    <main class="flex-1 p-6">
-        @if(session('alert'))
-            <div class="mb-6">{!! session('alert') !!}</div>
-        @endif
-
-        @if ($errors->any())
-            <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                <strong>Une erreur est survenue :</strong>
-                <ul class="list-disc list-inside mt-2 text-sm">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        @yield('content')
-        @push('scripts')
-<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
-<script>
-    ClassicEditor
-        .create(document.querySelector('#texte'))
-        .catch(error => {
-            console.error(error);
+    <!-- CKEditor Configuration -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('TailwindCSS admin layout chargé, initialisation CKEditor...');
+        
+        // Configuration CKEditor en français
+        const editorConfig = {
+            toolbar: [
+                'heading', '|',
+                'bold', 'italic', 'underline', '|',
+                'bulletedList', 'numberedList', '|',
+                'outdent', 'indent', '|',
+                'blockQuote', 'insertTable', '|',
+                'link', '|',
+                'undo', 'redo'
+            ],
+            heading: {
+                options: [
+                    { model: 'paragraph', title: 'Paragraphe', class: 'ck-heading_paragraph' },
+                    { model: 'heading1', view: 'h1', title: 'Titre 1', class: 'ck-heading_heading1' },
+                    { model: 'heading2', view: 'h2', title: 'Titre 2', class: 'ck-heading_heading2' },
+                    { model: 'heading3', view: 'h3', title: 'Titre 3', class: 'ck-heading_heading3' }
+                ]
+            ],
+            language: 'fr'
+        };
+        
+        // Initialiser CKEditor pour tous les textareas avec la classe 'wysiwyg'
+        const textareas = document.querySelectorAll('textarea.wysiwyg');
+        console.log(`Trouvé ${textareas.length} textareas WYSIWYG`);
+        
+        textareas.forEach((textarea, index) => {
+            console.log(`Initialisation de CKEditor ${index + 1}...`);
+            
+            ClassicEditor
+                .create(textarea, editorConfig)
+                .then(editor => {
+                    console.log(`CKEditor ${index + 1} initialisé avec succès`);
+                    
+                    // Style personnalisé pour l'éditeur
+                    editor.editing.view.change(writer => {
+                        writer.setStyle('min-height', '150px', editor.editing.view.document.getRoot());
+                    });
+                    
+                    // Synchroniser le contenu avec le textarea
+                    editor.model.document.on('change:data', () => {
+                        textarea.value = editor.getData();
+                    });
+                })
+                .catch(error => {
+                    console.error(`Erreur lors de l'initialisation de CKEditor ${index + 1}:`, error);
+                    // En cas d'erreur, on garde le textarea normal
+                    textarea.style.display = 'block';
+                });
         });
-</script>
-@endpush
-    </main>
-</div>
+        
+        console.log('Configuration CKEditor terminée');
+    });
+    </script>
 
-<!-- Footer -->
-<footer class="bg-white border-t mt-6 py-3 text-center text-sm text-gray-500">
-    © {{ date('Y') }} Powered by Led Initiatives Sarl
-</footer>
-
+    @yield('scripts')
 </body>
-@yield('scripts')
 </html>

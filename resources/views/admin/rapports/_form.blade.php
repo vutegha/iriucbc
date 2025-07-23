@@ -21,11 +21,10 @@
     </div>
 
     <div>
-        <label class="block text-sm font-medium text-gray-700">Résumé</label>
-        <textarea name="resume" id="resume" rows="3"
-                  class="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring">{{ old('resume', $rapport->resume ?? '') }}</textarea>
+        <label class="form-label">Résumé</label>
+        <textarea name="resume" id="resume" class="wysiwyg form-input" rows="4">{{ old('resume', $rapport->resume ?? '') }}</textarea>
         @error('resume')
-            <p class="text-sm text-red-500">{{ $message }}</p>
+            <p class="text-sm text-coral mt-1">{{ $message }}</p>
         @enderror
     </div>
 
@@ -56,7 +55,7 @@
 
     <div>
         <button type="submit"
-                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                class="bg-iri-primary text-white px-4 py-2 rounded hover:bg-iri-secondary">
             {{ isset($rapport) ? 'Mettre à jour' : 'Enregistrer' }}
         </button>
     </div>

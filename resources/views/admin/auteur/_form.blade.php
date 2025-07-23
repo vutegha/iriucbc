@@ -1,4 +1,11 @@
-<form id="auteurForm" action="{{ $formAction }}" method="POST" enctype="multipart/form-data">
+<form id="auteurForm" action    {{-- Biographie --}}
+    <div class="mb-4">
+        <label for="biographie" class="form-label">Biographie</label>
+        <textarea name="biographie" id="biographie" class="wysiwyg form-input" rows="4">{{ old('biographie', $auteur->biographie ?? '') }}</textarea>
+        @error('biographie')
+            <p class="text-sm text-coral mt-1">{{ $message }}</p>
+        @enderror
+    </div>mAction }}" method="POST" enctype="multipart/form-data">
     @csrf
     @if(isset($auteur))
         @method('PUT')
@@ -28,12 +35,11 @@
 
     {{-- Biographie --}}
     <div class="mb-4">
-        <label for="biographie" class="block text-gray-700">Biographie</label>
-        <textarea id="biographie" name="biographie"
-                  class="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300 @error('biographie') border-red-500 @enderror"
-                  rows="4">{{ old('biographie', $auteur->biographie ?? '') }}</textarea>
+        <label for="biographie" class="block text-sm font-semibold text-olive">Biographie</label>
+        <input id="biographie" type="hidden" name="biographie" value="{{ old('biographie', $auteur->biographie ?? '') }}">
+        <trix-editor input="biographie" class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:ring-coral focus:border-coral"></trix-editor>
         @error('biographie')
-            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+            <p class="text-sm text-coral mt-1">{{ $message }}</p>
         @enderror
     </div>
 
@@ -58,7 +64,7 @@
     {{-- Bouton --}}
     <div class="mt-6">
         <button type="submit"
-                class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">
+                class="bg-iri-primary text-white px-6 py-2 rounded hover:bg-iri-secondary transition">
             {{ isset($auteur) ? 'Mettre à jour' : 'Enregistrer' }}
         </button>
     </div>

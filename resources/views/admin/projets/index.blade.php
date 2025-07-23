@@ -1,105 +1,273 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
+
+@section('breadcrumbs')
+<nav class="text-sm" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{{ route('admin.dashboard') }}" class="text-white/70 hover:text-white">
+                <i class="fas fa-home mr-2"></i>Tableau de bord
+            </a>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <i class="fas fa-chevron-right mx-2 text-white/50"></i>
+                <span class="text-white">projets</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+@endsection
+
+@section('title', 'Gestion des Projets')
+@section('subtitle', 'Suivi et modÃ©ration des projets de recherche')
 
 @section('content')
-@section('title', 'IRI UCBC | Liste des projets')
-<div class="max-w-7xl mx-auto mt-10 bg-white p-6 rounded-xl shadow-md">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Liste des projets</h1>
-        <a href="{{ route('admin.projets.create') }}"
-           class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            + Nouveau projet
-        </a>
-    </div>
 
-    {{-- Filtres --}}
-    <form method="GET" action="{{ route('admin.projets.index') }}" class="mb-6 flex flex-wrap gap-4 items-end">
-        <div>
-            <label for="etat" class="block text-sm text-gray-600">Filtrer par état</label>
-            <select name="etat" id="etat" class="mt-1 block w-40 rounded-md border-gray-300 shadow-sm">
-                <option value="">-- Tous les états --</option>
-                @foreach(['en cours', 'terminé', 'suspendu'] as $option)
-                    <option value="{{ $option }}" {{ request('etat') == $option ? 'selected' : '' }}>
-                        {{ ucfirst($option) }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
+<x-admin-layout 
+    title="Gestion des Projets"
+    subtitle="Suivi et modÃ©ration des projets de recherche"
+    create-route="{{ route('admin.projets.create') }}"
+    create-label="Nouveau Projet"
+    :show-search="true"
+    search-placeholder="Rechercher par titre, description..."
+    :filters="[
+        [
+            'name' => 'etat',
+            'label' => 'Ã‰tat',
+            'type' => 'select',
+            'options' => [
+                '' => 'Tous les Ã©tats',
+                'en cours' => 'En cours',
+                'terminÃ©' => 'TerminÃ©',
+                'suspendu' => 'Suspendu'
+            ]
+        ],
+        [
+            'name' => 'is_published',
+            'label' => 'Publication',
+            'type' => 'select',
+            'options' => [
+                '' => 'Tous',
+                '1' => 'PubliÃ©s',
+                '0' => 'Non publiÃ©s'
+            ]
+        ],
+        [
+            'name' => 'annee',
+            'label' => 'AnnÃ©e',
+            'type' => 'select',
+            'options' => array_merge(['' => 'Toutes'], array_combine($anneesDisponibles, $anneesDisponibles))
+        ],
+        [
+            'name' => 'created_at_from',
+            'label' => 'CrÃ©Ã© depuis',
+            'type' => 'date'
+        ],
+        [
+            'name' => 'created_at_to',
+            'label' => 'CrÃ©Ã© jusqu\'au',
+            'type' => 'date'
+        ]
+    ]"
+    :stats="[
+        [
+            'label' => 'Total Projets',
+            'value' => $projets->total(),
+            'icon' => 'bi-folder',
+            'bg_color' => 'bg-coral',
+            'icon_color' => 'text-coral'
+        ],
+        [
+            'label' => 'PubliÃ©s',
+            'value' => $projets->where('is_published', true)->count(),
+            'icon' => 'bi-check-circle',
+            'bg_color' => 'bg-green-100',
+            'icon_color' => 'text-green-600'
+        ],
+        [
+            'label' => 'En Attente',
+            'value' => $projets->where('is_published', false)->count(),
+            'icon' => 'bi-clock',
+            'bg_color' => 'bg-yellow-100',
+            'icon_color' => 'text-yellow-600'
+        ],
+        [
+            'label' => 'En Cours',
+            'value' => $projets->where('etat', 'en cours')->count(),
+            'icon' => 'bi-play-circle',
+            'bg_color' => 'bg-blue-100',
+            'icon_color' => 'text-blue-600'
+        ],
+        [
+            'label' => 'TerminÃ©s',
+            'value' => $projets->where('etat', 'terminÃ©')->count(),
+            'icon' => 'bi-check-circle-fill',
+            'bg_color' => 'bg-emerald-100',
+            'icon_color' => 'text-emerald-600'
+        ],
+        [
+            'label' => 'Suspendus',
+            'value' => $projets->where('etat', 'suspendu')->count(),
+            'icon' => 'bi-pause-circle',
+            'bg_color' => 'bg-red-100',
+            'icon_color' => 'text-red-600'
+        ]
+    ]"
+>
 
-        <div>
-            <label for="annee" class="block text-sm text-gray-600">Filtrer par année</label>
-            <select name="annee" id="annee" class="mt-1 block w-40 rounded-md border-gray-300 shadow-sm">
-                <option value="">-- Toutes les années --</option>
-                @foreach ($anneesDisponibles as $annee)
-                    <option value="{{ $annee }}" {{ request('annee') == $annee ? 'selected' : '' }}>
-                        {{ $annee }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700">Filtrer</button>
-        <a href="{{ route('admin.projets.index') }}" class="text-blue-600 underline text-sm ml-2">Réinitialiser</a>
-    </form>
-
-    {{-- Tableau --}}
-    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Projet</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Période</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">État</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100 bg-white">
-                @forelse ($projets as $projet)
-                <tr>
-                    <td class="px-6 py-4">
-                        <div class="flex items-center space-x-3">
-                            @if ($projet->image)
-                                <img src="{{ asset('storage/' . $projet->image) }}" alt="Image"
-                                     class="h-10 w-10 rounded object-cover border">
-                            @else
-                                <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-white text-sm">
-                                    {{ strtoupper(substr($projet->nom, 0, 1)) }}
-                                </div>
-                            @endif
-                            <span class="text-sm font-medium text-gray-800">{{ $projet->nom }}</span>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-700">
-                        {{ $projet->date_debut ?? '---' }} <br> {{ $projet->date_fin ?? '---' }}
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="inline-block px-2 py-1 rounded-full text-xs
-                            {{ $projet->etat === 'en cours' ? 'bg-yellow-100 text-yellow-800' :
-                               ($projet->etat === 'terminé' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') }}">
-                            {{ ucfirst($projet->etat) }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-right text-sm space-x-2">
-                        <a href="{{ route('admin.projets.edit', $projet) }}" class="text-indigo-600 hover:underline">✏️ Modifier</a>
-                        <form action="{{ route('admin.projets.destroy', $projet) }}" method="POST" class="inline"
-                              onsubmit="return confirm('Supprimer ce projet ?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-red-600 hover:underline">🗑️ Supprimer</button>
-                        </form>
-                    </td>
-                </tr>
-                @empty
+    <!-- Table des projets -->
+    <div class="overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
                     <tr>
-                        <td colspan="4" class="px-6 py-4 text-center text-gray-500 italic">Aucun projet trouvé.</td>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Projet</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Informations</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ã‰tat</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ModÃ©ration</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($projets as $projet)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10 bg-coral bg-opacity-10 rounded-full flex items-center justify-center">
+                                        <i class="bi bi-folder text-coral"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ Str::limit($projet->titre, 40) }}</div>
+                                        <div class="text-sm text-gray-500">
+                                            @if($projet->user)
+                                                par {{ $projet->user->prenom }} {{ $projet->user->nom }}
+                                            @else
+                                                Auteur non dÃ©fini
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">
+                                    <div class="font-medium">{{ $projet->date_debut ? $projet->date_debut->format('Y') : 'N/A' }}</div>
+                                    <div class="text-xs text-gray-500">{{ Str::limit($projet->description, 50) }}</div>
+                                </div>
+                                @if($projet->partenaires)
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        <i class="bi bi-people text-gray-400"></i> {{ $projet->partenaires }}
+                                    </div>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @php
+                                    $etatConfig = [
+                                        'en cours' => ['class' => 'bg-blue-100 text-blue-800', 'icon' => 'bi-play-circle'],
+                                        'terminÃ©' => ['class' => 'bg-green-100 text-green-800', 'icon' => 'bi-check-circle'],
+                                        'suspendu' => ['class' => 'bg-red-100 text-red-800', 'icon' => 'bi-pause-circle'],
+                                    ];
+                                    $config = $etatConfig[$projet->etat] ?? ['class' => 'bg-gray-100 text-gray-800', 'icon' => 'bi-question-circle'];
+                                @endphp
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config['class'] }}">
+                                    <i class="{{ $config['icon'] }} mr-1"></i>
+                                    {{ ucfirst($projet->etat) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex flex-col space-y-1">
+                                    @if($projet->is_published)
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <i class="bi bi-eye mr-1"></i>
+                                            PubliÃ©
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <i class="bi bi-clock mr-1"></i>
+                                            En attente
+                                        </span>
+                                    @endif
+                                    
+                                    @if(auth()->check() && auth()->user()->canModerate())
+                                        <div class="flex space-x-1">
+                                            @if(!$projet->is_published)
+                                                <form action="{{ route('admin.projets.publish', $projet) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="submit" 
+                                                            class="text-xs px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                                                            title="Publier">
+                                                        <i class="bi bi-check"></i>
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <form action="{{ route('admin.projets.unpublish', $projet) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="submit" 
+                                                            class="text-xs px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                                                            title="DÃ©publier">
+                                                        <i class="bi bi-x"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex items-center justify-end space-x-2">
+                                    <a href="{{ route('admin.projets.show', $projet) }}" 
+                                       class="text-coral hover:text-coral/80 p-1 rounded-md hover:bg-coral/5 transition-colors duration-200"
+                                       title="Voir">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{{ route('admin.projets.edit', $projet) }}" 
+                                       class="text-blue-600 hover:text-blue-800 p-1 rounded-md hover:bg-blue-50 transition-colors duration-200"
+                                       title="Modifier">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    @if(auth()->check() && auth()->user()->canModerate())
+                                        <form action="{{ route('admin.projets.destroy', $projet) }}" method="POST" class="inline" 
+                                              onsubmit="return confirm('ÃŠtes-vous sÃ»r de vouloir supprimer ce projet ?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" 
+                                                    class="text-red-600 hover:text-red-800 p-1 rounded-md hover:bg-red-50 transition-colors duration-200"
+                                                    title="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center">
+                                    <i class="bi bi-folder text-gray-300 text-4xl mb-4"></i>
+                                    <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun projet</h3>
+                                    <p class="text-gray-500">Commencez par crÃ©er votre premier projet.</p>
+                                    <a href="{{ route('admin.projets.create') }}" 
+                                       class="mt-4 btn-primary">
+                                        <i class="bi bi-plus mr-2"></i>
+                                        CrÃ©er un projet
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <div class="mt-6">
-        {{ $projets->appends(request()->query())->links() }}
-    </div>
-</div>
+    <!-- Pagination -->
+    @if($projets->hasPages())
+        <div class="px-6 py-4 border-t border-gray-200">
+            {{ $projets->links() }}
+        </div>
+    @endif
+
+</x-admin-layout>
 
 @endsection
+

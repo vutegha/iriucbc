@@ -24,12 +24,14 @@ class ServiceController extends Controller
     {
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
+            'nom_menu' => 'nullable|string|max:255',
+            'resume' => 'nullable|string',
             'description' => 'nullable|string',
-            'icone' => 'nullable|image|mimes:jpg,jpeg,png,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
-        if ($request->hasFile('icone')) {
-            $validated['icone'] = $request->file('icone')->store('services', 'public');
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('services/images', 'public');
         }
 
         Service::create($validated);
@@ -42,19 +44,26 @@ class ServiceController extends Controller
         return view('admin.service.edit', compact('service'));
     }
 
+    public function show(Service $service)
+    {
+        return view('admin.service.show', compact('service'));
+    }
+
     public function update(Request $request, Service $service)
     {
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
+            'nom_menu' => 'nullable|string|max:255',
+            'resume' => 'nullable|string',
             'description' => 'nullable|string',
-            'icone' => 'nullable|image|mimes:jpg,jpeg,png,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
-        if ($request->hasFile('icone')) {
-            if ($service->icone) {
-                Storage::disk('public')->delete($service->icone);
+        if ($request->hasFile('image')) {
+            if ($service->image) {
+                Storage::disk('public')->delete($service->image);
             }
-            $validated['icone'] = $request->file('icone')->store('services', 'public');
+            $validated['image'] = $request->file('image')->store('services/images', 'public');
         }
 
         $service->update($validated);
@@ -64,11 +73,87 @@ class ServiceController extends Controller
 
     public function destroy(Service $service)
     {
-        if ($service->icone) {
-            Storage::disk('public')->delete($service->icone);
+        if ($service->image) {
+            Storage::disk('public')->delete($service->image);
         }
         $service->delete();
 
         return redirect()->route('admin.service.index')->with('success', 'Service supprimé.');
+    }
+
+    /**
+     * Publier un service
+     */
+    public function publish(Request $request, Service $service)
+    {
+        try {
+            $service->publish(auth()->user(), $request->input('comment'));
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Service publié avec succès',
+                'status' => $service->publication_status,
+                'published_at' => $service->published_at ? $service->published_at->format('d/m/Y H:i') : null
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la publication : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Dépublier un service
+     */
+    public function unpublish(Request $request, Service $service)
+    {
+        try {
+            $service->unpublish($request->input('comment'));
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Service dépublié avec succès',
+                'status' => $service->publication_status
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la dépublication : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Basculer l'affichage dans le menu
+     */
+    public function toggleMenu(Request $request, Service $service)
+    {
+        try {
+            $service->toggleMenu();
+            
+            return response()->json([
+                'success' => true,
+                'message' => $service->show_in_menu ? 'Service ajouté au menu' : 'Service retiré du menu',
+                'show_in_menu' => $service->show_in_menu
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la mise à jour : ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Voir les éléments en attente de modération
+     */
+    public function pendingModeration()
+    {
+        $services = Service::pendingModeration()
+                          ->latest()
+                          ->paginate(10);
+
+        return view('admin.service.pending', compact('services'));
     }
 }
