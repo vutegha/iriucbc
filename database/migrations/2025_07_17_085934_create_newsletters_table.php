@@ -11,17 +11,43 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('newsletters', function (Blueprint $table) {
-            $table->id();
-            $table->string('email')->unique();
-            $table->string('nom')->nullable();
-            $table->string('token')->unique(); // Token pour gérer les préférences
-            $table->boolean('actif')->default(true);
-            $table->timestamp('confirme_a')->nullable(); // Date de confirmation
-            $table->timestamps();
-            
-            $table->index(['email', 'actif']);
-        });
+        // Check if newsletters table exists and add missing columns
+        if (Schema::hasTable('newsletters')) {
+            Schema::table('newsletters', function (Blueprint $table) {
+                if (!Schema::hasColumn('newsletters', 'nom')) {
+                    $table->string('nom')->nullable()->after('email');
+                }
+                if (!Schema::hasColumn('newsletters', 'token')) {
+                    $table->string('token')->unique()->after('nom');
+                }
+                if (!Schema::hasColumn('newsletters', 'actif')) {
+                    $table->boolean('actif')->default(true)->after('token');
+                }
+                if (!Schema::hasColumn('newsletters', 'confirme_a')) {
+                    $table->timestamp('confirme_a')->nullable()->after('actif');
+                }
+                
+                // Add index (Laravel 11 compatible way)
+                try {
+                    $table->index(['email', 'actif'], 'newsletters_email_actif_index');
+                } catch (\Exception $e) {
+                    // Index probably already exists, ignore
+                }
+            });
+        } else {
+            // If table doesn't exist, create it
+            Schema::create('newsletters', function (Blueprint $table) {
+                $table->id();
+                $table->string('email')->unique();
+                $table->string('nom')->nullable();
+                $table->string('token')->unique(); // Token pour gérer les préférences
+                $table->boolean('actif')->default(true);
+                $table->timestamp('confirme_a')->nullable(); // Date de confirmation
+                $table->timestamps();
+                
+                $table->index(['email', 'actif']);
+            });
+        }
     }
 
     /**

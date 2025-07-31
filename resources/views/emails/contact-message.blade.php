@@ -110,8 +110,8 @@
     </div>
 
     <div class="footer">
-        <p><strong>Institut de Recherche Interdisciplinaire</strong></p>
-        <p>Université Catholique de Bukavu (IRI-UCBC)</p>
+        <p><strong>Institut de Recherche Intégré à l'Université Chrétienne Bilingue du Congo</strong></p>
+        <p>Congo Initiative-Université Chrétienne Bilingue du Congo (IRI-UCBC)</p>
         <p>📧 iri@ucbc.org | 🌐 www.iri-ucbc.org</p>
     </div>
 </body>

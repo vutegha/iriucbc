@@ -14,6 +14,7 @@
                 {{ optional($services)->count() ?? 0 }} service(s) enregistré(s)
             </p>
         </div>
+        @can('create services')
         <a href="{{ route('admin.service.create') }}" 
            class="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-iri-primary to-iri-secondary text-white rounded-xl hover:from-iri-secondary hover:to-iri-primary transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 border border-iri-accent/20">
             <i class="fas fa-plus-circle mr-3 text-lg group-hover:rotate-90 transition-transform duration-300"></i>
@@ -22,10 +23,11 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-iri-gold/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded"></div>
             </span>
         </a>
+        @endcan
     </div>
 
     <!-- Cartes statistiques -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
         <!-- Total Services -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200 iri-shine">
             <div class="flex items-center">
@@ -71,32 +73,22 @@
             </div>
         </div>
 
-        <!-- Dans Menu -->
+        <!-- Services Menu -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200 iri-shine">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <div class="w-12 h-12 bg-iri-secondary/20 rounded-lg flex items-center justify-center border border-iri-secondary/30">
-                        <i class="fas fa-list text-iri-secondary text-xl"></i>
+                    <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center border border-purple-500/30">
+                        <i class="fas fa-list-ul text-purple-600 text-xl"></i>
                     </div>
                 </div>
                 <div class="ml-4">
-                    <p class="text-sm font-semibold text-gray-700 mb-1">Dans Menu</p>
-                    <p class="text-2xl font-bold text-iri-secondary">{{ optional($services)->where('show_in_menu', true)->count() ?? 0 }}</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Au Menu -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200 iri-shine">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-12 h-12 bg-olive/20 rounded-lg flex items-center justify-center border border-olive/40">
-                        <i class="fas fa-bars text-olive text-xl"></i>
-                    </div>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-semibold text-gray-700 mb-1">Au Menu</p>
-                    <p class="text-2xl font-bold text-olive">{{ optional($services)->whereNotNull('nom_menu')->count() ?? 0 }}</p>
+                    <p class="text-sm font-semibold text-gray-700 mb-1">Services Menu</p>
+                    <p class="text-2xl font-bold text-purple-600">
+                        {{ optional($services)->filter(function($service) {
+                            return $service->is_published && 
+                                   $service->show_in_menu;
+                        })->count() ?? 0 }}
+                    </p>
                 </div>
             </div>
         </div>
@@ -124,17 +116,12 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1">
                     <!-- Image du service -->
                     <div class="relative">
-                        @if($service->image)
-                            <div class="h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
-                                <img src="{{ asset('storage/' . $service->image) }}" 
-                                     class="w-full h-full object-cover" 
-                                     alt="Image du service {{ $service->nom }}">
-                            </div>
-                        @else
-                            <div class="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                                <i class="fas fa-cogs text-gray-400 text-4xl"></i>
-                            </div>
-                        @endif
+                        <div class="h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
+                            <img src="{{ $service->image_url }}" 
+                                 class="w-full h-full object-cover" 
+                                 alt="Image du service {{ $service->nom }}"
+                                 loading="lazy">
+                        </div>
                         
                         <!-- Badges de statut -->
                         <div class="absolute top-3 left-3 flex space-x-2">
@@ -185,6 +172,7 @@
                         
                         <!-- Actions -->
                         <div class="flex justify-center space-x-3 pt-4 border-t border-gray-100">
+                            @can('view services')
                             <!-- Voir -->
                             <a href="{{ route('admin.service.show', $service) }}" 
                                class="group relative inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-iri-accent to-iri-gold text-white rounded-xl hover:from-iri-gold hover:to-iri-accent transform hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-xl border-2 border-iri-accent/20"
@@ -195,7 +183,9 @@
                                     <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                                 </div>
                             </a>
+                            @endcan
                             
+                            @can('update services')
                             <!-- Modifier -->
                             <a href="{{ route('admin.service.edit', $service) }}" 
                                class="group relative inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-iri-primary to-iri-secondary text-white rounded-xl hover:from-iri-secondary hover:to-iri-primary transform hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-xl border-2 border-iri-primary/20"
@@ -206,7 +196,9 @@
                                     <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                                 </div>
                             </a>
+                            @endcan
                             
+                            @can('delete services')
                             <!-- Supprimer -->
                             <form action="{{ route('admin.service.destroy', $service) }}" method="POST" 
                                   onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce service ?')" 
@@ -223,6 +215,7 @@
                                     </div>
                                 </button>
                             </form>
+                            @endcan
                         </div>
                     </div>
                 </div>

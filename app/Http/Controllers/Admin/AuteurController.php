@@ -26,11 +26,11 @@ class AuteurController extends Controller
         try {
             $validated = $request->validate([
                 'nom' => 'required|string|max:255',
-                'email' => 'required|email|max:255|unique:auteurs,email',
+                'prenom' => 'nullable|string|max:255',
+                'email' => 'nullable|email|max:255|unique:auteurs,email',
+                'institution' => 'nullable|string|max:255',
                 'biographie' => 'nullable|string',
                 'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5048',
-                
-                
             ]);
 
             if ($request->hasFile('photo')) {
@@ -39,16 +39,47 @@ class AuteurController extends Controller
                 $validated['photo'] = $path;
             }
 
-            Auteur::create($validated);
+            $auteur = Auteur::create($validated);
+
+            // Si c'est une requête AJAX, retourner du JSON
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'auteur' => [
+                        'id' => $auteur->id,
+                        'nom' => $auteur->nom,
+                        'prenom' => $auteur->prenom,
+                        'nom_complet' => $auteur->prenom ? "{$auteur->prenom} {$auteur->nom}" : $auteur->nom,
+                        'email' => $auteur->email,
+                        'institution' => $auteur->institution,
+                    ],
+                    'message' => 'Auteur créé avec succès!'
+                ]);
+            }
 
             return redirect()->route('admin.auteur.index')
                 ->with('alert', '<span class="alert alert-success">Auteur enregistré avec succès.</span>');
         } catch (ValidationException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreurs de validation',
+                    'errors' => $e->validator->errors()
+                ], 422);
+            }
+            
             return redirect()->back()
                 ->withErrors($e->validator)
                 ->withInput()
                 ->with('alert', '<span class="alert alert-danger">Erreur de validation.</span>');
         } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreur lors de la création de l\'auteur: ' . $e->getMessage()
+                ], 500);
+            }
+            
             return redirect()->back()
                 ->withInput()
                 ->with('alert', '<span class="alert alert-danger">Erreur : ' . e($e->getMessage()) . '</span>');
@@ -65,7 +96,9 @@ class AuteurController extends Controller
         try {
             $validated = $request->validate([
                 'nom' => 'required|string|max:255',
-                'email' => 'required|email|max:255|unique:auteurs,email',
+                'prenom' => 'nullable|string|max:255',
+                'email' => 'nullable|email|max:255|unique:auteurs,email,' . $auteur->id,
+                'institution' => 'nullable|string|max:255',
                 'biographie' => 'nullable|string',
                 'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5048',
             ]);
@@ -114,7 +147,79 @@ class AuteurController extends Controller
         }
     }
     public function show(Auteur $auteur)
-{
-    return view('admin.auteur.show', compact('auteur'));
-}
+    {
+        return view('admin.auteur.show', compact('auteur'));
+    }
+
+    /**
+     * Recherche d'auteurs pour AJAX
+     */
+    public function search(Request $request)
+    {
+        $query = $request->get('q', '');
+        
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $auteurs = Auteur::where(function($q) use ($query) {
+            $q->where('nom', 'LIKE', "%{$query}%")
+              ->orWhere('prenom', 'LIKE', "%{$query}%")
+              ->orWhere('email', 'LIKE', "%{$query}%")
+              ->orWhere('institution', 'LIKE', "%{$query}%");
+        })
+        ->select('id', 'nom', 'prenom', 'email', 'institution')
+        ->limit(20)
+        ->get()
+        ->map(function($auteur) {
+            return [
+                'id' => $auteur->id,
+                'nom' => $auteur->prenom ? "{$auteur->prenom} {$auteur->nom}" : $auteur->nom,
+                'email' => $auteur->email,
+                'institution' => $auteur->institution
+            ];
+        });
+
+        return response()->json($auteurs);
+    }
+
+    /**
+     * Création d'auteur via AJAX
+     */
+    public function storeAjax(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'nom' => 'required|string|max:255',
+                'prenom' => 'nullable|string|max:255',
+                'email' => 'nullable|email|max:255|unique:auteurs,email',
+                'institution' => 'nullable|string|max:255',
+            ]);
+
+            $auteur = Auteur::create($validated);
+
+            return response()->json([
+                'success' => true,
+                'auteur' => [
+                    'id' => $auteur->id,
+                    'nom' => $auteur->nom,
+                    'prenom' => $auteur->prenom,
+                    'nom_complet' => $auteur->prenom ? "{$auteur->prenom} {$auteur->nom}" : $auteur->nom,
+                ],
+                'message' => 'Auteur créé avec succès!'
+            ]);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreurs de validation',
+                'errors' => $e->validator->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la création de l\'auteur'
+            ], 500);
+        }
+    }
 }

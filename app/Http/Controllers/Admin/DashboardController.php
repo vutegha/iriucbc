@@ -49,12 +49,12 @@ class DashboardController extends Controller
         $dernieresActualites = Actualite::latest()->take(5)->get();
         $dernieresPublications = Publication::latest()->take(5)->get();
         $derniersProjets = Projet::latest()->take(5)->get();
-        $derniersEvenements = Evenement::latest('date_debut')->take(5)->get();
+        $derniersEvenements = Evenement::latest('date_evenement')->take(5)->get();
         $derniersMessages = Contact::latest()->take(5)->get();
 
         // Prochains événements
         $prochainsEvenements = Evenement::aVenir()
-                                      ->orderBy('date_debut', 'asc')
+                                      ->orderBy('date_evenement', 'asc')
                                       ->take(3)
                                       ->get();
 

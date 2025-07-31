@@ -2,25 +2,26 @@
 
 @section('title', $projet->exists ? 'Projet - ' . $projet->nom : 'Projet introuvable')
 
-@section('content')
+@section('breadcrumb')
 @if($projet->exists)
-    <!-- Breadcrumb -->
     @php
-        $breadcrumbs = [
+        $breadcrumbItems = [
             ['title' => 'Services', 'url' => route('site.services')]
         ];
         
         if($projet->service) {
-            $breadcrumbs[] = ['title' => $projet->service->nom, 'url' => route('site.service.show', $projet->service->slug)];
+            $breadcrumbItems[] = ['title' => $projet->service->nom, 'url' => route('site.service.show', $projet->service->slug)];
         }
         
-        $breadcrumbs[] = ['title' => $projet->nom, 'url' => null];
+        $breadcrumbItems[] = ['title' => Str::limit($projet->nom, 50), 'url' => null];
     @endphp
     
-    @include('partials.breadcrumb', ['breadcrumbs' => $breadcrumbs])
+    <x-breadcrumb-overlay :items="$breadcrumbItems" />
+@endif
+@endsection
 
-    <!-- Main Content -->
-    <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+@section('content')
+@if($projet->exists)
         <!-- Hero Section -->
         <section class="relative">
             <div class="relative h-96 bg-gradient-to-br from-iri-primary via-iri-secondary to-iri-accent overflow-hidden">
@@ -46,6 +47,8 @@
             </div>
         </section>
 
+    <!-- Main Content -->
+    <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
         <!-- Project Details -->
         <section class="py-16">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -55,9 +58,19 @@
                         <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
                             <h2 class="text-3xl font-bold text-gray-900 mb-6">À propos de ce projet</h2>
                             
+                            <!-- Résumé du projet si disponible -->
+                            @if($projet->resume)
+                                <blockquote class="border-l-4 border-iri-primary bg-iri-primary/5 p-6 rounded-lg mb-6">
+                                    <p class="text-lg text-gray-700 italic leading-relaxed font-medium">
+                                        "{{ $projet->resume }}"
+                                    </p>
+                                </blockquote>
+                            @endif
+                            
                             @if($projet->description)
-                                <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">
-                                    {!! nl2br(e($projet->description)) !!}
+                                <div class="prose prose-lg max-w-none">
+                                    <x-rich-text-display :content="$projet->description" 
+                                        class="prose-headings:text-iri-primary prose-links:text-iri-secondary prose-strong:text-iri-dark" />
                                 </div>
                             @else
                                 <p class="text-gray-500 italic">Aucune description disponible pour ce projet.</p>
@@ -197,6 +210,64 @@
                                 @endif
                             </div>
                         </div>
+
+                        <!-- Projets exécutés -->
+                        @if($projet->service && optional($projet->service->projets)->count() > 1)
+                            @php
+                                $autresProjets = $projet->service->projets->where('id', '!=', $projet->id)->take(5);
+                            @endphp
+                            @if($autresProjets->count() > 0)
+                                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mt-8">
+                                    <h3 class="text-lg font-bold text-gray-900 mb-6 flex items-center">
+                                        <i class="fas fa-project-diagram text-iri-primary mr-2"></i>
+                                        Autres projets du programme
+                                    </h3>
+                                    
+                                    <div class="space-y-4">
+                                        @foreach($autresProjets as $autreProjet)
+                                            <a href="{{ route('site.projet.show', ['slug' => $autreProjet->slug]) }}" 
+                                               class="block p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 group">
+                                                <div class="flex items-start gap-3">
+                                                    @if($autreProjet->image)
+                                                        <img src="{{ asset('storage/'.$autreProjet->image) }}" 
+                                                             alt="{{ $autreProjet->nom }}" 
+                                                             class="w-12 h-12 rounded-lg object-cover flex-shrink-0">
+                                                    @else
+                                                        <div class="w-12 h-12 bg-iri-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                            <i class="fas fa-project-diagram text-iri-primary"></i>
+                                                        </div>
+                                                    @endif
+                                                    
+                                                    <div class="flex-1 min-w-0">
+                                                        <h4 class="font-medium text-gray-900 text-sm mb-1 line-clamp-2 group-hover:text-iri-primary transition-colors duration-200">
+                                                            {{ $autreProjet->nom }}
+                                                        </h4>
+                                                        @if($autreProjet->etat)
+                                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                                                                @if($autreProjet->etat === 'en cours') bg-green-100 text-green-800
+                                                                @elseif($autreProjet->etat === 'terminé') bg-blue-100 text-blue-800
+                                                                @elseif($autreProjet->etat === 'suspendu') bg-red-100 text-red-800
+                                                                @else bg-gray-100 text-gray-800
+                                                                @endif">
+                                                                {{ ucfirst($autreProjet->etat) }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="mt-6">
+                                        <a href="{{ route('site.projets') }}" 
+                                           class="inline-flex items-center w-full justify-center bg-gradient-to-r from-iri-primary to-iri-secondary text-white font-semibold py-2 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                                            <i class="fas fa-eye mr-2"></i>
+                                            Voir tous les projets du programme
+                                        </a>
+                                    </div>
+                                </div>
+                            @endif
+                        @endif
                     </div>
                 </div>
             </div>
@@ -220,4 +291,53 @@
         </div>
     </div>
 @endif
+
+<!-- Styles -->
+<style>
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .prose {
+        color: #374151;
+        max-width: none;
+    }
+    .prose p {
+        margin-bottom: 1.5rem;
+        line-height: 1.8;
+    }
+    .prose h1, .prose h2, .prose h3, .prose h4 {
+        color: #111827;
+        font-weight: 600;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    .prose h1 {
+        font-size: 2rem;
+    }
+    .prose h2 {
+        font-size: 1.5rem;
+    }
+    .prose h3 {
+        font-size: 1.25rem;
+    }
+    .prose ul, .prose ol {
+        margin: 1.5rem 0;
+        padding-left: 1.5rem;
+    }
+    .prose li {
+        margin-bottom: 0.5rem;
+    }
+    .prose blockquote {
+        border-left: 4px solid #3B82F6;
+        padding-left: 1rem;
+        margin: 1.5rem 0;
+        font-style: italic;
+        background: #F8FAFC;
+        padding: 1rem;
+        border-radius: 0.5rem;
+    }
+</style>
 @endsection

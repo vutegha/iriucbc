@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use App\Traits\HasModeration;
+use App\Models\User;
 
 class Service extends Model
 {
@@ -39,11 +40,28 @@ class Service extends Model
     }
 
     /**
+     * Relation avec l'utilisateur qui a publié le service
+     */
+    public function publisher()
+    {
+        return $this->belongsTo(User::class, 'published_by');
+    }
+
+    /**
      * Scope pour récupérer les services affichés dans le menu
      */
     public function scopeInMenu($query)
     {
         return $query->where('show_in_menu', true)->where('is_published', true);
+    }
+
+    /**
+     * Obtenir le nom d'affichage pour le menu
+     * Si nom_menu est vide, utiliser le nom principal
+     */
+    public function getMenuDisplayNameAttribute()
+    {
+        return !empty(trim($this->nom_menu)) ? trim($this->nom_menu) : $this->nom;
     }
 
     /**
@@ -71,6 +89,38 @@ class Service extends Model
     {
         $this->update(['show_in_menu' => false]);
         return $this;
+    }
+    
+    /**
+     * Obtenir l'URL de l'image ou une image par défaut
+     */
+    public function getImageUrlAttribute()
+    {
+        if (!$this->image) {
+            return asset('images/service-placeholder.php');
+        }
+
+        // Le chemin est stocké comme : services/images/filename.ext
+        // Laravel Storage utilise storage_path('app/public/') comme base
+        if ($this->hasValidImage()) {
+            // Utiliser Storage::url() qui gère automatiquement les liens symboliques
+            return \Illuminate\Support\Facades\Storage::url($this->image);
+        }
+
+        return asset('images/service-placeholder.php');
+    }
+
+    /**
+     * Vérifier si l'image existe
+     */
+    public function hasValidImage()
+    {
+        if (!$this->image) {
+            return false;
+        }
+
+        // Utiliser Storage facade pour vérifier l'existence
+        return \Illuminate\Support\Facades\Storage::disk('public')->exists($this->image);
     }
     
     public function getRouteKeyName()

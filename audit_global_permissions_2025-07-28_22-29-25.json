@@ -1,0 +1,64 @@
+{
+    "audit_date": "2025-07-28T22:29:25.928180Z",
+    "total_users": 6,
+    "statistics": {
+        "users_with_multiple_roles": 1,
+        "users_with_direct_permissions": 1,
+        "inactive_users_with_permissions": 0,
+        "unverified_users_with_admin": 1,
+        "super_privileged_users": 2
+    },
+    "top_risks": [
+        {
+            "user_id": 6,
+            "email": "sergyo.vutegha@gmail.com",
+            "severity": 4,
+            "alerts": [
+                "\ud83d\udea8 MULTI-R\u00d4LES (6 r\u00f4les)",
+                "\u26a0\ufe0f PERMISSIONS DIRECTES (78)",
+                "\ud83d\udce7 ADMIN NON V\u00c9RIFI\u00c9",
+                "\ud83c\udfaf SUPER-PRIVIL\u00c9GI\u00c9 (78 permissions)"
+            ]
+        },
+        {
+            "user_id": 1,
+            "email": "admin@iriucbc.com",
+            "severity": 1,
+            "alerts": [
+                "\ud83c\udfaf SUPER-PRIVIL\u00c9GI\u00c9 (51 permissions)"
+            ]
+        }
+    ],
+    "role_distribution": [
+        {
+            "name": "user",
+            "users": 3,
+            "permissions": 5
+        },
+        {
+            "name": "admin",
+            "users": 2,
+            "permissions": 51
+        },
+        {
+            "name": "moderator",
+            "users": 2,
+            "permissions": 19
+        },
+        {
+            "name": "editor",
+            "users": 2,
+            "permissions": 18
+        },
+        {
+            "name": "super-admin",
+            "users": 1,
+            "permissions": 51
+        },
+        {
+            "name": "gestionnaire_projets",
+            "users": 1,
+            "permissions": 27
+        }
+    ]
+}

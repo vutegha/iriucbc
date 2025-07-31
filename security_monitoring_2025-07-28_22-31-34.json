@@ -1,0 +1,68 @@
+{
+    "monitoring_date": "2025-07-28T22:31:34.844055Z",
+    "total_alerts": 5,
+    "alerts_by_severity": {
+        "HIGH": 3,
+        "MEDIUM": 1,
+        "CRITICAL": 1
+    },
+    "thresholds_used": {
+        "max_roles_per_user": 2,
+        "max_direct_permissions": 0,
+        "max_total_permissions": 60,
+        "max_admin_accounts": 3
+    },
+    "alerts": [
+        {
+            "type": "direct_permissions",
+            "severity": "HIGH",
+            "message": "Utilisateur serge (sergyo.vutegha@gmail.com) a 78 permissions directes",
+            "metadata": {
+                "user_id": 6,
+                "permission_count": 78
+            },
+            "timestamp": "2025-07-28T22:31:34.785830Z"
+        },
+        {
+            "type": "multiple_roles",
+            "severity": "MEDIUM",
+            "message": "Utilisateur serge a 6 r\u00f4les: admin, moderator, editor, user, super-admin, gestionnaire_projets",
+            "metadata": {
+                "user_id": 6,
+                "role_count": 6,
+                "roles": "admin, moderator, editor, user, super-admin, gestionnaire_projets"
+            },
+            "timestamp": "2025-07-28T22:31:34.791506Z"
+        },
+        {
+            "type": "unverified_admin",
+            "severity": "CRITICAL",
+            "message": "Admin non v\u00e9rifi\u00e9: serge (sergyo.vutegha@gmail.com) - R\u00f4les: admin, moderator, editor, user, super-admin, gestionnaire_projets",
+            "metadata": {
+                "user_id": 6,
+                "roles": "admin, moderator, editor, user, super-admin, gestionnaire_projets"
+            },
+            "timestamp": "2025-07-28T22:31:34.795137Z"
+        },
+        {
+            "type": "super_privileged",
+            "severity": "HIGH",
+            "message": "Utilisateur super-privil\u00e9gi\u00e9: serge a 78 permissions",
+            "metadata": {
+                "user_id": 6,
+                "permission_count": 78
+            },
+            "timestamp": "2025-07-28T22:31:34.828865Z"
+        },
+        {
+            "type": "suspicious_role_combination",
+            "severity": "HIGH",
+            "message": "Combinaison suspecte de r\u00f4les: serge a les r\u00f4les: admin, moderator, editor, user, super-admin, gestionnaire_projets",
+            "metadata": {
+                "user_id": 6,
+                "roles": "admin, moderator, editor, user, super-admin, gestionnaire_projets"
+            },
+            "timestamp": "2025-07-28T22:31:34.841360Z"
+        }
+    ]
+}

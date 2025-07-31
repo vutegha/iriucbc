@@ -162,6 +162,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex items-center justify-end space-x-2">
+                                    @can('view rapports')
                                     @if($rapport->fichier && file_exists(public_path($rapport->fichier)))
                                         <a href="{{ asset($rapport->fichier) }}" target="_blank"
                                            class="text-indigo-600 hover:text-indigo-800 p-1 rounded-md hover:bg-indigo-50 transition-colors duration-200"
@@ -174,11 +175,15 @@
                                        title="Voir">
                                         <i class="bi bi-eye"></i>
                                     </a>
+                                    @endcan
+                                    @can('update rapports')
                                     <a href="{{ route('admin.rapports.edit', $rapport) }}" 
                                        class="text-blue-600 hover:text-blue-800 p-1 rounded-md hover:bg-blue-50 transition-colors duration-200"
                                        title="Modifier">
                                         <i class="bi bi-pencil"></i>
                                     </a>
+                                    @endcan
+                                    @can('delete rapports')
                                     <form action="{{ route('admin.rapports.destroy', $rapport) }}" method="POST" class="inline" 
                                           onsubmit="return confirm('ÃŠtes-vous sÃ»r de vouloir supprimer ce rapport ?')">
                                         @csrf
@@ -189,6 +194,7 @@
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>
@@ -199,11 +205,13 @@
                                     <i class="bi bi-file-earmark-text text-gray-300 text-4xl mb-4"></i>
                                     <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun rapport</h3>
                                     <p class="text-gray-500">Commencez par ajouter votre premier rapport.</p>
+                                    @can('create rapports')
                                     <a href="{{ route('admin.rapports.create') }}" 
                                        class="mt-4 btn-primary">
                                         <i class="bi bi-plus mr-2"></i>
                                         CrÃ©er un rapport
                                     </a>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>

@@ -544,6 +544,8 @@ class ComposerStaticInit88970a0117c062eed55fa8728fc43833
     public static $classMap = array (
         'App\\Console\\Commands\\MarkExpiredJobOffers' => __DIR__ . '/../..' . '/app/Console/Commands/MarkExpiredJobOffers.php',
         'App\\Console\\Commands\\MigratePublicationAuthors' => __DIR__ . '/../..' . '/app/Console/Commands/MigratePublicationAuthors.php',
+        'App\\Console\\Commands\\MigrateToSpatieRoles' => __DIR__ . '/../..' . '/app/Console/Commands/MigrateToSpatieRoles.php',
+        'App\\Console\\Commands\\SetupModerationRoles' => __DIR__ . '/../..' . '/app/Console/Commands/SetupModerationRoles.php',
         'App\\Console\\Commands\\TestEmailNotifications' => __DIR__ . '/../..' . '/app/Console/Commands/TestEmailNotifications.php',
         'App\\Console\\Commands\\VerifyDatabaseIntegrity' => __DIR__ . '/../..' . '/app/Console/Commands/VerifyDatabaseIntegrity.php',
         'App\\Events\\ActualiteFeaturedCreated' => __DIR__ . '/../..' . '/app/Events/ActualiteFeaturedCreated.php',

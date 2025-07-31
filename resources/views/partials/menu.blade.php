@@ -110,6 +110,14 @@
                         
                         @if(isset($menuServices) && optional($menuServices)->count() > 0)
                             @foreach($menuServices as $service)
+                                @php
+                                    // Utilise nom_menu si défini, sinon utilise le nom principal
+                                    $nomAffiche = !empty($service->nom_menu) && trim($service->nom_menu) !== '' 
+                                        ? $service->nom_menu 
+                                        : $service->nom;
+                                @endphp
+                                
+                                @if($nomAffiche && trim($nomAffiche) !== '')
                                 <a href="{{ route('site.service.show', $service->slug) }}"
                                    class="flex items-center w-full px-4 py-3 text-sm transition-all duration-200 group"
                                    :class="currentPath.includes('/service/{{ $service->slug }}') ? 
@@ -132,7 +140,7 @@
                                                  :class="currentPath.includes('/service/{{ $service->slug }}') ? 
                                                      'text-iri-accent' : 
                                                      'text-iri-dark group-hover:text-iri-primary'">
-                                                {{ $service->nom_menu ?? $service->nom }}
+                                                {{ $nomAffiche }}
                                             </div>
                                             @if($service->description_courte)
                                                 <div class="text-xs mt-0.5 transition-colors"
@@ -145,6 +153,7 @@
                                         </div>
                                     </div>
                                 </a>
+                                @endif
                             @endforeach
                         @else
                             <div class="px-4 py-6 text-center">
@@ -361,13 +370,19 @@
                          style="display: none;">
                         @if(isset($menuServices) && optional($menuServices)->count() > 0)
                             @foreach($menuServices as $service)
+                                @php
+                                    // Utilise nom_menu si défini, sinon utilise le nom principal
+                                    $nomAffiche = !empty($service->nom_menu) && trim($service->nom_menu) !== '' 
+                                        ? $service->nom_menu 
+                                        : $service->nom;
+                                @endphp
                                 <a href="{{ route('site.service.show', $service->slug) }}"
                                    class="block py-2 px-4 text-sm rounded-lg transition-all duration-200 group"
                                    :class="currentPath.includes('/service/{{ $service->slug }}') ? 
                                        'bg-iri-accent/20 text-iri-accent font-medium border-l-3 border-iri-accent' : 
                                        'text-iri-dark hover:text-iri-primary hover:bg-iri-light hover:border-l-3 hover:border-iri-accent/50'"
                                    @click="mobileOpen = false; programsOpen = false">
-                                    {{ $service->nom_menu ?? $service->nom }}
+                                    {{ $nomAffiche }}
                                 </a>
                             @endforeach
                         @endif

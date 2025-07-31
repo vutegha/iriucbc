@@ -1,140 +1,330 @@
-<!-- Formulaire pour événements -->
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-info-circle me-2"></i>Informations de l'événement
-                </h5>
-            </div>
-            <div class="card-body">
-                <!-- Titre -->
-                <div class="mb-3">
-                    <label for="titre" class="form-label">Titre <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control @error('titre') is-invalid @enderror" 
-                           id="titre" name="titre" value="{{ old('titre', $evenement->titre ?? '') }}" 
-                           placeholder="Titre de l'événement" required>
-                    @error('titre')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+<!-- Formulaire moderne pour événements -->
+<div class="space-y-8">
+    <!-- Section principale -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Colonne principale (2/3) -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Informations de base -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 bg-gradient-to-r from-iri-primary to-iri-secondary border-b">
+                    <h3 class="text-lg font-semibold text-white flex items-center">
+                        <i class="fas fa-info-circle mr-3"></i>
+                        Informations générales
+                    </h3>
                 </div>
-
-                <!-- Résumé -->
-                <div class="mb-3">
-                    <label for="resume" class="form-label">Résumé</label>
-                    <textarea class="form-control @error('resume') is-invalid @enderror" 
-                              id="resume" name="resume" rows="3" 
-                              placeholder="Résumé court de l'événement (optionnel)">{{ old('resume', $evenement->resume ?? '') }}</textarea>
-                    @error('resume')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                    <div class="form-text">Maximum 500 caractères.</div>
-                </div>
-
-                <!-- Description complète -->
-                <div class="mb-3">
-                    <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
-                    <textarea class="form-control @error('description') is-invalid @enderror" 
-                              id="description" name="description" rows="8" 
-                              placeholder="Description détaillée de l'événement" required>{{ old('description', $evenement->description ?? '') }}</textarea>
-                    @error('description')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <!-- Lieu -->
-                <div class="mb-3">
-                    <label for="lieu" class="form-label">Lieu</label>
-                    <input type="text" class="form-control @error('lieu') is-invalid @enderror" 
-                           id="lieu" name="lieu" value="{{ old('lieu', $evenement->lieu ?? '') }}" 
-                           placeholder="Lieu de l'événement">
-                    @error('lieu')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <!-- URL du rapport -->
-                <div class="mb-3">
-                    <label for="rapport_url" class="form-label">URL du rapport</label>
-                    <input type="url" class="form-control @error('rapport_url') is-invalid @enderror" 
-                           id="rapport_url" name="rapport_url" value="{{ old('rapport_url', $evenement->rapport_url ?? '') }}" 
-                           placeholder="https://exemple.com/rapport.pdf">
-                    @error('rapport_url')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                    <div class="form-text">Lien vers un rapport ou document lié à l'événement.</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-4">
-        <!-- Dates et horaires -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-clock me-2"></i>Dates et horaires
-                </h5>
-            </div>
-            <div class="card-body">
-                <!-- Date de début -->
-                <div class="mb-3">
-                    <label for="date_debut" class="form-label">Date de début <span class="text-danger">*</span></label>
-                    <input type="datetime-local" class="form-control @error('date_debut') is-invalid @enderror" 
-                           id="date_debut" name="date_debut" 
-                           value="{{ old('date_debut', isset($evenement) && $evenement->date_debut ? \Carbon\Carbon::parse($evenement->date_debut)->format('Y-m-d\TH:i') : '') }}" 
-                           required>
-                    @error('date_debut')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <!-- Date de fin -->
-                <div class="mb-3">
-                    <label for="date_fin" class="form-label">Date de fin</label>
-                    <input type="datetime-local" class="form-control @error('date_fin') is-invalid @enderror" 
-                           id="date_fin" name="date_fin" 
-                           value="{{ old('date_fin', isset($evenement) && $evenement->date_fin ? \Carbon\Carbon::parse($evenement->date_fin)->format('Y-m-d\TH:i') : '') }}">
-                    @error('date_fin')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                    <div class="form-text">Optionnel. Laissez vide pour un événement d'une journée.</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Image -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-image me-2"></i>Image de l'événement
-                </h5>
-            </div>
-            <div class="card-body">
-                @if(isset($evenement) && $evenement->image)
-                    <div class="mb-3">
-                        <img src="{{ asset('storage/' . $evenement->image) }}" 
-                             alt="Image actuelle" class="img-fluid rounded" style="max-height: 200px;">
-                        <div class="form-text mt-2">Image actuelle</div>
+                
+                <div class="p-6 space-y-6">
+                    <!-- Titre -->
+                    <div>
+                        <label for="titre" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-heading mr-2 text-iri-primary"></i>
+                            Titre de l'événement <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" 
+                               name="titre" 
+                               id="titre" 
+                               value="{{ old('titre', $evenement->titre ?? '') }}" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-iri-primary focus:border-iri-primary transition-colors @error('titre') border-red-500 @enderror"
+                               placeholder="Ex: Conférence internationale sur le développement durable" 
+                               required>
+                        @error('titre')
+                            <p class="mt-2 text-sm text-red-600 flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                {{ $message }}
+                            </p>
+                        @enderror
                     </div>
-                @endif
 
-                <div class="mb-3">
-                    <label for="image" class="form-label">{{ isset($evenement) && $evenement->image ? 'Nouvelle image' : 'Image' }}</label>
-                    <input type="file" class="form-control @error('image') is-invalid @enderror" 
-                           id="image" name="image" accept="image/*">
+                    <!-- Résumé -->
+                    <div>
+                        <label for="resume" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-clipboard-list mr-2 text-iri-primary"></i>
+                            Résumé court
+                        </label>
+                        <textarea name="resume" 
+                                  id="resume" 
+                                  rows="3"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-iri-primary focus:border-iri-primary transition-colors @error('resume') border-red-500 @enderror"
+                                  placeholder="Résumé accrocheur de l'événement (recommandé pour l'affichage public)">{{ old('resume', $evenement->resume ?? '') }}</textarea>
+                        @error('resume')
+                            <p class="mt-2 text-sm text-red-600 flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                {{ $message }}
+                            </p>
+                        @enderror
+                        <p class="mt-1 text-sm text-gray-500">Maximum 250 caractères recommandés</p>
+                    </div>
+
+                    <!-- Description complète -->
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-align-left mr-2 text-iri-primary"></i>
+                            Description détaillée
+                        </label>
+                        <textarea name="description" 
+                                  id="description" 
+                                  rows="8"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-iri-primary focus:border-iri-primary transition-colors @error('description') border-red-500 @enderror"
+                                  placeholder="Description complète de l'événement, objectifs, programme préliminaire, public cible...">{{ old('description', $evenement->description ?? '') }}</textarea>
+                        @error('description')
+                            <p class="mt-2 text-sm text-red-600 flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+
+                    <!-- Type -->
+                    <div>
+                        <label for="type" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-tag mr-2 text-iri-primary"></i>
+                            Type d'événement
+                        </label>
+                        <select name="type" 
+                                id="type"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-iri-primary focus:border-iri-primary transition-colors @error('type') border-red-500 @enderror">
+                            <option value="conference" {{ old('type', $evenement->type ?? '') == 'conference' ? 'selected' : '' }}>Conférence</option>
+                            <option value="seminaire" {{ old('type', $evenement->type ?? '') == 'seminaire' ? 'selected' : '' }}>Séminaire</option>
+                            <option value="atelier" {{ old('type', $evenement->type ?? '') == 'atelier' ? 'selected' : '' }}>Atelier</option>
+                            <option value="formation" {{ old('type', $evenement->type ?? '') == 'formation' ? 'selected' : '' }}>Formation</option>
+                            <option value="table-ronde" {{ old('type', $evenement->type ?? '') == 'table-ronde' ? 'selected' : '' }}>Table ronde</option>
+                            <option value="colloque" {{ old('type', $evenement->type ?? '') == 'colloque' ? 'selected' : '' }}>Colloque</option>
+                            <option value="autre" {{ old('type', $evenement->type ?? '') == 'autre' ? 'selected' : '' }}>Autre</option>
+                        </select>
+                        @error('type')
+                            <p class="mt-2 text-sm text-red-600 flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dates et lieu -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 bg-gradient-to-r from-iri-accent to-iri-gold border-b">
+                    <h3 class="text-lg font-semibold text-white flex items-center">
+                        <i class="fas fa-calendar-alt mr-3"></i>
+                        Dates et localisation
+                    </h3>
+                </div>
+                
+                <div class="p-6 space-y-6">
+                    <!-- Date et heure -->
+                    <div>
+                        <label for="date_evenement" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-calendar mr-2 text-iri-primary"></i>
+                            Date et heure <span class="text-red-500">*</span>
+                        </label>
+                        <input type="datetime-local" 
+                               name="date_evenement" 
+                               id="date_evenement" 
+                               value="{{ old('date_evenement', isset($evenement) && $evenement->date_evenement ? \Carbon\Carbon::parse($evenement->date_evenement)->format('Y-m-d\TH:i') : '') }}" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-iri-primary focus:border-iri-primary transition-colors @error('date_evenement') border-red-500 @enderror"
+                               required>
+                        @error('date_evenement')
+                            <p class="mt-2 text-sm text-red-600 flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+
+                    <!-- Lieu -->
+                    <div>
+                        <label for="lieu" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-map-marker-alt mr-2 text-iri-primary"></i>
+                            Lieu
+                        </label>
+                        <input type="text" 
+                               name="lieu" 
+                               id="lieu" 
+                               value="{{ old('lieu', $evenement->lieu ?? '') }}" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-iri-primary focus:border-iri-primary transition-colors @error('lieu') border-red-500 @enderror"
+                               placeholder="Ex: Salle de conférence IRI-UCBC">
+                        @error('lieu')
+                            <p class="mt-2 text-sm text-red-600 flex items-center">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonne latérale (1/3) -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Image et médias -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 bg-gradient-to-r from-indigo-500 to-indigo-600 border-b">
+                    <h3 class="text-lg font-semibold text-white flex items-center">
+                        <i class="fas fa-image mr-3"></i>
+                        Image de couverture
+                    </h3>
+                </div>
+                
+                <div class="p-6">
+                    <div class="text-center">
+                        <!-- Aperçu de l'image -->
+                        <div id="image-preview" class="mb-4">
+                            @if(isset($evenement) && $evenement->image)
+                                <img src="{{ asset('storage/' . $evenement->image) }}" 
+                                     alt="Image actuelle" 
+                                     class="w-full h-48 object-cover rounded-lg border border-gray-200">
+                            @else
+                                <div class="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <i class="fas fa-image text-4xl text-gray-400 mb-2"></i>
+                                        <p class="text-gray-500 text-sm">Aucune image sélectionnée</p>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Upload -->
+                        <input type="file" 
+                               name="image" 
+                               id="image" 
+                               accept="image/*" 
+                               class="hidden" 
+                               onchange="previewImage(this)">
+                        <label for="image" 
+                               class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 transition-all duration-200">
+                            <i class="fas fa-upload mr-2"></i>
+                            Choisir une image
+                        </label>
+                        
+                        @if(isset($evenement) && $evenement->image)
+                            <button type="button" 
+                                    onclick="removeImage()" 
+                                    class="ml-2 inline-flex items-center px-3 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors">
+                                <i class="fas fa-trash mr-1"></i>
+                                Supprimer
+                            </button>
+                        @endif
+                    </div>
+                    
+                    <p class="text-xs text-gray-500 mt-3 text-center">
+                        Formats : JPG, PNG, GIF • Taille max : 5MB<br>
+                        Résolution recommandée : 1200x600px
+                    </p>
+                    
                     @error('image')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <p class="mt-2 text-sm text-red-600 flex items-center justify-center">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ $message }}
+                        </p>
                     @enderror
-                    <div class="form-text">
-                        Formats acceptés : JPG, JPEG, PNG, WebP. Taille max : 5 Mo.
+                </div>
+            </div>
+
+            <!-- Organisation -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 border-b">
+                    <h3 class="text-lg font-semibold text-white flex items-center">
+                        <i class="fas fa-users mr-3"></i>
+                        Organisation
+                    </h3>
+                </div>
+                
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label for="organisateur" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user-tie mr-2 text-iri-primary"></i>
+                            Organisateur
+                        </label>
+                        <input type="text" 
+                               name="organisateur" 
+                               id="organisateur" 
+                               value="{{ old('organisateur', $evenement->organisateur ?? 'IRI-UCBC') }}" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-iri-primary focus:border-iri-primary transition-colors @error('organisateur') border-red-500 @enderror"
+                               placeholder="Nom de l'organisateur">
+                        @error('organisateur')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="contact_email" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-envelope mr-2 text-iri-primary"></i>
+                            Email de contact
+                        </label>
+                        <input type="email" 
+                               name="contact_email" 
+                               id="contact_email" 
+                               value="{{ old('contact_email', $evenement->contact_email ?? '') }}" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-iri-primary focus:border-iri-primary transition-colors @error('contact_email') border-red-500 @enderror"
+                               placeholder="contact@iri-ucbc.org">
+                        @error('contact_email')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="contact_telephone" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-phone mr-2 text-iri-primary"></i>
+                            Téléphone de contact
+                        </label>
+                        <input type="tel" 
+                               name="contact_telephone" 
+                               id="contact_telephone" 
+                               value="{{ old('contact_telephone', $evenement->contact_telephone ?? '') }}" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-iri-primary focus:border-iri-primary transition-colors @error('contact_telephone') border-red-500 @enderror"
+                               placeholder="+243 XXX XXX XXX">
+                        @error('contact_telephone')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
+            </div>
 
-                <!-- Aperçu de l'image -->
-                <div id="image-preview" style="display: none;">
-                    <img id="preview-img" src="" alt="Aperçu" class="img-fluid rounded" style="max-height: 200px;">
-                    <div class="form-text mt-2">Aperçu de la nouvelle image</div>
+            <!-- Paramètres avancés -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 border-b">
+                    <h3 class="text-lg font-semibold text-white flex items-center">
+                        <i class="fas fa-cogs mr-3"></i>
+                        Paramètres avancés
+                    </h3>
+                </div>
+                
+                <div class="p-6 space-y-4">
+                    <!-- En vedette -->
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input type="checkbox" 
+                                   name="en_vedette" 
+                                   id="en_vedette" 
+                                   value="1"
+                                   {{ old('en_vedette', $evenement->en_vedette ?? false) ? 'checked' : '' }}
+                                   class="w-4 h-4 text-iri-primary border-gray-300 rounded focus:ring-iri-primary">
+                        </div>
+                        <div class="ml-3">
+                            <label for="en_vedette" class="text-sm font-medium text-gray-700">
+                                <i class="fas fa-star mr-1 text-yellow-500"></i>
+                                Mettre en vedette
+                            </label>
+                            <p class="text-xs text-gray-500">Afficher en priorité sur le site</p>
+                        </div>
+                    </div>
+
+                    <!-- URL du rapport -->
+                    <div>
+                        <label for="rapport_url" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-link mr-2 text-iri-primary"></i>
+                            Lien vers le rapport (après événement)
+                        </label>
+                        <input type="url" 
+                               name="rapport_url" 
+                               id="rapport_url" 
+                               value="{{ old('rapport_url', $evenement->rapport_url ?? '') }}" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-iri-primary focus:border-iri-primary transition-colors @error('rapport_url') border-red-500 @enderror"
+                               placeholder="https://...">
+                        @error('rapport_url')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
             </div>
         </div>
@@ -143,36 +333,38 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Aperçu de l'image
-    const imageInput = document.getElementById('image');
-    const imagePreview = document.getElementById('image-preview');
-    const previewImg = document.getElementById('preview-img');
+// Gestion de l'aperçu d'image
+function previewImage(input) {
+    const preview = document.getElementById('image-preview');
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.innerHTML = `
+                <img src="${e.target.result}" 
+                     alt="Aperçu" 
+                     class="w-full h-48 object-cover rounded-lg border border-gray-200">
+            `;
+        };
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
 
-    imageInput.addEventListener('change', function() {
-        const file = this.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImg.src = e.target.result;
-                imagePreview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        } else {
-            imagePreview.style.display = 'none';
-        }
-    });
-
-    // Validation des dates
-    const dateDebut = document.getElementById('date_debut');
-    const dateFin = document.getElementById('date_fin');
-
-    dateDebut.addEventListener('change', function() {
-        dateFin.min = this.value;
-        if (dateFin.value && dateFin.value < this.value) {
-            dateFin.value = '';
-        }
-    });
-});
+// Suppression d'image
+function removeImage() {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette image ?')) {
+        document.getElementById('image').value = '';
+        document.getElementById('image-preview').innerHTML = `
+            <div class="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
+                <div class="text-center">
+                    <i class="fas fa-image text-4xl text-gray-400 mb-2"></i>
+                    <p class="text-gray-500 text-sm">Aucune image sélectionnée</p>
+                </div>
+            </div>
+        `;
+    }
+}
 </script>
 @endpush

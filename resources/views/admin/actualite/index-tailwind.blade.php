@@ -195,7 +195,7 @@
                                 <div class="flex items-center space-x-4 text-xs text-gray-500">
                                     <span class="flex items-center">
                                         <i class="bi bi-calendar mr-1"></i>
-                                        {{ $actualite->created_at->format('d/m/Y à H:i') }}
+                                        {{ $actualite->created_at ? $actualite->created_at->format('d/m/Y à H:i') : 'Date inconnue' }}
                                     </span>
                                     <span class="flex items-center">
                                         <i class="bi bi-eye mr-1"></i>

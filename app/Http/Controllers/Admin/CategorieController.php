@@ -22,15 +22,54 @@ class CategorieController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nom' => 'required|string|max:255|unique:categories,nom',
-            'description' => 'nullable|string|max:1000',
-        ]);
+        try {
+            $validated = $request->validate([
+                'nom' => 'required|string|max:255|unique:categories,nom',
+                'description' => 'nullable|string|max:1000',
+            ]);
 
-        Categorie::create($validated);
+            $categorie = Categorie::create($validated);
 
-        return redirect()->route('admin.categorie.index')
-            ->with('alert', '<span class="alert alert-success">Catégorie créée avec succès.</span>');
+            // Si c'est une requête AJAX, retourner du JSON
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'categorie' => [
+                        'id' => $categorie->id,
+                        'nom' => $categorie->nom,
+                        'description' => $categorie->description,
+                    ],
+                    'message' => 'Catégorie créée avec succès!'
+                ]);
+            }
+
+            return redirect()->route('admin.categorie.index')
+                ->with('alert', '<span class="alert alert-success">Catégorie créée avec succès.</span>');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreurs de validation',
+                    'errors' => $e->validator->errors()
+                ], 422);
+            }
+            
+            return redirect()->back()
+                ->withErrors($e->validator)
+                ->withInput()
+                ->with('alert', '<span class="alert alert-danger">Erreur de validation.</span>');
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreur lors de la création de la catégorie: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('alert', '<span class="alert alert-danger">Erreur : ' . e($e->getMessage()) . '</span>');
+        }
     }
 
     public function edit(Categorie $categorie)
@@ -61,6 +100,42 @@ class CategorieController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('alert', '<span class="alert alert-danger">Erreur lors de la suppression : ' . e($e->getMessage()) . '</span>');
+        }
+    }
+
+    /**
+     * Création de catégorie via AJAX
+     */
+    public function storeAjax(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'nom' => 'required|string|max:255|unique:categories,nom',
+                'description' => 'nullable|string|max:1000',
+            ]);
+
+            $categorie = Categorie::create($validated);
+
+            return response()->json([
+                'success' => true,
+                'categorie' => [
+                    'id' => $categorie->id,
+                    'nom' => $categorie->nom,
+                ],
+                'message' => 'Catégorie créée avec succès!'
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreurs de validation',
+                'errors' => $e->validator->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la création de la catégorie'
+            ], 500);
         }
     }
 }

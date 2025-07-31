@@ -20,6 +20,8 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <x-admin.alert />
+    
     <!-- En-tête avec statistiques -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
         <div class="px-6 py-4 bg-gradient-to-r from-iri-primary to-iri-secondary">
@@ -28,11 +30,13 @@
                     <h1 class="text-2xl font-bold text-white">Gestion des Événements</h1>
                     <p class="text-white/80 mt-1">Organisation et gestion des événements IRI-UCBC</p>
                 </div>
+                @can('create evenements')
                 <a href="{{ route('admin.evenements.create') }}" 
                    class="inline-flex items-center px-4 py-2 bg-white text-iri-primary rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-md hover:shadow-lg">
                     <i class="fas fa-plus mr-2"></i>
                     Nouvel Événement
                 </a>
+                @endcan
             </div>
         </div>
         
@@ -62,7 +66,7 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-iri-gray">À venir</p>
-                            <p class="text-2xl font-semibold text-iri-dark">{{ $evenements->where('date_debut', '>', now())->count() }}</p>
+                            <p class="text-2xl font-semibold text-iri-dark">{{ $evenements->where('date_evenement', '>', now())->count() }}</p>
                         </div>
                     </div>
                 </div>
@@ -76,7 +80,7 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-iri-gray">En cours</p>
-                            <p class="text-2xl font-semibold text-iri-dark">{{ $evenements->where('date_debut', '<=', now())->where('date_fin', '>=', now())->count() }}</p>
+                            <p class="text-2xl font-semibold text-iri-dark">{{ $evenements->where('date_evenement', '<=', now())->count() }}</p>
                         </div>
                     </div>
                 </div>
@@ -90,7 +94,7 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-iri-gray">Passés</p>
-                            <p class="text-2xl font-semibold text-iri-dark">{{ $evenements->where('date_fin', '<', now())->count() }}</p>
+                            <p class="text-2xl font-semibold text-iri-dark">{{ $evenements->where('date_evenement', '<', now())->count() }}</p>
                         </div>
                     </div>
                 </div>
@@ -188,7 +192,9 @@
                                     </div>
                                     <div class="ml-4">
                                         <div class="text-sm font-medium text-iri-dark">{{ Str::limit($evenement->titre, 40) }}</div>
-                                        @if($evenement->description)
+                                        @if($evenement->resume)
+                                            <div class="text-sm text-iri-gray">{{ Str::limit($evenement->resume, 60) }}</div>
+                                        @elseif($evenement->description)
                                             <div class="text-sm text-iri-gray">{{ Str::limit($evenement->description, 60) }}</div>
                                         @endif
                                     </div>
@@ -196,16 +202,10 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-iri-dark">
-                                    {{ $evenement->date_debut->format('d/m/Y') }}
-                                    @if($evenement->date_fin && $evenement->date_fin != $evenement->date_debut)
-                                        <br><span class="text-xs text-iri-gray">au {{ $evenement->date_fin->format('d/m/Y') }}</span>
-                                    @endif
+                                    {{ $evenement->date_evenement ? $evenement->date_evenement->format('d/m/Y') : 'Non définie' }}
                                 </div>
                                 <div class="text-xs text-iri-gray">
-                                    {{ $evenement->heure_debut ?? '00:00' }}
-                                    @if($evenement->heure_fin)
-                                        - {{ $evenement->heure_fin }}
-                                    @endif
+                                    {{ $evenement->date_evenement ? $evenement->date_evenement->format('H:i') : '' }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -215,33 +215,39 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @php
-                                    $now = now();
-                                    if ($evenement->date_debut > $now) {
-                                        $etat = ['class' => 'bg-blue-100 text-blue-800 border-blue-200', 'text' => 'À venir', 'icon' => 'fas fa-clock'];
-                                    } elseif ($evenement->date_fin >= $now) {
-                                        $etat = ['class' => 'bg-green-100 text-green-800 border-green-200', 'text' => 'En cours', 'icon' => 'fas fa-play'];
-                                    } else {
-                                        $etat = ['class' => 'bg-gray-100 text-gray-800 border-gray-200', 'text' => 'Passé', 'icon' => 'fas fa-check'];
-                                    }
-                                @endphp
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border {{ $etat['class'] }}">
-                                    <i class="{{ $etat['icon'] }} mr-1"></i>
-                                    {{ $etat['text'] }}
-                                </span>
+                                <x-evenement-badge :evenement="$evenement" />
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex items-center justify-end space-x-2">
+                                    @can('view evenements')
                                     <a href="{{ route('admin.evenements.show', $evenement) }}" 
                                        class="inline-flex items-center p-2 text-iri-primary hover:text-iri-secondary hover:bg-iri-primary/10 rounded-lg transition-all duration-200"
                                        title="Voir les détails">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    @endcan
+                                    
+                                    @can('update evenements')
+                                    <!-- Action Mettre en vedette / Retirer de la vedette -->
+                                    <form action="{{ route('admin.evenements.toggle-featured', $evenement) }}" method="POST" class="inline">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" 
+                                                class="inline-flex items-center p-2 {{ $evenement->en_vedette ? 'text-yellow-600 hover:text-yellow-800 hover:bg-yellow-50' : 'text-gray-400 hover:text-yellow-600 hover:bg-yellow-50' }} rounded-lg transition-all duration-200"
+                                                title="{{ $evenement->en_vedette ? 'Retirer de la vedette' : 'Mettre en vedette' }}">
+                                            <i class="fas fa-star"></i>
+                                        </button>
+                                    </form>
+                                    @endcan
+                                    
+                                    @can('update evenements')
                                     <a href="{{ route('admin.evenements.edit', $evenement) }}" 
                                        class="inline-flex items-center p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
                                        title="Modifier">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    @endcan
+                                    @can('delete evenements')
                                     <form action="{{ route('admin.evenements.destroy', $evenement) }}" method="POST" class="inline" 
                                           onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')">
                                         @csrf
@@ -252,6 +258,7 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>
@@ -264,11 +271,13 @@
                                     </div>
                                     <h3 class="text-lg font-medium text-iri-dark mb-2">Aucun événement trouvé</h3>
                                     <p class="text-iri-gray mb-4">Commencez par créer votre premier événement.</p>
+                                    @can('create evenements')
                                     <a href="{{ route('admin.evenements.create') }}" 
                                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-iri-primary to-iri-secondary text-white rounded-lg hover:from-iri-secondary hover:to-iri-primary transition-all duration-200">
                                         <i class="fas fa-plus mr-2"></i>
                                         Créer un événement
                                     </a>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>

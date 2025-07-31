@@ -248,13 +248,13 @@
                                         {{-- Contrôles de modération --}}
                                         @if(auth()->check() && auth()->user()->canModerate())
                                             @if($projet->is_published)
-                                                <button onclick="unpublishProjet({{ $projet->id }})" 
+                                                <button onclick="unpublishProjet('{{ $projet->slug }}')" 
                                                         class="btn btn-sm btn-outline-warning" 
                                                         title="Dépublier">
                                                     <i class="bi bi-pause-circle"></i>
                                                 </button>
                                             @else
-                                                <button onclick="publishProjet({{ $projet->id }})" 
+                                                <button onclick="publishProjet('{{ $projet->slug }}')" 
                                                         class="btn btn-sm btn-outline-success" 
                                                         title="Publier">
                                                     <i class="bi bi-check-circle"></i>
@@ -313,9 +313,9 @@
 @push('scripts')
 <script>
     // Fonctions de modération pour les projets
-    function publishProjet(id) {
+    function publishProjet(slug) {
         if (confirm('Êtes-vous sûr de vouloir publier ce projet ?')) {
-            fetch(`/admin/projet/${id}/publish`, {
+            fetch(`/admin/projets/${slug}/publish`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -338,9 +338,9 @@
         }
     }
 
-    function unpublishProjet(id) {
+    function unpublishProjet(slug) {
         if (confirm('Êtes-vous sûr de vouloir dépublier ce projet ?')) {
-            fetch(`/admin/projet/${id}/unpublish`, {
+            fetch(`/admin/projets/${slug}/unpublish`, {
                 method: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),

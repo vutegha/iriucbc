@@ -2,20 +2,14 @@
 
 @section('title', $actualite->titre . ' - Actualités')
 
-@section('content')
-<!-- Main Content -->uts.iri')
-
-@section('title', 'Actualité - ' . $actualite->titre)
-
-@section('content')
-<!-- Breadcrumb -->
-@include('partials.breadcrumb', [
-    'breadcrumbs' => [
+@section('breadcrumb')
+    <x-breadcrumb-overlay :items="[
         ['title' => 'Actualités', 'url' => route('site.actualites')],
-        ['title' => $actualite->titre, 'url' => null]
-    ]
-])
+        ['title' => Str::limit($actualite->titre, 50), 'url' => null]
+    ]" />
+@endsection
 
+@section('content')
 <!-- Main Content -->
 <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
     <!-- Hero Section -->
@@ -44,14 +38,17 @@
                             <i class="fas fa-clock mr-2"></i>
                             <span>Lecture : {{ ceil(str_word_count(strip_tags($actualite->contenu ?? $actualite->texte ?? '')) / 200) }} min</span>
                         </div>
+                        
+                        <!-- Share Buttons -->
+                        <x-social-share 
+                            :url="route('site.actualite.show', ['slug' => $actualite->slug])"
+                            :title="$actualite->titre"
+                            size="md"
+                            style="hero"
+                            class="ml-auto" />
                     </div>
 
-                    @if($actualite->resume)
-                        <p class="text-xl md:text-2xl text-white/90 leading-relaxed drop-shadow-lg">
-                            {{ $actualite->resume }}
-                        </p>
-                    @endif
-                </div>
+                                   </div>
 
                 <!-- Article Image -->
                 @if($actualite->image)
@@ -59,7 +56,8 @@
                         <div class="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6 shadow-2xl">
                             <img src="{{ asset('storage/' . $actualite->image) }}" 
                                  alt="{{ $actualite->titre }}" 
-                                 class="w-full rounded-lg shadow-lg">
+                                 class="w-full rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-transform duration-200"
+                                 onclick="openImageModal(this.src, this.alt)">
                         </div>
                     </div>
                 @endif
@@ -76,46 +74,27 @@
                     <article class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
                         <!-- Article Header -->
                         <div class="bg-gradient-to-r from-gray-50 to-white p-8 border-b border-gray-200">
-                            <div class="flex items-center justify-between mb-6">
-                                <div class="flex items-center gap-4">
-                                    <div class="bg-gradient-to-r from-iri-primary to-iri-secondary p-3 rounded-full">
-                                        <i class="fas fa-newspaper text-white text-lg"></i>
-                                    </div>
-                                    <div>
-                                        <h2 class="text-2xl font-bold text-gray-900">Article</h2>
-                                        <p class="text-gray-600">{{ $actualite->created_at->format('d F Y') }}</p>
-                                    </div>
-                                </div>
-                                
-                                <!-- Share Buttons -->
-                                <div class="flex items-center gap-2">
-                                    <button class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors duration-200" title="Partager sur Facebook">
-                                        <i class="fab fa-facebook-f"></i>
-                                    </button>
-                                    <button class="bg-blue-400 text-white p-2 rounded-lg hover:bg-blue-500 transition-colors duration-200" title="Partager sur Twitter">
-                                        <i class="fab fa-twitter"></i>
-                                    </button>
-                                    <button class="bg-blue-800 text-white p-2 rounded-lg hover:bg-blue-900 transition-colors duration-200" title="Partager sur LinkedIn">
-                                        <i class="fab fa-linkedin-in"></i>
-                                    </button>
+                            <div class="flex items-center justify-center mb-6">
+                                <div class="bg-gradient-to-r from-iri-primary to-iri-secondary p-3 rounded-full">
+                                    <i class="fas fa-newspaper text-white text-lg"></i>
                                 </div>
                             </div>
 
-                            @if($actualite->resume && !$actualite->image)
-                                <div class="p-6 bg-iri-primary/5 rounded-lg border-l-4 border-iri-primary">
-                                    <p class="text-lg text-gray-700 italic leading-relaxed">
-                                        {{ $actualite->resume }}
+                            @if($actualite->resume)
+                                <blockquote class="border-l-4 border-iri-primary bg-iri-primary/5 p-6 rounded-lg mb-6">
+                                    <p class="text-lg text-gray-700 italic leading-relaxed font-medium">
+                                        "{{ $actualite->resume }}"
                                     </p>
-                                </div>
+                                </blockquote>
                             @endif
                         </div>
 
                         <!-- Article Body -->
                         <div class="p-8">
                             @if($actualite->texte || $actualite->contenu)
-                                <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">
-                                    {!! nl2br(e($actualite->texte ?? $actualite->contenu)) !!}
-                                </div>
+                                <x-rich-text-display 
+                                    :content="$actualite->texte ?? $actualite->contenu" 
+                                    class="prose-headings:text-iri-primary prose-links:text-iri-secondary prose-strong:text-iri-dark" />
                             @else
                                 <div class="text-center py-12">
                                     <div class="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -264,4 +243,45 @@
         border-radius: 0.5rem;
     }
 </style>
+
+<!-- Image Modal -->
+<div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div class="relative max-w-4xl max-h-full p-4">
+        <button onclick="closeImageModal()" class="absolute top-2 right-2 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75 transition-all duration-200 z-10">
+            <i class="fas fa-times text-xl"></i>
+        </button>
+        <img id="modalImage" src="" alt="" class="max-w-full max-h-full rounded-lg shadow-2xl">
+    </div>
+</div>
+
+<script>
+function openImageModal(src, alt) {
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    modalImage.src = src;
+    modalImage.alt = alt;
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeImageModal();
+    }
+});
+
+// Close modal on background click
+document.getElementById('imageModal').addEventListener('click', function(event) {
+    if (event.target === this) {
+        closeImageModal();
+    }
+});
+</script>
 @endsection

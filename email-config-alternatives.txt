@@ -1,0 +1,11 @@
+# Alternative email configuration for development with Mailtrap
+# Replace the MAIL_* variables in .env with these if you prefer Mailtrap:
+
+MAIL_MAILER=smtp
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your-mailtrap-username
+MAIL_PASSWORD=your-mailtrap-password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="noreply@iri-ucbc.org"
+MAIL_FROM_NAME="IRI-UCBC"

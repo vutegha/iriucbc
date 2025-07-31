@@ -23,7 +23,8 @@ use App\Models\JobApplication;
 use App\Models\Partenaire;
 use App\Models\ChercheurAffilie;
 use App\Models\{Project, OurService, Event, User};
-use App\Mail\ContactMessage;
+use App\Mail\{ContactMessage, ContactMessageWithCopy};
+use App\Models\EmailSetting;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\{Log, Storage, DB};
 use Illuminate\Support\Facades\Mail;
@@ -66,27 +67,54 @@ public function index(Request $request)
      $services = Service::published()->get();
      
      // Récupérer les événements pour la sidebar (total de 5)
-     $evenementsAVenir = Evenement::aVenir()
-                                 ->orderBy('date_debut', 'asc')
-                                 ->take(5)
-                                 ->get();
-     
-     $nombreEvenementsAVenir = $evenementsAVenir->count();
-     $evenementsPasses = collect();
-     
-     // Si moins de 5 événements à venir, compléter avec les événements passés récents
-     if ($nombreEvenementsAVenir < 5) {
-         $nombreEvenementsPasses = 5 - $nombreEvenementsAVenir;
-         $evenementsPasses = Evenement::passe()
-                                     ->orderBy('date_debut', 'desc')
-                                     ->take($nombreEvenementsPasses)
+     // Récupération des événements en vedette et publiés
+     $evenementsEnVedette = Evenement::where('en_vedette', true)
+                                     ->where(function($query) {
+                                         $query->where('is_published', true)
+                                               ->orWhereNull('is_published'); // Compatibilité pour les anciens événements
+                                     })
+                                     ->orderBy('date_evenement', 'asc')
+                                     ->take(5)
                                      ->get();
-     }
      
-     // Combiner les événements
-     $evenements = $evenementsAVenir->merge($evenementsPasses);
+     $nombreEvenementsEnVedette = $evenementsEnVedette->count();
+     $evenementsAutres = collect();
 
-     // Statistiques des projets (uniquement les projets publiés)
+     // Si moins de 5 événements en vedette, compléter avec d'autres événements publiés
+     if ($nombreEvenementsEnVedette < 5) {
+         $nombreEvenementsAutres = 5 - $nombreEvenementsEnVedette;
+         
+         // Récupérer d'abord les événements à venir non en vedette mais publiés
+         $evenementsAVenir = Evenement::where('en_vedette', false)
+                                     ->where(function($query) {
+                                         $query->where('is_published', true)
+                                               ->orWhereNull('is_published'); // Compatibilité pour les anciens événements
+                                     })
+                                     ->aVenir()
+                                     ->orderBy('date_evenement', 'asc')
+                                     ->take($nombreEvenementsAutres)
+                                     ->get();
+                                     
+         $nombreRestant = $nombreEvenementsAutres - $evenementsAVenir->count();
+         
+         // Si toujours pas assez, compléter avec des événements passés publiés
+         if ($nombreRestant > 0) {
+             $evenementsPasses = Evenement::where('en_vedette', false)
+                                         ->where(function($query) {
+                                             $query->where('is_published', true)
+                                                   ->orWhereNull('is_published'); // Compatibilité pour les anciens événements
+                                         })
+                                         ->passe()
+                                         ->orderBy('date_evenement', 'desc')
+                                         ->take($nombreRestant)
+                                         ->get();
+             $evenementsAutres = $evenementsAVenir->merge($evenementsPasses);
+         } else {
+             $evenementsAutres = $evenementsAVenir;
+         }
+     }
+
+     $evenements = $evenementsEnVedette->merge($evenementsAutres);     // Statistiques des projets (uniquement les projets publiés)
      $statsProjects = [
          'total_projets' => Projet::published()->count(),
          'projets_en_cours' => Projet::published()->where('etat', 'en cours')->count(),
@@ -164,13 +192,22 @@ public function actualiteShowById($id)
     return redirect()->route('site.actualite', ['slug' => $actualite->slug]);
 }
 
-public function evenementShow($id)
+public function evenementShow($slug)
 {
-    $evenement = Evenement::findOrFail($id);
+    $evenement = Evenement::where('slug', $slug)
+                          ->where(function($query) {
+                              $query->where('is_published', true)
+                                    ->orWhereNull('is_published'); // Compatibilité pour les anciens événements
+                          })
+                          ->firstOrFail();
     
-    // Récupérer d'autres événements récents pour suggestions
+    // Récupérer d'autres événements récents publiés pour suggestions
     $autresEvenements = Evenement::where('id', '!=', $evenement->id)
-                                 ->orderBy('date_debut', 'desc')
+                                 ->where(function($query) {
+                                     $query->where('is_published', true)
+                                           ->orWhereNull('is_published'); // Compatibilité pour les anciens événements
+                                 })
+                                 ->orderBy('date_evenement', 'desc')
                                  ->take(4)
                                  ->get();
     
@@ -429,7 +466,7 @@ public function search(Request $request)
 
     // Rapports
     $rapports = Rapport::where('titre', 'like', "%{$query}%")
-        ->orWhere('resume', 'like', "%{$query}%")
+        ->orWhere('description', 'like', "%{$query}%")
         ->get()
         ->map(function($item) {
             $item->type_global = 'Rapport';
@@ -619,9 +656,10 @@ public function storeContact(ContactRequest $request)
 {
     try {
         $contact = null;
+        $emailResult = null;
         
         // Utiliser une transaction pour s'assurer que tout se passe bien
-        DB::transaction(function () use ($request, &$contact) {
+        DB::transaction(function () use ($request, &$contact, &$emailResult) {
             // 1. Enregistrer le message de contact
             $contact = Contact::create([
                 'nom' => $request->nom,
@@ -632,23 +670,49 @@ public function storeContact(ContactRequest $request)
             ]);
 
             // 2. Ajouter automatiquement l'email à la newsletter (si pas déjà présent)
-            Newsletter::firstOrCreate(['email' => $request->email]);
+            $newsletter = Newsletter::firstOrCreate(['email' => $request->email]);
 
-            // 3. Envoyer l'email à l'adresse de réception
-            try {
-                Mail::to('iri@ucbc.org')->send(new ContactMessage($contact));
-            } catch (\Exception $mailException) {
-                // Log l'erreur mais ne pas faire échouer la transaction
-                \Log::warning('Erreur envoi email contact: ' . $mailException->getMessage());
-            }
+            // 3. Envoyer les emails avec le système de copie
+            $emailResult = ContactMessageWithCopy::sendToConfiguredEmails($contact);
         });
 
-        return redirect()->route('site.contact')
-                         ->with('success', 'Votre message a été envoyé avec succès ! Nous vous répondrons dans les plus brefs délais. Vous avez également été ajouté à notre liste de diffusion.');
+        
+        // Vérifier le résultat de l'envoi d'email
+        if ($emailResult && $emailResult['success']) {
+            $successMessage = 'Votre message a été envoyé avec succès ! ' .
+                            'Nous vous répondrons dans les plus brefs délais. ' .
+                            'Un email de confirmation vous a été envoyé. ' .
+                            'Vous avez également été ajouté à notre liste de diffusion.';
+                            
+            // Log du succès pour le suivi
+            Log::info('Message de contact envoyé avec succès', [
+                'contact_id' => $contact->id,
+                'total_emails_sent' => $emailResult['total_sent']
+            ]);
+        } else {
+            $successMessage = 'Votre message a été enregistré avec succès ! ' .
+                            'Cependant, il y a eu un problème avec l\'envoi automatique des emails. ' .
+                            'Nous vous contacterons directement. ' .
+                            'Vous avez été ajouté à notre liste de diffusion.';
+                            
+            // Log de l'erreur pour investigation
+            Log::warning('Échec partiel envoi email contact', [
+                'contact_id' => $contact->id,
+                'email_error' => $emailResult['error'] ?? 'Erreur inconnue'
+            ]);
+        }
+
+        return redirect()->route('site.contact')->with('success', $successMessage);
 
     } catch (\Exception $e) {
+        Log::error('Erreur complète lors de la soumission du contact', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'request_data' => $request->except(['_token'])
+        ]);
+        
         return redirect()->route('site.contact')
-                         ->with('error', 'Une erreur s\'est produite lors de l\'envoi de votre message. Veuillez réessayer.')
+                         ->with('error', 'Une erreur s\'est produite lors de l\'envoi de votre message. Veuillez réessayer ou nous contacter directement.')
                          ->withInput();
     }
 }
@@ -658,46 +722,136 @@ public function storeContact(ContactRequest $request)
  */
 public function subscribeNewsletter(Request $request)
 {
-    $request->validate([
-        'email' => 'required|email|max:255',
-        'preferences' => 'required|array|min:1',
-        'preferences.*' => 'in:publications,actualites,projets',
-        'redirect_url' => 'nullable|url'
-    ]);
-
     try {
-        // Créer ou récupérer l'abonné
-        $newsletter = Newsletter::firstOrCreate(
-            ['email' => $request->email],
-            [
-                'nom' => null, // Pas de nom depuis le footer
-                'token' => Str::random(64),
-                'actif' => true,
-                'confirme_a' => now()
-            ]
-        );
+        \Log::info('Newsletter subscription attempt', [
+            'email' => $request->email,
+            'nom' => $request->nom,
+            'preferences' => $request->preferences,
+            'all_data' => $request->all()
+        ]);
 
-        // Supprimer les anciennes préférences
-        \App\Models\NewsletterPreference::where('newsletter_id', $newsletter->id)->delete();
+        // Validation flexible
+        $request->validate([
+            'email' => 'required|email|max:255',
+            'nom' => 'nullable|string|max:255', // Le nom est optionnel
+            'preferences' => 'nullable|array', // Les préférences sont optionnelles
+            'preferences.*' => 'in:actualites,publications,rapports,evenements'
+        ]);
 
-        // Créer les nouvelles préférences
-        foreach ($request->preferences as $preference) {
-            \App\Models\NewsletterPreference::create([
-                'newsletter_id' => $newsletter->id,
-                'type' => $preference,
-                'actif' => true
-            ]);
+        // Préparer les préférences par défaut si aucune n'est fournie
+        $preferences = ['actualites' => true, 'publications' => true]; // Valeurs par défaut
+        
+        if ($request->has('preferences') && is_array($request->preferences)) {
+            // Si des préférences sont envoyées, les utiliser
+            $preferences = [];
+            foreach(['actualites', 'publications', 'rapports', 'evenements'] as $type) {
+                $preferences[$type] = in_array($type, $request->preferences);
+            }
+            
+            // S'assurer qu'au moins une préférence est activée
+            if (!array_filter($preferences)) {
+                $preferences = ['actualites' => true, 'publications' => true];
+            }
         }
 
-        // Déterminer l'URL de redirection
-        $redirectUrl = $request->redirect_url ?: url()->previous();
-        
-        // Retourner à la page avec le message de succès pour affichage dans le modal
-        return redirect()->to($redirectUrl)->with('success', 'Inscription réussie ! Vous recevrez désormais nos newsletters selon vos préférences.');
+        \Log::info('Prepared preferences', ['preferences' => $preferences]);
 
+        // Vérifier si l'email existe déjà
+        $existing = \DB::table('newsletters')->where('email', $request->email)->first();
+        
+        if ($existing) {
+            if ($existing->actif) {
+                \Log::info('Newsletter subscription attempt for existing active user', ['email' => $request->email]);
+                return back()->with('info', 'Cette adresse email est déjà inscrite à notre newsletter. Vous recevez déjà nos actualités !');
+            } else {
+                // Réactiver l'abonnement
+                \DB::table('newsletters')
+                    ->where('email', $request->email)
+                    ->update([
+                        'actif' => 1,
+                        'nom' => $request->nom ?: $existing->nom ?: 'Abonné',
+                        'preferences' => json_encode($preferences),
+                        'updated_at' => now()
+                    ]);
+                
+                \Log::info('Newsletter subscription reactivated', ['email' => $request->email]);
+                return back()->with('success', 'Votre abonnement à la newsletter a été réactivé avec succès !');
+            }
+        }
+
+        // Nouvelle inscription
+        $inserted = \DB::table('newsletters')->insert([
+            'email' => $request->email,
+            'nom' => $request->nom ?: 'Abonné', // Nom par défaut si vide
+            'token' => bin2hex(random_bytes(32)),
+            'actif' => 1,
+            'preferences' => json_encode($preferences),
+            'emails_sent_count' => 0,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        if ($inserted) {
+            \Log::info('Newsletter subscription successful', [
+                'email' => $request->email,
+                'preferences' => $preferences
+            ]);
+            
+            // Envoyer l'email de bienvenue pour les nouvelles inscriptions
+            try {
+                // Récupérer l'enregistrement nouvellement créé pour avoir l'ID et le token
+                $newsletter = \DB::table('newsletters')->where('email', $request->email)->first();
+                
+                if ($newsletter) {
+                    // Créer une instance Newsletter pour le service
+                    $newsletterModel = new \App\Models\Newsletter();
+                    $newsletterModel->fill([
+                        'id' => $newsletter->id,
+                        'email' => $newsletter->email,
+                        'nom' => $newsletter->nom,
+                        'token' => $newsletter->token,
+                        'actif' => $newsletter->actif,
+                        'preferences' => json_decode($newsletter->preferences, true)
+                    ]);
+                    $newsletterModel->exists = true; // Indiquer que c'est un modèle existant
+                    
+                    $newsletterService = app(\App\Services\NewsletterService::class);
+                    $emailSent = $newsletterService->sendWelcomeEmail($newsletterModel);
+                    
+                    if ($emailSent) {
+                        \Log::info('Newsletter welcome email sent successfully', ['email' => $request->email]);
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::error('Newsletter welcome email failed', [
+                    'email' => $request->email,
+                    'error' => $e->getMessage()
+                ]);
+                // Ne pas faire échouer l'inscription si l'email échoue
+            }
+            
+            return back()->with('success', 'Inscription réussie ! Merci de vous être abonné à notre newsletter.');
+        } else {
+            \Log::error('Newsletter subscription insert failed');
+            return back()->with('error', 'Erreur lors de l\'enregistrement.');
+        }
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        \Log::warning('Newsletter subscription validation failed', [
+            'email' => $request->email ?? 'unknown',
+            'errors' => $e->errors()
+        ]);
+        
+        return back()->with('error', 'Veuillez vérifier l\'adresse email saisie.');
+        
     } catch (\Exception $e) {
-        $redirectUrl = $request->redirect_url ?: url()->previous();
-        return redirect()->to($redirectUrl)->with('error', 'Une erreur est survenue lors de l\'inscription. Veuillez réessayer.');
+        \Log::error('Newsletter subscription error', [
+            'email' => $request->email ?? 'unknown',
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        
+        return back()->with('error', 'Une erreur est survenue lors de l\'inscription. Veuillez réessayer.');
     }
 }
 
@@ -884,6 +1038,18 @@ public function downloadJobDocument(JobOffer $job)
         Log::error('Erreur lors du téléchargement du document d\'appel d\'offre: ' . $e->getMessage());
         abort(500, 'Erreur lors du téléchargement');
     }
+}
+
+public function evenements()
+{
+    $evenements = Evenement::where(function($query) {
+                                $query->where('is_published', true)
+                                      ->orWhereNull('is_published'); // Compatibilité pour les anciens événements
+                            })
+                           ->orderBy('date_evenement', 'desc')
+                           ->paginate(12);
+
+    return view('site.evenements', compact('evenements'));
 }
    
 }

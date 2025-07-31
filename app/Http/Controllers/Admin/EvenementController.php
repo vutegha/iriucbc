@@ -30,7 +30,7 @@ class EvenementController extends Controller
         }
 
         if ($request->filled('annee')) {
-            $query->whereYear('date_debut', $request->annee);
+            $query->whereYear('date_evenement', $request->annee);
         }
 
         if ($request->filled('search')) {
@@ -40,11 +40,11 @@ class EvenementController extends Controller
             });
         }
 
-        $evenements = $query->latest('date_debut')->paginate(10);
+        $evenements = $query->latest('date_evenement')->paginate(10);
 
         // Pour les filtres
-        $anneesDisponibles = Evenement::selectRaw('YEAR(date_debut) as annee')
-                                    ->whereNotNull('date_debut')
+        $anneesDisponibles = Evenement::selectRaw('YEAR(date_evenement) as annee')
+                                    ->whereNotNull('date_evenement')
                                     ->distinct()
                                     ->orderBy('annee', 'desc')
                                     ->pluck('annee')
@@ -65,12 +65,49 @@ class EvenementController extends Controller
                 'titre' => 'required|string|max:255',
                 'resume' => 'nullable|string|max:500',
                 'description' => 'required|string',
-                'date_debut' => 'required|date|after_or_equal:today',
-                'date_fin' => 'nullable|date|after_or_equal:date_debut',
+                'date_evenement' => 'required|date|after_or_equal:today',
                 'lieu' => 'nullable|string|max:255',
+                'organisateur' => 'nullable|string|max:255',
+                'contact_email' => 'nullable|email|max:255',
+                'contact_telephone' => 'nullable|string|max:20',
+                'type' => 'required|string|in:conference,seminaire,atelier,formation,table-ronde,colloque,autre',
+                'en_vedette' => 'nullable|boolean',
                 'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
                 'rapport_url' => 'nullable|url|max:255',
+            ], [
+                'titre.required' => 'Le titre de l\'événement est obligatoire.',
+                'titre.max' => 'Le titre ne peut pas dépasser 255 caractères.',
+                'resume.max' => 'Le résumé ne peut pas dépasser 500 caractères.',
+                'description.required' => 'La description de l\'événement est obligatoire.',
+                'date_evenement.required' => 'La date de l\'événement est obligatoire.',
+                'date_evenement.date' => 'La date de l\'événement doit être une date valide.',
+                'date_evenement.after_or_equal' => 'La date de l\'événement ne peut pas être dans le passé.',
+                'lieu.max' => 'Le lieu ne peut pas dépasser 255 caractères.',
+                'organisateur.max' => 'Le nom de l\'organisateur ne peut pas dépasser 255 caractères.',
+                'contact_email.email' => 'L\'email de contact doit être une adresse email valide.',
+                'contact_email.max' => 'L\'email de contact ne peut pas dépasser 255 caractères.',
+                'contact_telephone.max' => 'Le téléphone de contact ne peut pas dépasser 20 caractères.',
+                'type.required' => 'Le type d\'événement est obligatoire.',
+                'type.in' => 'Le type d\'événement sélectionné n\'est pas valide.',
+                'image.image' => 'Le fichier doit être une image.',
+                'image.mimes' => 'L\'image doit être au format JPG, JPEG, PNG ou WebP.',
+                'image.max' => 'L\'image ne peut pas dépasser 5 Mo.',
+                'rapport_url.url' => 'L\'URL du rapport doit être une URL valide.',
+                'rapport_url.max' => 'L\'URL du rapport ne peut pas dépasser 255 caractères.',
             ]);
+
+            // Convertir en_vedette en boolean
+            $validated['en_vedette'] = $request->has('en_vedette');
+
+            // Générer un slug unique
+            $validated['slug'] = \Str::slug($validated['titre']);
+            $originalSlug = $validated['slug'];
+            $counter = 1;
+            
+            while (Evenement::where('slug', $validated['slug'])->exists()) {
+                $validated['slug'] = $originalSlug . '-' . $counter;
+                $counter++;
+            }
 
             if ($request->hasFile('image')) {
                 $filename = 'evenements/' . uniqid() . '_' . preg_replace('/\s+/', '_', $request->file('image')->getClientOriginalName());
@@ -81,17 +118,18 @@ class EvenementController extends Controller
             Evenement::create($validated);
 
             return redirect()->route('admin.evenements.index')
-                ->with('alert', '<span class="text-green-600">Événement créé avec succès.</span>');
+                ->with('alert', '<span class="text-green-600"><i class="fas fa-check-circle mr-2"></i>Événement créé avec succès.</span>');
 
         } catch (ValidationException $e) {
             return back()
                 ->withErrors($e->validator)
                 ->withInput()
-                ->with('alert', '<span class="text-red-600">Erreur de validation. Veuillez corriger les champs indiqués.</span>');
+                ->with('alert', '<span class="text-red-600"><i class="fas fa-exclamation-triangle mr-2"></i>Erreur de validation. Veuillez corriger les champs indiqués.</span>');
         } catch (\Exception $e) {
+            \Log::error('Erreur lors de la création de l\'événement: ' . $e->getMessage());
             return back()
                 ->withInput()
-                ->with('alert', '<span class="text-red-600">Une erreur est survenue : ' . e($e->getMessage()) . '</span>');
+                ->with('alert', '<span class="text-red-600"><i class="fas fa-times-circle mr-2"></i>Une erreur inattendue est survenue. Veuillez réessayer.</span>');
         }
     }
 
@@ -112,12 +150,50 @@ class EvenementController extends Controller
                 'titre' => 'required|string|max:255',
                 'resume' => 'nullable|string|max:500',
                 'description' => 'required|string',
-                'date_debut' => 'required|date',
-                'date_fin' => 'nullable|date|after_or_equal:date_debut',
+                'date_evenement' => 'required|date',
                 'lieu' => 'nullable|string|max:255',
+                'organisateur' => 'nullable|string|max:255',
+                'contact_email' => 'nullable|email|max:255',
+                'contact_telephone' => 'nullable|string|max:20',
+                'type' => 'required|string|in:conference,seminaire,atelier,formation,table-ronde,colloque,autre',
+                'en_vedette' => 'nullable|boolean',
                 'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
                 'rapport_url' => 'nullable|url|max:255',
+            ], [
+                'titre.required' => 'Le titre de l\'événement est obligatoire.',
+                'titre.max' => 'Le titre ne peut pas dépasser 255 caractères.',
+                'resume.max' => 'Le résumé ne peut pas dépasser 500 caractères.',
+                'description.required' => 'La description de l\'événement est obligatoire.',
+                'date_evenement.required' => 'La date de l\'événement est obligatoire.',
+                'date_evenement.date' => 'La date de l\'événement doit être une date valide.',
+                'lieu.max' => 'Le lieu ne peut pas dépasser 255 caractères.',
+                'organisateur.max' => 'Le nom de l\'organisateur ne peut pas dépasser 255 caractères.',
+                'contact_email.email' => 'L\'email de contact doit être une adresse email valide.',
+                'contact_email.max' => 'L\'email de contact ne peut pas dépasser 255 caractères.',
+                'contact_telephone.max' => 'Le téléphone de contact ne peut pas dépasser 20 caractères.',
+                'type.required' => 'Le type d\'événement est obligatoire.',
+                'type.in' => 'Le type d\'événement sélectionné n\'est pas valide.',
+                'image.image' => 'Le fichier doit être une image.',
+                'image.mimes' => 'L\'image doit être au format JPG, JPEG, PNG ou WebP.',
+                'image.max' => 'L\'image ne peut pas dépasser 5 Mo.',
+                'rapport_url.url' => 'L\'URL du rapport doit être une URL valide.',
+                'rapport_url.max' => 'L\'URL du rapport ne peut pas dépasser 255 caractères.',
             ]);
+
+            // Convertir en_vedette en boolean
+            $validated['en_vedette'] = $request->has('en_vedette');
+
+            // Mettre à jour le slug si le titre a changé
+            if ($validated['titre'] !== $evenement->titre) {
+                $validated['slug'] = \Str::slug($validated['titre']);
+                $originalSlug = $validated['slug'];
+                $counter = 1;
+                
+                while (Evenement::where('slug', $validated['slug'])->where('id', '!=', $evenement->id)->exists()) {
+                    $validated['slug'] = $originalSlug . '-' . $counter;
+                    $counter++;
+                }
+            }
 
             if ($request->hasFile('image')) {
                 // Supprimer l'ancienne image
@@ -133,17 +209,18 @@ class EvenementController extends Controller
             $evenement->update($validated);
 
             return redirect()->route('admin.evenements.index')
-                ->with('alert', '<span class="text-green-600">Événement mis à jour avec succès.</span>');
+                ->with('alert', '<span class="text-green-600"><i class="fas fa-check-circle mr-2"></i>Événement mis à jour avec succès.</span>');
 
         } catch (ValidationException $e) {
             return back()
                 ->withErrors($e->validator)
                 ->withInput()
-                ->with('alert', '<span class="text-red-600">Erreur de validation. Veuillez corriger les champs indiqués.</span>');
+                ->with('alert', '<span class="text-red-600"><i class="fas fa-exclamation-triangle mr-2"></i>Erreur de validation. Veuillez corriger les champs indiqués.</span>');
         } catch (\Exception $e) {
+            \Log::error('Erreur lors de la mise à jour de l\'événement: ' . $e->getMessage());
             return back()
                 ->withInput()
-                ->with('alert', '<span class="text-red-600">Une erreur est survenue lors de la mise à jour : ' . e($e->getMessage()) . '</span>');
+                ->with('alert', '<span class="text-red-600"><i class="fas fa-times-circle mr-2"></i>Une erreur inattendue est survenue lors de la mise à jour.</span>');
         }
     }
 
@@ -167,65 +244,48 @@ class EvenementController extends Controller
     }
 
     /**
-     * Publier un événement
+     * Basculer le statut "en vedette" d'un événement
      */
-    public function publish(Request $request, Evenement $evenement)
+    public function toggleFeatured(Evenement $evenement)
     {
+        $this->authorize('update', $evenement);
+        
         try {
             $evenement->update([
-                'is_published' => true,
-                'published_at' => now(),
-                'published_by' => auth()->id(),
-                'moderation_comment' => $request->input('comment')
+                'en_vedette' => !$evenement->en_vedette
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Événement publié avec succès',
-                'published_at' => $evenement->published_at ? $evenement->published_at->format('d/m/Y H:i') : null
-            ]);
+            $message = $evenement->en_vedette 
+                ? 'Événement mis en vedette avec succès !'
+                : 'Événement retiré de la vedette !';
+
+            return back()->with('alert', '<span class="text-green-600">✅ ' . $message . '</span>');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la publication : ' . $e->getMessage()
-            ], 500);
+            return back()
+                ->with('alert', '<span class="text-red-600">Erreur lors de la modification : ' . e($e->getMessage()) . '</span>');
         }
     }
 
     /**
-     * Dépublier un événement
+     * Basculer le statut "publié" d'un événement
      */
-    public function unpublish(Request $request, Evenement $evenement)
+    public function togglePublished(Evenement $evenement)
     {
+        $this->authorize('moderate', $evenement);
+        
         try {
-            $evenement->update([
-                'is_published' => false,
-                'published_at' => null,
-                'published_by' => null,
-                'moderation_comment' => $request->input('comment')
-            ]);
+            if ($evenement->isPublished()) {
+                $evenement->unpublish();
+                $message = 'Événement dépublié avec succès !';
+            } else {
+                $evenement->publish();
+                $message = 'Événement publié avec succès !';
+            }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Événement dépublié avec succès'
-            ]);
+            return back()->with('alert', '<span class="text-green-600">✅ ' . $message . '</span>');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la dépublication : ' . $e->getMessage()
-            ], 500);
+            return back()
+                ->with('alert', '<span class="text-red-600">Erreur lors de la modification : ' . e($e->getMessage()) . '</span>');
         }
-    }
-
-    /**
-     * Liste des événements en attente de modération
-     */
-    public function pendingModeration()
-    {
-        $evenements = Evenement::where('is_published', false)
-                              ->latest('created_at')
-                              ->paginate(15);
-
-        return view('admin.evenements.pending', compact('evenements'));
     }
 }

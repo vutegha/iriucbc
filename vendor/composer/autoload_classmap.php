@@ -8,6 +8,8 @@ $baseDir = dirname($vendorDir);
 return array(
     'App\\Console\\Commands\\MarkExpiredJobOffers' => $baseDir . '/app/Console/Commands/MarkExpiredJobOffers.php',
     'App\\Console\\Commands\\MigratePublicationAuthors' => $baseDir . '/app/Console/Commands/MigratePublicationAuthors.php',
+    'App\\Console\\Commands\\MigrateToSpatieRoles' => $baseDir . '/app/Console/Commands/MigrateToSpatieRoles.php',
+    'App\\Console\\Commands\\SetupModerationRoles' => $baseDir . '/app/Console/Commands/SetupModerationRoles.php',
     'App\\Console\\Commands\\TestEmailNotifications' => $baseDir . '/app/Console/Commands/TestEmailNotifications.php',
     'App\\Console\\Commands\\VerifyDatabaseIntegrity' => $baseDir . '/app/Console/Commands/VerifyDatabaseIntegrity.php',
     'App\\Events\\ActualiteFeaturedCreated' => $baseDir . '/app/Events/ActualiteFeaturedCreated.php',

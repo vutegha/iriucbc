@@ -1,27 +1,19 @@
 @extends('layouts.admin')
 
 @section('breadcrumbs')
-<nav class="text-sm" aria-label="Breadcrumb">
-    <ol class="inline-flex items-center space-x-1 md:space-x-3">
-        <li class="inline-flex items-center">
-            <a href="{{ route('admin.dashboard') }}" class="text-white/70 hover:text-white">
-                <i class="fas fa-home mr-2"></i>Tableau de bord
-            </a>
-        </li>
-        <li>
-            <div class="flex items-center">
-                <i class="fas fa-chevron-right mx-2 text-white/50"></i>
-                <a href="{{ route('admin.publication.index') }}" class="text-white/70 hover:text-white">Publications</a>
-            </div>
-        </li>
-        <li aria-current="page">
-            <div class="flex items-center">
-                <i class="fas fa-chevron-right mx-2 text-white/50"></i>
-                <span class="text-white">{{ Str::limit($publication->titre, 30) }}</span>
-            </div>
-        </li>
-    </ol>
-</nav>
+    <li class="flex items-center">
+        <i class="fas fa-chevron-right text-iri-gray/50 mx-2"></i>
+        <a href="{{ route('admin.publication.index') }}" 
+           class="text-iri-gray hover:text-iri-primary transition-colors duration-200 font-medium">
+            Publications
+        </a>
+    </li>
+    <li aria-current="page">
+        <div class="flex items-center">
+            <i class="fas fa-chevron-right mx-2 text-iri-gray/50"></i>
+            <span class="text-iri-primary font-medium">{{ Str::limit($publication->titre, 30) }}</span>
+        </div>
+    </li>
 @endsection
 
 @section('content')
@@ -71,7 +63,7 @@
     </div>
 
     @php
-        $formAction = route('admin.publication.update', $publication->id);
+        $formAction = route('admin.publication.update', $publication);
     @endphp
     @include('admin.publication._form')
 </div>

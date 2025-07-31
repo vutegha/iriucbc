@@ -14,6 +14,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // Enregistrer le middleware de modération
         $middleware->alias([
             'can_moderate' => \App\Http\Middleware\CanModerate::class,
+            'permission' => \App\Http\Middleware\PermissionMiddleware::class,
+            'verified.admin' => \App\Http\Middleware\EnsureEmailIsVerifiedForAdmins::class,
+        ]);
+
+        // Appliquer le middleware de vérification email pour les admins sur les routes admin
+        $middleware->group('admin', [
+            'verified.admin',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

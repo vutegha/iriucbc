@@ -3,22 +3,12 @@
 @section('title', 'Gestion des Publications')
 
 @section('breadcrumbs')
-<nav class="flex mb-6" aria-label="Breadcrumb">
-    <ol class="inline-flex items-center space-x-1 md:space-x-3">
-        <li class="inline-flex items-center">
-            <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-iri-primary">
-                <i class="fas fa-home w-4 h-4 mr-2"></i>
-                Dashboard
-            </a>
-        </li>
-        <li>
-            <div class="flex items-center">
-                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
-                <span class="text-sm font-medium text-iri-primary">Publications</span>
-            </div>
-        </li>
-    </ol>
-</nav>
+    <li aria-current="page">
+        <div class="flex items-center">
+            <i class="fas fa-chevron-right mx-2 text-iri-gray/50"></i>
+            <span class="text-iri-primary font-medium">Publications</span>
+        </div>
+    </li>
 @endsection
 
 @section('content')
@@ -34,11 +24,13 @@
                 <p class="text-green-100">Gérez et modérez les publications de votre plateforme</p>
             </div>
             <div class="mt-4 sm:mt-0">
+                @can('create publications')
                 <a href="{{ route('admin.publication.create') }}" 
                    class="inline-flex items-center px-4 py-2 bg-white text-iri-primary font-semibold rounded-lg shadow-md hover:bg-gray-50 transition-all duration-200">
                     <i class="fas fa-plus mr-2"></i>
                     Nouvelle Publication
                 </a>
+                @endcan
             </div>
         </div>
     </div>
@@ -198,30 +190,25 @@
                              x-transition:leave="transition ease-in duration-75"
                              x-transition:leave-start="transform opacity-100 scale-100"
                              x-transition:leave-end="transform opacity-0 scale-95">
-                            <a href="{{ route('admin.publication.show', $publication->id) }}" 
+                            @can('view publications')
+                            <a href="{{ route('admin.publication.show', $publication) }}" 
                                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                 <i class="fas fa-eye mr-2"></i>Voir
                             </a>
-                            <a href="{{ route('admin.publication.edit', $publication->id) }}" 
+                            @endcan
+                            @can('update publications')
+                            <a href="{{ route('admin.publication.edit', $publication) }}" 
                                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                 <i class="fas fa-edit mr-2"></i>Modifier
                             </a>
-                            @if(!$publication->is_published)
-                                <button onclick="publishPublication({{ $publication->id }})"
-                                        class="w-full flex items-center px-4 py-2 text-sm text-green-700 hover:bg-green-50">
-                                    <i class="fas fa-check mr-2"></i>Publier
-                                </button>
-                            @else
-                                <button onclick="unpublishPublication({{ $publication->id }})"
-                                        class="w-full flex items-center px-4 py-2 text-sm text-orange-700 hover:bg-orange-50">
-                                    <i class="fas fa-pause mr-2"></i>Dépublier
-                                </button>
-                            @endif
+                            @endcan
+                            @can('delete publications')
                             <hr class="my-1">
                             <button onclick="deletePublication({{ $publication->id }})"
                                     class="w-full flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50">
                                 <i class="fas fa-trash mr-2"></i>Supprimer
                             </button>
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -378,32 +365,22 @@
                             </div>
                             <div class="text-xs text-gray-500">vues</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right">
-                            <div class="flex items-center justify-end space-x-2">
-                                <a href="{{ route('admin.publication.show', $publication->id) }}" 
-                                   class="inline-flex items-center px-3 py-1.5 bg-iri-primary text-white text-xs font-medium rounded-lg hover:bg-iri-secondary transition-colors duration-200"
-                                   title="Voir les détails">
-                                    <i class="fas fa-eye mr-1"></i>Voir
-                                </a>
-                                <a href="{{ route('admin.publication.edit', $publication->id) }}" 
-                                   class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                                   title="Modifier">
-                                    <i class="fas fa-edit mr-1"></i>Modifier
-                                </a>
-                                
-                                @if(!$publication->is_published)
-                                    <button onclick="publishPublication({{ $publication->id }})" 
-                                            class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors duration-200"
-                                            title="Publier">
-                                        <i class="fas fa-check mr-1"></i>Publier
-                                    </button>
-                                @else
-                                    <button onclick="unpublishPublication({{ $publication->id }})" 
-                                            class="inline-flex items-center px-3 py-1.5 bg-orange-600 text-white text-xs font-medium rounded-lg hover:bg-orange-700 transition-colors duration-200"
-                                            title="Dépublier">
-                                        <i class="fas fa-pause mr-1"></i>Dépublier
-                                    </button>
-                                @endif
+        <td class="px-6 py-4 whitespace-nowrap text-right">
+            <div class="flex items-center justify-end space-x-2">
+                @can('view publications')
+                <a href="{{ route('admin.publication.show', $publication) }}" 
+                   class="inline-flex items-center px-3 py-1.5 bg-iri-primary text-white text-xs font-medium rounded-lg hover:bg-iri-secondary transition-colors duration-200"
+                   title="Voir les détails">
+                    <i class="fas fa-eye mr-1"></i>Voir
+                </a>
+                @endcan
+                @can('update publications')
+                <a href="{{ route('admin.publication.edit', $publication) }}" 
+                   class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                   title="Modifier">
+                    <i class="fas fa-edit mr-1"></i>Modifier
+                </a>
+                @endcan
                                 
                                 <div class="relative" x-data="{ open: false }">
                                     <button @click="open = !open" 
@@ -420,17 +397,21 @@
                                          x-transition:leave="transition ease-in duration-75"
                                          x-transition:leave-start="transform opacity-100 scale-100"
                                          x-transition:leave-end="transform opacity-0 scale-95">
+                                        @can('update publications')
                                         <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                             <i class="fas fa-copy mr-2"></i>Dupliquer
                                         </a>
                                         <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                             <i class="fas fa-download mr-2"></i>Exporter
                                         </a>
+                                        @endcan
+                                        @can('delete publications')
                                         <hr class="my-1">
                                         <button onclick="deletePublication({{ $publication->id }})"
                                                 class="w-full flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50">
                                             <i class="fas fa-trash mr-2"></i>Supprimer
                                         </button>
+                                        @endcan
                                     </div>
                                 </div>
                             </div>
@@ -537,56 +518,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Fonctions pour les actions
-function publishPublication(id) {
-    if (confirm('Êtes-vous sûr de vouloir publier cette publication ?')) {
-        fetch('/admin/publication/' + id + '/publish', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.reload();
-            } else {
-                alert('Erreur: ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('Erreur lors de la publication');
-            console.error('Error:', error);
-        });
-    }
-}
-
-function unpublishPublication(id) {
-    if (confirm('Êtes-vous sûr de vouloir dépublier cette publication ?')) {
-        fetch('/admin/publication/' + id + '/unpublish', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.reload();
-            } else {
-                alert('Erreur: ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('Erreur lors de la dépublication');
-            console.error('Error:', error);
-        });
-    }
-}
-
 function deletePublication(id) {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette publication ? Cette action est irréversible.')) {
         fetch('/admin/publication/' + id, {

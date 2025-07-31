@@ -8,16 +8,11 @@
     <section class="relative bg-gradient-to-br from-iri-primary via-iri-secondary to-iri-accent py-20">
         <div class="absolute inset-0 bg-black/10"></div>
         
-        <!-- Breadcrumb Overlay -->
-        <div class="absolute top-4 left-4 z-20">
-            <nav class="flex space-x-2 text-sm text-white/90" aria-label="Breadcrumb">
-                <a href="{{ route('site.home') }}" class="hover:text-white transition-colors">
-                    <i class="fas fa-home mr-1"></i> Accueil
-                </a>
-                <span class="text-white/60">›</span>
-                <span class="text-white font-medium">{{ $currentPage ?? 'Galerie' }}</span>
-            </nav>
-        </div>
+@section('breadcrumb')
+    <x-breadcrumb-overlay :items="[
+        ['title' => 'Galerie', 'url' => null]
+    ]" />
+@endsection
         
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 drop-shadow-2xl">

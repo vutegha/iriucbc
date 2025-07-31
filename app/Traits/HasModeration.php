@@ -104,6 +104,11 @@ trait HasModeration
      */
     protected function sendPublicationNotification()
     {
+        // Pour l'instant, on désactive les notifications de modération
+        // car le système de rôles n'est pas encore implémenté
+        
+        // TODO: Implémenter le système de notifications quand les rôles seront créés
+        /*
         // Récupérer tous les utilisateurs ayant le droit de censurer
         $moderators = User::whereHas('roles', function ($query) {
             $query->where('name', 'moderator')
@@ -114,6 +119,7 @@ trait HasModeration
         if ($moderators->isNotEmpty()) {
             Notification::send($moderators, new ContentPublished($this));
         }
+        */
     }
 
     /**

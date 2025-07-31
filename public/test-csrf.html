@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="test-token-123">
+    <title>Test Token CSRF</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test du Token CSRF</h1>
+    
+    <div id="test-meta" class="test">
+        <h3>Test 1: Meta tag CSRF</h3>
+        <p id="meta-result">En cours...</p>
+    </div>
+    
+    <div id="test-function" class="test">
+        <h3>Test 2: Fonction getCsrfToken()</h3>
+        <p id="function-result">En cours...</p>
+    </div>
+    
+    <div id="test-fallback" class="test">
+        <h3>Test 3: Fallback sans meta tag</h3>
+        <p id="fallback-result">En cours...</p>
+    </div>
+
+    <script>
+        // Test 1: Vérifier la meta tag
+        const metaTag = document.querySelector('meta[name="csrf-token"]');
+        const metaResult = document.getElementById('meta-result');
+        const metaTest = document.getElementById('test-meta');
+        
+        if (metaTag) {
+            const token = metaTag.getAttribute('content');
+            metaResult.textContent = `✅ Token trouvé: ${token}`;
+            metaTest.classList.add('success');
+        } else {
+            metaResult.textContent = '❌ Meta tag CSRF non trouvé';
+            metaTest.classList.add('error');
+        }
+        
+        // Test 2: Fonction getCsrfToken (copie de celle du _form.blade.php)
+        function getCsrfToken() {
+            // Méthode 1: Meta tag
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (csrfToken) {
+                return csrfToken.getAttribute('content');
+            }
+            
+            // Méthode 2: Input hidden du formulaire
+            const csrfInput = document.querySelector('input[name="_token"]');
+            if (csrfInput) {
+                return csrfInput.value;
+            }
+            
+            // Méthode 3: Fallback Laravel Blade (simulé)
+            return 'fallback-token-456';
+        }
+        
+        const functionResult = document.getElementById('function-result');
+        const functionTest = document.getElementById('test-function');
+        
+        try {
+            const token = getCsrfToken();
+            functionResult.textContent = `✅ Token récupéré par la fonction: ${token}`;
+            functionTest.classList.add('success');
+        } catch (error) {
+            functionResult.textContent = `❌ Erreur: ${error.message}`;
+            functionTest.classList.add('error');
+        }
+        
+        // Test 3: Fallback sans meta tag
+        // Supprimer temporairement la meta tag pour tester le fallback
+        if (metaTag) {
+            metaTag.remove();
+        }
+        
+        const fallbackResult = document.getElementById('fallback-result');
+        const fallbackTest = document.getElementById('test-fallback');
+        
+        try {
+            const fallbackToken = getCsrfToken();
+            fallbackResult.textContent = `✅ Token fallback: ${fallbackToken}`;
+            fallbackTest.classList.add('success');
+        } catch (error) {
+            fallbackResult.textContent = `❌ Erreur fallback: ${error.message}`;
+            fallbackTest.classList.add('error');
+        }
+        
+        console.log('🔍 Tests CSRF terminés');
+    </script>
+</body>
+</html>

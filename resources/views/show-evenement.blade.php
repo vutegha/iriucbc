@@ -68,11 +68,48 @@
                                         Rapport
                                     </a>
                                 @endif
-                                <button onclick="window.print()" 
-                                        class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-300 flex items-center border border-white/30">
-                                    <i class="fas fa-print mr-2"></i>
-                                    Imprimer
-                                </button>
+                                
+                                <!-- Boutons de partage sur les réseaux sociaux -->
+                                <div class="flex items-center space-x-2">
+                                    <!-- Partage Facebook -->
+                                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->url()) }}" 
+                                       target="_blank"
+                                       class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-all duration-300 flex items-center justify-center"
+                                       title="Partager sur Facebook">
+                                        <i class="fab fa-facebook-f"></i>
+                                    </a>
+                                    
+                                    <!-- Partage Twitter -->
+                                    <a href="https://twitter.com/intent/tweet?url={{ urlencode(request()->url()) }}&text={{ urlencode($evenement->titre) }}" 
+                                       target="_blank"
+                                       class="bg-sky-500 hover:bg-sky-600 text-white p-2 rounded-lg transition-all duration-300 flex items-center justify-center"
+                                       title="Partager sur Twitter">
+                                        <i class="fab fa-twitter"></i>
+                                    </a>
+                                    
+                                    <!-- Partage LinkedIn -->
+                                    <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode(request()->url()) }}" 
+                                       target="_blank"
+                                       class="bg-blue-700 hover:bg-blue-800 text-white p-2 rounded-lg transition-all duration-300 flex items-center justify-center"
+                                       title="Partager sur LinkedIn">
+                                        <i class="fab fa-linkedin-in"></i>
+                                    </a>
+                                    
+                                    <!-- Partage WhatsApp -->
+                                    <a href="https://wa.me/?text={{ urlencode($evenement->titre . ' - ' . request()->url()) }}" 
+                                       target="_blank"
+                                       class="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-all duration-300 flex items-center justify-center"
+                                       title="Partager sur WhatsApp">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </a>
+                                    
+                                    <!-- Copier le lien -->
+                                    <button onclick="copyToClipboard('{{ request()->url() }}')" 
+                                            class="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg transition-all duration-300 flex items-center justify-center"
+                                            title="Copier le lien">
+                                        <i class="fas fa-link"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         
@@ -175,7 +212,7 @@
                         <div class="space-y-4">
                             @foreach($autresEvenements as $autre)
                                 <div class="border-l-4 border-iri-accent pl-4 hover:bg-gray-50 rounded-r-lg p-3 transition-colors duration-200">
-                                    <a href="{{ route('site.evenement.show', $autre->id) }}" class="block">
+                                    <a href="{{ route('site.evenement.show', $autre->slug) }}" class="block">
                                         <h4 class="font-semibold text-gray-900 hover:text-iri-accent transition-colors duration-200 mb-1">
                                             {{ Str::limit($autre->titre, 60) }}
                                         </h4>
@@ -244,4 +281,41 @@
         }
     }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            // Afficher une notification de succès
+            const notification = document.createElement('div');
+            notification.innerHTML = '<i class="fas fa-check mr-2"></i>Lien copié !';
+            notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300';
+            document.body.appendChild(notification);
+            
+            // Supprimer la notification après 3 secondes
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }).catch(function(err) {
+            console.error('Erreur lors de la copie: ', err);
+            // Fallback pour les navigateurs plus anciens
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            const notification = document.createElement('div');
+            notification.innerHTML = '<i class="fas fa-check mr-2"></i>Lien copié !';
+            notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        });
+    }
+</script>
 @endpush

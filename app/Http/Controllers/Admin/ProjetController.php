@@ -11,19 +11,61 @@ use App\Events\ProjectCreated;
 
 class ProjetController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->middleware('can:viewAny,App\Models\Projet')->only(['index']);
+        $this->middleware('can:view,projet')->only(['show']);
+        $this->middleware('can:create,App\Models\Projet')->only(['create', 'store']);
+        $this->middleware('can:update,projet')->only(['edit', 'update']);
+        $this->middleware('can:delete,projet')->only(['destroy']);
+        $this->middleware('can:moderate,projet')->only(['publish', 'unpublish']);
+    }
+
    public function index(Request $request)
 {
-    $query = Projet::query();
+    $query = Projet::with('service');
 
+    // Recherche textuelle
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('nom', 'like', "%{$search}%")
+              ->orWhere('description', 'like', "%{$search}%")
+              ->orWhere('resume', 'like', "%{$search}%");
+        });
+    }
+
+    // Filtre par état
     if ($request->filled('etat')) {
         $query->where('etat', $request->etat);
     }
 
+    // Filtre par publication
+    if ($request->filled('is_published')) {
+        $query->where('is_published', $request->is_published == '1');
+    }
+
+    // Filtre par service
+    if ($request->filled('service_id')) {
+        $query->where('service_id', $request->service_id);
+    }
+
+    // Filtre par année
     if ($request->filled('annee')) {
         $query->whereYear('date_debut', $request->annee);
     }
 
-    $projets = $query->latest()->paginate(10);
+    // Filtre par dates de création
+    if ($request->filled('created_at_from')) {
+        $query->whereDate('created_at', '>=', $request->created_at_from);
+    }
+
+    if ($request->filled('created_at_to')) {
+        $query->whereDate('created_at', '<=', $request->created_at_to);
+    }
+
+    $projets = $query->latest()->paginate(12);
 
     // Pour le filtre année
     $anneesDisponibles = Projet::selectRaw('YEAR(date_debut) as annee')
@@ -33,7 +75,13 @@ class ProjetController extends Controller
                                 ->pluck('annee')
                                 ->toArray();
 
-    return view('admin.projets.index', compact('projets', 'anneesDisponibles'));
+    // Calcul du budget total
+    $budgetTotal = Projet::whereNotNull('budget')->sum('budget');
+
+    // Services pour les filtres
+    $services = Service::orderBy('nom')->get();
+
+    return view('admin.projets.index', compact('projets', 'anneesDisponibles', 'budgetTotal', 'services'));
 }
 
 
@@ -54,9 +102,11 @@ class ProjetController extends Controller
                 'resume'=>'nullable| string|max:255',
                 'date_fin' => 'nullable|date|after_or_equal:date_debut',
                 'etat' => 'required|string|in:en cours,terminé,suspendu',
+                'budget' => 'nullable|numeric|min:0',
                 'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5048',
                 'beneficiaires_hommes' => 'nullable|integer|min:0',
                 'beneficiaires_femmes' => 'nullable|integer|min:0',
+                'beneficiaires_enfants' => 'nullable|integer|min:0',
                 'beneficiaires_total' => 'nullable|integer|min:0',
             ]);
 
@@ -104,6 +154,7 @@ class ProjetController extends Controller
                 'date_debut' => 'nullable|date',
                 'date_fin' => 'nullable|date|after_or_equal:date_debut',
                 'etat' => 'required|in:en cours,terminé,suspendu',
+                'budget' => 'nullable|numeric|min:0',
                 'beneficiaires_hommes' => 'nullable|integer|min:0',
                 'beneficiaires_femmes' => 'nullable|integer|min:0',
                 'beneficiaires_total' => 'nullable|integer|min:0',
@@ -138,7 +189,7 @@ class ProjetController extends Controller
 
     public function show(Projet $projet)
     {
-        $projet->load('medias');
+        $projet->load(['medias', 'publishedBy']);
         return view('admin.projets.show', compact('projet'));
     }
 
@@ -165,20 +216,35 @@ class ProjetController extends Controller
      */
     public function publish(Request $request, Projet $projet)
     {
+        $this->authorize('moderate', $projet);
+        
         try {
-            $projet->publish(auth()->user(), $request->input('comment'));
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Projet publié avec succès',
-                'status' => $projet->publication_status,
-                'published_at' => $projet->published_at ? $projet->published_at->format('d/m/Y H:i') : null
+            $projet->update([
+                'is_published' => true,
+                'published_at' => now(),
+                'published_by' => auth()->id(),
+                'moderation_comment' => $request->input('comment')
             ]);
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Projet publié avec succès'
+                ]);
+            }
+            
+            return redirect()->route('admin.projets.show', $projet)
+                ->with('alert', '<span class="text-green-600">✅ Projet publié avec succès ! Il est maintenant visible par le public.</span>');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la publication : ' . $e->getMessage()
-            ], 500);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreur lors de la publication : ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('admin.projets.show', $projet)
+                ->with('alert', '<span class="text-red-600">❌ Erreur lors de la publication : ' . e($e->getMessage()) . '</span>');
         }
     }
 
@@ -187,19 +253,35 @@ class ProjetController extends Controller
      */
     public function unpublish(Request $request, Projet $projet)
     {
+        $this->authorize('moderate', $projet);
+        
         try {
-            $projet->unpublish($request->input('comment'));
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Projet dépublié avec succès',
-                'status' => $projet->publication_status
+            $projet->update([
+                'is_published' => false,
+                'published_at' => null,
+                'published_by' => null,
+                'moderation_comment' => $request->input('comment')
             ]);
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Projet dépublié avec succès'
+                ]);
+            }
+            
+            return redirect()->route('admin.projets.show', $projet)
+                ->with('alert', '<span class="text-orange-600">⚠️ Projet dépublié avec succès ! Il n\'est plus visible par le public.</span>');
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la dépublication : ' . $e->getMessage()
-            ], 500);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreur lors de la dépublication : ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('admin.projets.show', $projet)
+                ->with('alert', '<span class="text-red-600">❌ Erreur lors de la dépublication : ' . e($e->getMessage()) . '</span>');
         }
     }
 

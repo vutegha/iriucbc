@@ -206,7 +206,7 @@
 
                             <!-- Actions -->
                             <div class="flex items-center space-x-2 ml-4">
-                                <a href="{{ route('admin.actualite.show', $actualite) }}" 
+                                <a href="{{ route('admin.actualite.show', $actualite->slug) }}" 
                                    class="text-coral hover:text-coral-dark p-2" 
                                    title="Voir">
                                     <i class="bi bi-eye text-lg"></i>

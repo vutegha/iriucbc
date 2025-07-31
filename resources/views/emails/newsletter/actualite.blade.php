@@ -19,7 +19,7 @@
     <div class="container">
         <div class="header">
             <h1>📰 Nouvelle Actualité</h1>
-            <p>Institut de Recherche Interdisciplinaire - UCBC</p>
+            <p>Institut de Recherche Intégré à l'Université Chrétienne Bilingue du Congo</p>
         </div>
 
         <div class="content">
@@ -55,8 +55,8 @@
         </div>
 
         <div class="footer">
-            <p><strong>Institut de Recherche Interdisciplinaire - UCBC</strong></p>
-            <p>Université Catholique de Bukavu</p>
+            <p><strong>Institut de Recherche Intégré à l'Université Chrétienne Bilingue du Congo</strong></p>
+            <p>Congo Initiative-Université Chrétienne Bilingue du Congo</p>
             
             <div class="unsubscribe">
                 <p>

@@ -1,0 +1,11 @@
+# SendGrid configuration for production
+# Sign up at https://sendgrid.com for reliable email delivery
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.sendgrid.net
+MAIL_PORT=587
+MAIL_USERNAME=apikey
+MAIL_PASSWORD=your-sendgrid-api-key
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="iri@ucbc.org"
+MAIL_FROM_NAME="IRI-UCBC"

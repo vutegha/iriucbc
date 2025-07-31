@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Admin IRI-UCBC - @yield('title', 'Dashboard')</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    @include('partials.favicon')
     
     <!-- TailwindCSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -209,6 +210,19 @@
                         Rapports
                     </a>
 
+                    <!-- Administration -->
+                    <div class="px-3 py-2 mt-6">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Administration</p>
+                    </div>
+                    
+                    @can('manage users')
+                    <a href="{{ route('admin.users.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.users.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-people-fill mr-3 text-lg"></i>
+                        Utilisateurs & Permissions
+                    </a>
+                    @endcan
+
                     <!-- Communication -->
                     <div class="px-3 py-2 mt-6">
                         <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Communication</p>
@@ -224,6 +238,12 @@
                        class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.newsletter.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <i class="bi bi-mailbox mr-3 text-lg"></i>
                         Newsletter
+                    </a>
+                    
+                    <a href="{{ route('admin.email-settings.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.email-settings.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-gear mr-3 text-lg"></i>
+                        Configuration emails
                     </a>
 
                     <!-- Ressources Humaines -->
@@ -557,69 +577,6 @@
             </main>
         </div>
     </div>
-
-    <!-- CKEditor 5 -->
-    <script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
-
-    <!-- CKEditor Configuration -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('TailwindCSS admin layout chargé, initialisation CKEditor...');
-        
-        // Configuration CKEditor en français
-        const editorConfig = {
-            toolbar: [
-                'heading', '|',
-                'bold', 'italic', 'underline', '|',
-                'bulletedList', 'numberedList', '|',
-                'outdent', 'indent', '|',
-                'blockQuote', 'insertTable', '|',
-                'link', '|',
-                'undo', 'redo'
-            ],
-            heading: {
-                options: [
-                    { model: 'paragraph', title: 'Paragraphe', class: 'ck-heading_paragraph' },
-                    { model: 'heading1', view: 'h1', title: 'Titre 1', class: 'ck-heading_heading1' },
-                    { model: 'heading2', view: 'h2', title: 'Titre 2', class: 'ck-heading_heading2' },
-                    { model: 'heading3', view: 'h3', title: 'Titre 3', class: 'ck-heading_heading3' }
-                ]
-            ],
-            language: 'fr'
-        };
-        
-        // Initialiser CKEditor pour tous les textareas avec la classe 'wysiwyg'
-        const textareas = document.querySelectorAll('textarea.wysiwyg');
-        console.log(`Trouvé ${textareas.length} textareas WYSIWYG`);
-        
-        textareas.forEach((textarea, index) => {
-            console.log(`Initialisation de CKEditor ${index + 1}...`);
-            
-            ClassicEditor
-                .create(textarea, editorConfig)
-                .then(editor => {
-                    console.log(`CKEditor ${index + 1} initialisé avec succès`);
-                    
-                    // Style personnalisé pour l'éditeur
-                    editor.editing.view.change(writer => {
-                        writer.setStyle('min-height', '150px', editor.editing.view.document.getRoot());
-                    });
-                    
-                    // Synchroniser le contenu avec le textarea
-                    editor.model.document.on('change:data', () => {
-                        textarea.value = editor.getData();
-                    });
-                })
-                .catch(error => {
-                    console.error(`Erreur lors de l'initialisation de CKEditor ${index + 1}:`, error);
-                    // En cas d'erreur, on garde le textarea normal
-                    textarea.style.display = 'block';
-                });
-        });
-        
-        console.log('Configuration CKEditor terminée');
-    });
-    </script>
 
     @yield('scripts')
 </body>

@@ -9,24 +9,19 @@
     <section class="relative bg-gradient-to-br from-iri-primary via-iri-secondary to-iri-accent py-20">
         <div class="absolute inset-0 bg-black/10"></div>
         
-        <!-- Breadcrumb Overlay -->
-        <div class="absolute top-4 left-4 z-20">
-            <nav class="flex space-x-2 text-sm text-white/90" aria-label="Breadcrumb">
-                <a href="{{ route('site.home') }}" class="hover:text-white transition-colors">
-                    <i class="fas fa-home mr-1"></i> Accueil
-                </a>
-                <span class="text-white/60">›</span>
-                @if(isset($service))
-                    <a href="{{ route('site.services') }}" class="hover:text-white transition-colors">Domaines d'intervention</a>
-                    <span class="text-white/60">›</span>
-                    <a href="{{ route('site.service.show', ['slug' => $service->slug]) }}" class="hover:text-white transition-colors">{{ $service->nom }}</a>
-                    <span class="text-white/60">›</span>
-                    <span class="text-white font-medium">Projets</span>
-                @else
-                    <span class="text-white font-medium">{{ $currentPage ?? 'Projets' }}</span>
-                @endif
-            </nav>
-        </div>
+@section('breadcrumb')
+    @if(isset($service))
+        <x-breadcrumb-overlay :items="[
+            ['title' => 'Domaines d\'intervention', 'url' => route('site.services')],
+            ['title' => $service->nom, 'url' => route('site.service.show', ['slug' => $service->slug])],
+            ['title' => 'Projets', 'url' => null]
+        ]" />
+    @else
+        <x-breadcrumb-overlay :items="[
+            ['title' => 'Projets', 'url' => null]
+        ]" />
+    @endif
+@endsection
         
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 drop-shadow-2xl">

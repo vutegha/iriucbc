@@ -7,8 +7,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --coral: #ee6751;
-            --olive: #505c10;
+            --primary-blue: #2563eb;
+            --primary-blue-dark: #1d4ed8;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-blue-dark) 0%, #1e40af 100%);
         }
     </style>
 </head>
@@ -22,7 +30,7 @@
                 </svg>
             </div>
             <h1 class="text-2xl font-bold text-gray-800 mb-2">Préférences Newsletter</h1>
-            <p class="text-gray-600">IRI-UCBC - Université Catholique de Bukavu</p>
+            <p class="text-gray-600">IRI-UCBC - Congo Initiative-Université Chrétienne Bilingue du Congo</p>
         </div>
 
         <!-- Messages de feedback -->
@@ -60,51 +68,109 @@
             </div>
         </div>
 
-        <!-- Formulaire de préférences -->
+        <!-- Formulaire de préférences unifié -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 class="text-lg font-semibold text-gray-800 mb-4">Vos préférences de notification</h2>
-            <p class="text-gray-600 mb-6 text-sm">Choisissez les types de contenus pour lesquels vous souhaitez recevoir des notifications par email.</p>
+            <p class="text-gray-600 mb-6 text-sm">Personnalisez votre nom et choisissez les types de contenus pour lesquels vous souhaitez recevoir des notifications par email.</p>
             
             <form method="POST" action="{{ route('newsletter.preferences.update', $newsletter->token) }}">
                 @csrf
+                @method('PUT')
                 
+                <!-- Champ nom personnalisé -->
+                <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <label for="nom" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-user mr-2 text-blue-600"></i>
+                        Votre nom (optionnel)
+                    </label>
+                    <input type="text" 
+                           id="nom" 
+                           name="nom" 
+                           value="{{ old('nom', $newsletter->nom) }}"
+                           placeholder="Ex: Jean Dupont"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                    <p class="text-xs text-gray-500 mt-1">
+                        Ce nom sera utilisé dans tous nos emails pour personnaliser nos communications.
+                    </p>
+                </div>
+                
+                <!-- Préférences de contenu -->
                 <div class="space-y-4">
-                    @foreach(App\Models\NewsletterPreference::TYPES as $type => $label)
-                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                            <input type="checkbox" 
-                                   name="preferences[]" 
-                                   value="{{ $type }}"
-                                   {{ in_array($type, $preferences) ? 'checked' : '' }}
-                                   class="w-4 h-4 text-red-500 bg-gray-100 border-gray-300 rounded focus:ring-red-500 focus:ring-2">
-                            <div class="ml-3 flex-1">
-                                <div class="font-medium text-gray-800">{{ $label }}</div>
-                                <div class="text-sm text-gray-500">
-                                    @if($type === 'publications')
-                                        Recevez les notifications pour les nouvelles publications académiques
-                                    @elseif($type === 'actualites')
-                                        Recevez les notifications pour les actualités importantes
-                                    @elseif($type === 'projets')
-                                        Recevez les notifications pour les nouveaux projets de recherche
-                                    @endif
-                                </div>
+                    <h3 class="text-md font-semibold text-gray-800 mb-3">
+                        <i class="fas fa-bell mr-2 text-blue-600"></i>
+                        Types de notifications
+                    </h3>
+                    
+                    <!-- Actualités -->
+                    <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" 
+                               name="preferences[actualites]" 
+                               value="1"
+                               {{ $newsletter->hasPreference('actualites') ? 'checked' : '' }}
+                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                        <div class="ml-3 flex-1">
+                            <div class="font-medium text-gray-800">Actualités</div>
+                            <div class="text-sm text-gray-500">
+                                Recevez les notifications pour les actualités importantes de l'institut
                             </div>
-                            <div class="text-2xl">
-                                @if($type === 'publications')
-                                    📚
-                                @elseif($type === 'actualites')
-                                    📰
-                                @elseif($type === 'projets')
-                                    🚀
-                                @endif
+                        </div>
+                        <div class="text-2xl">📰</div>
+                    </label>
+
+                    <!-- Publications -->
+                    <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" 
+                               name="preferences[publications]" 
+                               value="1"
+                               {{ $newsletter->hasPreference('publications') ? 'checked' : '' }}
+                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                        <div class="ml-3 flex-1">
+                            <div class="font-medium text-gray-800">Publications de recherche</div>
+                            <div class="text-sm text-gray-500">
+                                Recevez les notifications pour les nouvelles publications académiques et scientifiques
                             </div>
-                        </label>
-                    @endforeach
+                        </div>
+                        <div class="text-2xl">📚</div>
+                    </label>
+
+                    <!-- Rapports -->
+                    <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" 
+                               name="preferences[rapports]" 
+                               value="1"
+                               {{ $newsletter->hasPreference('rapports') ? 'checked' : '' }}
+                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                        <div class="ml-3 flex-1">
+                            <div class="font-medium text-gray-800">Rapports d'activité</div>
+                            <div class="text-sm text-gray-500">
+                                Recevez les notifications pour nos rapports d'activité et analyses approfondies
+                            </div>
+                        </div>
+                        <div class="text-2xl">📊</div>
+                    </label>
+
+                    <!-- Événements -->
+                    <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" 
+                               name="preferences[evenements]" 
+                               value="1"
+                               {{ $newsletter->hasPreference('evenements') ? 'checked' : '' }}
+                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                        <div class="ml-3 flex-1">
+                            <div class="font-medium text-gray-800">Événements</div>
+                            <div class="text-sm text-gray-500">
+                                Recevez les notifications pour nos conférences, séminaires et formations
+                            </div>
+                        </div>
+                        <div class="text-2xl">🎓</div>
+                    </label>
                 </div>
 
                 <div class="mt-6 space-y-3">
                     <button type="submit" 
-                            class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-4 rounded-lg transition-colors">
-                        Enregistrer mes préférences
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center">
+                        <i class="fas fa-save mr-2"></i>
+                        Enregistrer mes informations et préférences
                     </button>
                     
                     <a href="{{ route('site.home') }}" 
@@ -130,8 +196,8 @@
 
         <!-- Footer -->
         <div class="text-center text-gray-500 text-sm mt-8">
-            <p>© {{ date('Y') }} Institut de Recherche Interdisciplinaire - UCBC</p>
-            <p>Université Catholique de Bukavu</p>
+            <p>© {{ date('Y') }} Institut de Recherche Intégré à l'Université Chrétienne Bilingue du Congo</p>
+            <p>IRI-UCBC</p>
         </div>
     </div>
 </body>

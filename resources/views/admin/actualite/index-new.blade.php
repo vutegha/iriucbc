@@ -142,14 +142,14 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 <div class="flex flex-col">
-                    <span class="font-medium">{{ $actualite->created_at->format('d/m/Y') }}</span>
-                    <span class="text-xs text-gray-400">{{ $actualite->created_at->format('H:i') }}</span>
+                    <span class="font-medium">{{ $actualite->created_at ? $actualite->created_at->format('d/m/Y') : 'Date inconnue' }}</span>
+                    <span class="text-xs text-gray-400">{{ $actualite->created_at ? $actualite->created_at->format('H:i') : '--:--' }}</span>
                 </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex items-center justify-end space-x-2">
                     <!-- Consulter -->
-                    <a href="{{ route('admin.actualite.show', $actualite->id) }}" 
+                    <a href="{{ route('admin.actualite.show', $actualite->slug) }}" 
                        class="text-blue-600 hover:text-blue-900 p-1 rounded-md hover:bg-blue-50 transition-colors duration-200"
                        title="Consulter">
                         <i class="bi bi-eye"></i>

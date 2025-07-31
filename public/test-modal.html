@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="test-token">
+    <title>Test Modal AJAX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">Test des Modals AJAX</h1>
+        
+        <!-- Section Test Auteur -->
+        <div class="bg-white p-6 rounded-lg shadow mb-6">
+            <h2 class="text-lg font-semibold mb-4">Test Création Auteur</h2>
+            <form id="testAuthorForm" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="nom" placeholder="Nom" class="border p-2 rounded" required>
+                    <input type="text" id="prenom" placeholder="Prénom" class="border p-2 rounded" required>
+                </div>
+                <input type="email" id="email" placeholder="Email" class="border p-2 rounded w-full">
+                <input type="text" id="institution" placeholder="Institution" class="border p-2 rounded w-full">
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Créer Auteur
+                </button>
+            </form>
+            <div id="authorResult" class="mt-4 p-3 rounded hidden"></div>
+        </div>
+        
+        <!-- Section Test Catégorie -->
+        <div class="bg-white p-6 rounded-lg shadow mb-6">
+            <h2 class="text-lg font-semibold mb-4">Test Création Catégorie</h2>
+            <form id="testCategoryForm" class="space-y-4">
+                <input type="text" id="categoryNom" placeholder="Nom de la catégorie" class="border p-2 rounded w-full" required>
+                <textarea id="categoryDescription" placeholder="Description" class="border p-2 rounded w-full"></textarea>
+                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Créer Catégorie
+                </button>
+            </form>
+            <div id="categoryResult" class="mt-4 p-3 rounded hidden"></div>
+        </div>
+        
+        <!-- Section Test Recherche -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-lg font-semibold mb-4">Test Recherche Auteurs</h2>
+            <input type="text" id="searchInput" placeholder="Rechercher un auteur..." class="border p-2 rounded w-full">
+            <div id="searchResults" class="mt-4 p-3 border rounded min-h-[100px]">
+                Tapez pour rechercher...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration de base
+        const baseUrl = window.location.origin;
+        const adminUrl = baseUrl + '/admin';
+        
+        console.log('Base URL:', baseUrl);
+        console.log('Admin URL:', adminUrl);
+        
+        // Fonction utilitaire pour afficher les résultats
+        function showResult(elementId, message, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.className = `mt-4 p-3 rounded ${isSuccess ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            element.textContent = message;
+            element.classList.remove('hidden');
+        }
+        
+        // Test création auteur
+        document.getElementById('testAuthorForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('nom', document.getElementById('nom').value);
+            formData.append('prenom', document.getElementById('prenom').value);
+            formData.append('email', document.getElementById('email').value);
+            formData.append('institution', document.getElementById('institution').value);
+            
+            console.log('Test création auteur avec:', Object.fromEntries(formData));
+            
+            try {
+                const response = await fetch(adminUrl + '/auteurs', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+                
+                console.log('Response status:', response.status);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (data.success) {
+                    showResult('authorResult', `Auteur créé: ${data.auteur.nom_complet} (ID: ${data.auteur.id})`, true);
+                    this.reset();
+                } else {
+                    showResult('authorResult', `Erreur: ${data.message}`, false);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showResult('authorResult', `Erreur réseau: ${error.message}`, false);
+            }
+        });
+        
+        // Test création catégorie
+        document.getElementById('testCategoryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('nom', document.getElementById('categoryNom').value);
+            formData.append('description', document.getElementById('categoryDescription').value);
+            
+            console.log('Test création catégorie avec:', Object.fromEntries(formData));
+            
+            try {
+                const response = await fetch(adminUrl + '/categories', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+                
+                console.log('Response status:', response.status);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (data.success) {
+                    showResult('categoryResult', `Catégorie créée: ${data.categorie.nom} (ID: ${data.categorie.id})`, true);
+                    this.reset();
+                } else {
+                    showResult('categoryResult', `Erreur: ${data.message}`, false);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showResult('categoryResult', `Erreur réseau: ${error.message}`, false);
+            }
+        });
+        
+        // Test recherche
+        let searchTimeout;
+        document.getElementById('searchInput').addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+            
+            if (query.length < 2) {
+                document.getElementById('searchResults').textContent = 'Tapez au moins 2 caractères...';
+                return;
+            }
+            
+            searchTimeout = setTimeout(async () => {
+                console.log('Recherche pour:', query);
+                
+                try {
+                    const response = await fetch(adminUrl + `/auteurs/search?q=${encodeURIComponent(query)}`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    console.log('Search response status:', response.status);
+                    
+                    const data = await response.json();
+                    console.log('Search response data:', data);
+                    
+                    if (Array.isArray(data) && data.length > 0) {
+                        const results = data.map(author => 
+                            `${author.prenom || ''} ${author.nom} (${author.email || 'N/A'})`
+                        ).join('<br>');
+                        document.getElementById('searchResults').innerHTML = results;
+                    } else {
+                        document.getElementById('searchResults').textContent = 'Aucun résultat trouvé';
+                    }
+                } catch (error) {
+                    console.error('Erreur recherche:', error);
+                    document.getElementById('searchResults').textContent = `Erreur: ${error.message}`;
+                }
+            }, 300);
+        });
+    </script>
+</body>
+</html>

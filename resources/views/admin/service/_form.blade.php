@@ -56,24 +56,7 @@
                 </div>
             </div>
 
-            <!-- Description -->
-            <div>
-                <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">
-                    <i class="fas fa-align-left text-iri-accent mr-2"></i>Description complète
-                </label>
-                <textarea name="description" 
-                          id="description" 
-                          rows="5" 
-                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-iri-accent focus:border-transparent transition-all duration-200 resize-none @error('description') border-red-500 @enderror"
-                          placeholder="Décrivez en détail ce service, ses objectifs et ses activités...">{{ old('description', $service->description ?? '') }}</textarea>
-                @error('description')
-                    <p class="mt-2 text-sm text-red-600 flex items-center">
-                        <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
-                    </p>
-                @enderror
-            </div>
-
-            <!-- Résumé -->
+            <!-- Résumé court -->
             <div>
                 <label for="resume" class="block text-sm font-semibold text-gray-700 mb-2">
                     <i class="fas fa-file-alt text-iri-gold mr-2"></i>Résumé court
@@ -82,14 +65,33 @@
                           id="resume" 
                           rows="3" 
                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-iri-gold focus:border-transparent transition-all duration-200 resize-none @error('resume') border-red-500 @enderror"
-                          placeholder="Un résumé concis de ce service (maximum 200 caractères)..."
-                          maxlength="200">{{ old('resume', $service->resume ?? '') }}</textarea>
+                          placeholder="Un résumé concis de ce service...">{{ old('resume', $service->resume ?? '') }}</textarea>
                 @error('resume')
                     <p class="mt-2 text-sm text-red-600 flex items-center">
                         <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
                     </p>
                 @enderror
-                <p class="mt-1 text-xs text-gray-500" id="resume-count">0/200 caractères</p>
+            </div>
+
+            <!-- Description complète -->
+            <div>
+                <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-align-left text-iri-accent mr-2"></i>Description complète
+                </label>
+                <textarea name="description" 
+                          id="description" 
+                          class="wysiwyg w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-iri-accent focus:border-transparent transition-all duration-200 bg-white placeholder-gray-400 lg:min-h-[400px]"
+                          rows="12"
+                          placeholder="Décrivez en détail ce service, ses objectifs et ses activités...">{{ old('description', $service->description ?? '') }}</textarea>
+                @error('description')
+                    <p class="mt-2 text-sm text-red-600 flex items-center">
+                        <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                    </p>
+                @enderror
+                <p class="mt-2 text-xs text-gray-500">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Utilisez l'éditeur de texte enrichi pour formatter votre contenu avec des titres, listes, liens, etc.
+                </p>
             </div>
 
             <!-- Image -->
@@ -116,12 +118,13 @@
                     
                     <!-- Aperçu de l'image -->
                     <div class="flex-shrink-0">
-                        @if($service && $service->image)
+                        @if($service && $service->hasValidImage())
                             <div class="relative group">
                                 <img id="image-preview" 
-                                     src="{{ asset('storage/' . $service->image) }}" 
+                                     src="{{ $service->image_url }}" 
                                      class="w-24 h-24 object-cover rounded-lg border-2 border-gray-200 shadow-sm" 
-                                     alt="Aperçu">
+                                     alt="Aperçu"
+                                     loading="lazy">
                                 <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
                                     <i class="fas fa-eye text-white text-lg"></i>
                                 </div>
@@ -158,7 +161,8 @@
     </form>
 </div>
 
-<!-- Script pour l'aperçu d'image et le compteur de caractères -->
+<!-- Script pour l'aperçu d'image et CKEditor -->
+<script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
 <script>
 function previewImage(input) {
     const preview = document.getElementById('image-preview');
@@ -177,23 +181,49 @@ function previewImage(input) {
     }
 }
 
-// Compteur de caractères pour le résumé
+// Initialiser CKEditor pour description
 document.addEventListener('DOMContentLoaded', function() {
-    const resumeTextarea = document.getElementById('resume');
-    const resumeCount = document.getElementById('resume-count');
-    
-    function updateCount() {
-        const length = resumeTextarea.value.length;
-        resumeCount.textContent = `${length}/200 caractères`;
-        
-        if (length > 180) {
-            resumeCount.classList.add('text-orange-500');
-        } else {
-            resumeCount.classList.remove('text-orange-500');
-        }
-    }
-    
-    updateCount();
-    resumeTextarea.addEventListener('input', updateCount);
+    ClassicEditor
+        .create(document.querySelector('#description'), {
+            toolbar: {
+                items: [
+                    'heading', '|',
+                    'bold', 'italic', 'underline', '|',
+                    'bulletedList', 'numberedList', '|',
+                    'outdent', 'indent', '|',
+                    'undo', 'redo', '|',
+                    'link', 'insertTable', '|',
+                    'alignment', '|',
+                    'fontColor', 'fontBackgroundColor', '|',
+                    'fontSize', '|',
+                    'specialCharacters'
+                ]
+            },
+            language: 'fr',
+            table: {
+                contentToolbar: [
+                    'tableColumn', 'tableRow', 'mergeTableCells'
+                ]
+            },
+            heading: {
+                options: [
+                    { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+                    { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+                    { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+                    { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
+                ]
+            }
+        })
+        .then(editor => {
+            console.log('CKEditor initialisé avec succès pour Service');
+            
+            // Style personnalisé pour CKEditor
+            editor.editing.view.change(writer => {
+                writer.setStyle('min-height', '400px', editor.editing.view.document.getRoot());
+            });
+        })
+        .catch(error => {
+            console.error('Erreur CKEditor:', error);
+        });
 });
 </script>

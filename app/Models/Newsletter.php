@@ -15,12 +15,22 @@ class Newsletter extends Model
         'nom',
         'token',
         'actif',
-        'confirme_a'
+        'confirme_a',
+        'preferences',
+        'last_email_sent',
+        'emails_sent_count',
+        'unsubscribe_reason',
+        'unsubscribe_reasons',
+        'unsubscribed_at'
     ];
 
     protected $casts = [
         'actif' => 'boolean',
         'confirme_a' => 'datetime',
+        'preferences' => 'array',
+        'unsubscribe_reasons' => 'array',
+        'last_email_sent' => 'datetime',
+        'unsubscribed_at' => 'datetime'
     ];
 
     /**
@@ -34,15 +44,17 @@ class Newsletter extends Model
             if (empty($newsletter->token)) {
                 $newsletter->token = Str::random(64);
             }
+            
+            // Définir les préférences par défaut
+            if (empty($newsletter->preferences)) {
+                $newsletter->preferences = [
+                    'actualites' => true,
+                    'publications' => true,
+                    'rapports' => true,
+                    'evenements' => true
+                ];
+            }
         });
-    }
-
-    /**
-     * Relation avec les préférences
-     */
-    public function preferences()
-    {
-        return $this->hasMany(NewsletterPreference::class);
     }
 
     /**
@@ -50,10 +62,38 @@ class Newsletter extends Model
      */
     public function hasPreference($type)
     {
-        return $this->preferences()
-            ->where('type', $type)
-            ->where('actif', true)
-            ->exists();
+        return isset($this->preferences[$type]) && $this->preferences[$type] === true;
+    }
+
+    /**
+     * Met à jour les préférences
+     */
+    public function updatePreferences(array $preferences)
+    {
+        $this->update(['preferences' => $preferences]);
+    }
+
+    /**
+     * Obtient les abonnés actifs avec une préférence spécifique
+     */
+    public static function getSubscribersForContent($contentType)
+    {
+        return self::where('actif', true)
+                  ->whereNotNull('confirme_a')
+                  ->where(function ($query) use ($contentType) {
+                      $query->whereJsonContains('preferences->' . $contentType, true)
+                            ->orWhereNull('preferences'); // Inclure ceux sans préférences (par défaut tout)
+                  })
+                  ->get();
+    }
+
+    /**
+     * Marque qu'un email a été envoyé
+     */
+    public function markEmailSent()
+    {
+        $this->increment('emails_sent_count');
+        $this->update(['last_email_sent' => now()]);
     }
 
     /**
@@ -65,12 +105,32 @@ class Newsletter extends Model
     }
 
     /**
-     * Scope pour les abonnés avec une préférence spécifique
+     * Scope pour les abonnés confirmés
      */
-    public function scopeWithPreference($query, $type)
+    public function scopeConfirmed($query)
     {
-        return $query->whereHas('preferences', function ($q) use ($type) {
-            $q->where('type', $type)->where('actif', true);
-        });
+        return $query->whereNotNull('confirme_a');
+    }
+
+    /**
+     * Obtient les raisons de désabonnement disponibles
+     */
+    public static function getUnsubscribeReasons()
+    {
+        return [
+            'too_many_emails' => 'Trop d\'emails',
+            'not_relevant' => 'Contenu non pertinent',
+            'not_interested' => 'Plus intéressé par nos services',
+            'technical_issues' => 'Problème technique',
+            'other' => 'Autres'
+        ];
+    }
+
+    /**
+     * Vérifie si l'abonné a sélectionné une raison spécifique
+     */
+    public function hasUnsubscribeReason($reason)
+    {
+        return in_array($reason, $this->unsubscribe_reasons ?? []);
     }
 }

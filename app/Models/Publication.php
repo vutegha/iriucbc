@@ -5,10 +5,11 @@ use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\HasModeration;
+use App\Traits\NotifiesNewsletterSubscribers;
 
 class Publication extends Model
 {
-    use HasFactory, HasModeration;
+    use HasFactory, HasModeration, NotifiesNewsletterSubscribers;
 
     protected $fillable = [
         'titre', 'resume', 'fichier_pdf', 'categorie_id', 'citation', 'en_vedette', 'a_la_une',
@@ -63,11 +64,27 @@ class Publication extends Model
         return $this->titre;
     }
 
+    /**
+     * Détermine le type de contenu pour la newsletter
+     */
+    public function getNewsletterContentType(): ?string
+    {
+        return 'publications';
+    }
+
     protected static function booted()
     {
         static::creating(function ($model) {
             $model->slug = now()->format('Ymd') . '-' . Str::slug($model->nom ?? $model->titre);
         });
+    }
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName()
+    {
+        return 'slug';
     }
 }
 

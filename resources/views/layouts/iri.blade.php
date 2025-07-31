@@ -7,7 +7,7 @@
     <title>@yield('title', 'Institut de Recherche Intégré - IRI-UCBC')</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('assets/img/logos/iri-favicon.png') }}">
+    @include('partials.favicon')
     
     <!-- Meta Tags pour SEO -->
     <meta name="description" content="@yield('description', 'Institut de Recherche Intégré de l\'Université Chrétienne Bilingue du Congo - Recherche, Innovation et Développement')">
@@ -510,34 +510,50 @@
         
         /* Styles pour la navigation (breadcrumb et pagination) */
         .breadcrumb-iri {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin: 16px 0;
-            padding: 12px 0;
+            background: linear-gradient(135deg, var(--iri-primary), var(--iri-secondary));
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
         .breadcrumb-item {
-            color: var(--iri-primary);
+            color: rgba(255, 255, 255, 0.8);
             text-decoration: none;
-            font-weight: 500;
+            transition: color 0.3s ease;
         }
-        
+
         .breadcrumb-item:hover {
-            text-decoration: underline;
+            color: white;
         }
-        
+
         .breadcrumb-current {
-            color: var(--iri-secondary);
+            color: white;
             font-weight: 600;
         }
-        
+
         .breadcrumb-separator {
-            color: #6b7280;
-            font-weight: 500;
+            color: rgba(255, 255, 255, 0.6);
+            margin: 0 0.5rem;
         }
-        
-        .pagination-iri {
+
+        /* Breadcrumb overlay style */
+        .breadcrumb-overlay {
+            position: absolute;
+            top: 64px; /* Hauteur du menu mobile h-16 */
+            left: 0;
+            right: 0;
+            z-index: 40;
+            background: none;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (min-width: 1024px) {
+            .breadcrumb-overlay {
+                top: 80px; /* Hauteur du menu desktop lg:h-20 */
+            }
+        }        .pagination-iri {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -644,6 +660,101 @@
 
     <!-- Navigation -->
     @include('partials.menu')
+
+    <!-- Breadcrumb Overlay -->
+    @hasSection('breadcrumb')
+        <div class="breadcrumb-overlay">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+                @yield('breadcrumb')
+            </div>
+        </div>
+    @endif
+
+    <!-- Notifications système pour la newsletter -->
+    @if(session('success') || session('error') || session('info'))
+    <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6 relative">
+            @if(session('success'))
+            <div class="flex items-center mb-4">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-lg font-semibold text-gray-900">Inscription réussie !</h3>
+                </div>
+            </div>
+            <p class="text-gray-600 mb-6">{{ session('success') }}</p>
+            @endif
+
+            @if(session('info'))
+            <div class="flex items-center mb-4">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-blue-500 text-2xl"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-lg font-semibold text-gray-900">Information</h3>
+                </div>
+            </div>
+            <p class="text-gray-600 mb-6">{{ session('info') }}</p>
+            @endif
+
+            @if(session('error'))
+            <div class="flex items-center mb-4">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-circle text-red-500 text-2xl"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-lg font-semibold text-gray-900">Erreur</h3>
+                </div>
+            </div>
+            <p class="text-gray-600 mb-6">{{ session('error') }}</p>
+            @endif
+
+            <div class="flex justify-end space-x-3">
+                <button 
+                    onclick="closeNotificationModal()" 
+                    class="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400/50 shadow-lg"
+                >
+                    Parfait !
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fonction pour fermer le modal de notification
+        function closeNotificationModal() {
+            const modal = document.getElementById('notification-modal');
+            if (modal) {
+                modal.style.opacity = '0';
+                setTimeout(() => {
+                    modal.remove();
+                }, 300);
+            }
+        }
+
+        // Auto-fermeture après 5 secondes pour les messages de succès
+        @if(session('success'))
+        setTimeout(() => {
+            closeNotificationModal();
+        }, 5000);
+        @endif
+
+        // Fermeture avec Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeNotificationModal();
+            }
+        });
+
+        // Fermeture en cliquant en dehors du modal
+        document.getElementById('notification-modal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeNotificationModal();
+            }
+        });
+    </script>
+    @endif
 
     <!-- Contenu principal -->
     <main class="min-h-screen">

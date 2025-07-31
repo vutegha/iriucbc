@@ -9,8 +9,8 @@
     <title>@yield('title', 'IRI - Institut de Recherche Intégré')</title>
 
     <!-- Favicon and Manifest -->
-    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" />
-    <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('apple-icon.png') }}" />
+    <link rel="shortcut icon" href="{{ asset('assets/img/favicon.ico') }}" />
+    <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('assets/img/favicon.png') }}" />
     <link rel="manifest" href="{{ asset('manifest.json') }}" />
 
     <!-- Fonts -->
@@ -37,11 +37,9 @@
 <body class="m-0 font-sans antialiased font-normal bg-white text-start text-base leading-default text-slate-500">
     <!-- <div class="main"> -->
     <div id="root">
-        @include('partials.navbar')
          @yield('content')
     </div>
     <!-- </div> -->
-     @include('partials.footer')
 </body>
 @yield('scripts')
 <!-- plugin for scrollbar  -->

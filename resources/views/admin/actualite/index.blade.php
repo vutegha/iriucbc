@@ -3,26 +3,65 @@
 @section('title', 'Gestion des Actualités')
 
 @section('breadcrumbs')
-<nav class="flex mb-6" aria-label="Breadcrumb">
-    <ol class="inline-flex items-center space-x-1 md:space-x-3">
-        <li class="inline-flex items-center">
-            <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-iri-primary">
-                <i class="fas fa-home w-4 h-4 mr-2"></i>
-                Dashboard
-            </a>
-        </li>
-        <li>
-            <div class="flex items-center">
-                <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
-                <span class="text-sm font-medium text-iri-primary">Actualités</span>
-            </div>
-        </li>
-    </ol>
-</nav>
+    <li aria-current="page">
+        <div class="flex items-center">
+            <i class="fas fa-chevron-right mx-2 text-iri-gray/50"></i>
+            <span class="text-iri-primary font-medium">Actualités</span>
+        </div>
+    </li>
 @endsection
+</nav>
+
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Messages Flash -->
+    @if(session('success'))
+        <div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle h-5 w-5 text-green-400"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-green-800">
+                        {{ session('success') }}
+                    </p>
+                </div>
+                <div class="ml-auto pl-3">
+                    <div class="-mx-1.5 -my-1.5">
+                        <button type="button" onclick="this.parentElement.parentElement.parentElement.parentElement.style.display='none'" 
+                                class="inline-flex bg-green-50 rounded-md p-1.5 text-green-500 hover:bg-green-100">
+                            <i class="fas fa-times h-4 w-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-circle h-5 w-5 text-red-400"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-red-800">
+                        {{ session('error') }}
+                    </p>
+                </div>
+                <div class="ml-auto pl-3">
+                    <div class="-mx-1.5 -my-1.5">
+                        <button type="button" onclick="this.parentElement.parentElement.parentElement.parentElement.style.display='none'" 
+                                class="inline-flex bg-red-50 rounded-md p-1.5 text-red-500 hover:bg-red-100">
+                            <i class="fas fa-times h-4 w-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
     
     <!-- En-tête avec actions -->
     <div class="bg-gradient-to-r from-iri-primary to-iri-secondary rounded-xl shadow-sm p-6 mb-6">
@@ -34,11 +73,13 @@
                 <p class="text-green-100">Gérez les actualités et informations importantes</p>
             </div>
             <div class="mt-4 sm:mt-0">
+                @can('create actualites')
                 <a href="{{ route('admin.actualite.create') }}" 
                    class="inline-flex items-center px-4 py-2 bg-white text-iri-primary font-semibold rounded-lg shadow-md hover:bg-gray-50 transition-all duration-200">
                     <i class="fas fa-plus mr-2"></i>
                     Nouvelle Actualité
                 </a>
+                @endcan
             </div>
         </div>
     </div>
@@ -207,30 +248,25 @@
                                 
                                 <div x-show="open" @click.away="open = false"
                                      class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                                    <a href="{{ route('admin.actualite.show', $actualite->id) }}" 
+                                    @can('view actualites')
+                                    <a href="{{ route('admin.actualite.show', $actualite) }}" 
                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                         <i class="fas fa-eye mr-2"></i>Voir
                                     </a>
-                                    <a href="{{ route('admin.actualite.edit', $actualite->id) }}" 
+                                    @endcan
+                                    @can('update actualites')
+                                    <a href="{{ route('admin.actualite.edit', $actualite) }}" 
                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                         <i class="fas fa-edit mr-2"></i>Modifier
                                     </a>
-                                    @if(!$actualite->is_published)
-                                        <button onclick="publishActualite({{ $actualite->id }})"
-                                                class="w-full flex items-center px-4 py-2 text-sm text-green-700 hover:bg-green-50">
-                                            <i class="fas fa-check mr-2"></i>Publier
-                                        </button>
-                                    @else
-                                        <button onclick="unpublishActualite({{ $actualite->id }})"
-                                                class="w-full flex items-center px-4 py-2 text-sm text-orange-700 hover:bg-orange-50">
-                                            <i class="fas fa-pause mr-2"></i>Dépublier
-                                        </button>
-                                    @endif
+                                    @endcan
+                                    @can('delete actualites')
                                     <hr class="my-1">
-                                    <button onclick="deleteActualite({{ $actualite->id }})"
+                                    <button onclick="deleteActualite('{{ $actualite->slug }}')"
                                             class="w-full flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50">
                                         <i class="fas fa-trash mr-2"></i>Supprimer
                                     </button>
+                                    @endcan
                                 </div>
                             </div>
                         </div>
@@ -244,7 +280,7 @@
                                 </span>
                                 <span class="flex items-center">
                                     <i class="fas fa-calendar mr-1"></i>
-                                    {{ $actualite->created_at->format('d/m/Y H:i') }}
+                                    {{ $actualite->created_at ? $actualite->created_at->format('d/m/Y H:i') : 'Date inconnue' }}
                                 </span>
                                 @if($actualite->categorie)
                                     <span class="flex items-center">
@@ -308,44 +344,34 @@
                     </div>
                     <div class="flex items-center">
                         <i class="fas fa-calendar mr-1"></i>
-                        {{ $actualite->created_at->format('d/m/Y') }}
+                        {{ $actualite->created_at ? $actualite->created_at->format('d/m/Y') : 'Date inconnue' }}
                     </div>
                 </div>
                 
                 <!-- Actions -->
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-2">
-                        <a href="{{ route('admin.actualite.show', $actualite->id) }}" 
+                        @can('view actualites')
+                        <a href="{{ route('admin.actualite.show', $actualite) }}" 
                            class="text-iri-primary hover:text-iri-secondary p-1 rounded-md hover:bg-iri-primary/10 transition-colors duration-200"
                            title="Voir">
                             <i class="fas fa-eye"></i>
                         </a>
-                        <a href="{{ route('admin.actualite.edit', $actualite->id) }}" 
+                        @endcan
+                        @can('update actualites')
+                        <a href="{{ route('admin.actualite.edit', $actualite) }}" 
                            class="text-blue-600 hover:text-blue-900 p-1 rounded-md hover:bg-blue-50 transition-colors duration-200"
                            title="Modifier">
                             <i class="fas fa-edit"></i>
                         </a>
-                    </div>
-                    
-                    <div class="flex items-center space-x-2">
-                        @if(!$actualite->is_published)
-                            <button onclick="publishActualite({{ $actualite->id }})" 
-                                    class="text-green-600 hover:text-green-900 p-1 rounded-md hover:bg-green-50 transition-colors duration-200"
-                                    title="Publier">
-                                <i class="fas fa-check"></i>
-                            </button>
-                        @else
-                            <button onclick="unpublishActualite({{ $actualite->id }})" 
-                                    class="text-orange-600 hover:text-orange-900 p-1 rounded-md hover:bg-orange-50 transition-colors duration-200"
-                                    title="Dépublier">
-                                <i class="fas fa-pause"></i>
-                            </button>
-                        @endif
-                        <button onclick="deleteActualite({{ $actualite->id }})" 
+                        @endcan
+                        @can('delete actualites')
+                        <button onclick="deleteActualite('{{ $actualite->slug }}')" 
                                 class="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-50 transition-colors duration-200"
                                 title="Supprimer">
                             <i class="fas fa-trash"></i>
                         </button>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -467,10 +493,10 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900">
-                                <div class="font-medium">{{ $actualite->created_at->format('d/m/Y') }}</div>
-                                <div class="text-xs text-gray-500">{{ $actualite->created_at->format('H:i') }}</div>
+                                <div class="font-medium">{{ $actualite->created_at ? $actualite->created_at->format('d/m/Y') : 'Date inconnue' }}</div>
+                                <div class="text-xs text-gray-500">{{ $actualite->created_at ? $actualite->created_at->format('H:i') : '--:--' }}</div>
                                 <div class="text-xs text-gray-400 mt-1">
-                                    {{ $actualite->created_at->diffForHumans() }}
+                                    {{ $actualite->created_at ? $actualite->created_at->diffForHumans() : 'Date inconnue' }}
                                 </div>
                             </div>
                         </td>
@@ -490,30 +516,20 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right">
                             <div class="flex items-center justify-end space-x-2">
-                                <a href="{{ route('admin.actualite.show', $actualite->id) }}" 
+                                @can('view actualites')
+                                <a href="{{ route('admin.actualite.show', $actualite) }}" 
                                    class="inline-flex items-center px-3 py-1.5 bg-iri-primary text-white text-xs font-medium rounded-lg hover:bg-iri-secondary transition-colors duration-200"
                                    title="Voir les détails">
                                     <i class="fas fa-eye mr-1"></i>Voir
                                 </a>
-                                <a href="{{ route('admin.actualite.edit', $actualite->id) }}" 
+                                @endcan
+                                @can('update actualites')
+                                <a href="{{ route('admin.actualite.edit', $actualite) }}" 
                                    class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
                                    title="Modifier">
                                     <i class="fas fa-edit mr-1"></i>Modifier
                                 </a>
-                                
-                                @if(!$actualite->is_published)
-                                    <button onclick="publishActualite({{ $actualite->id }})" 
-                                            class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors duration-200"
-                                            title="Publier">
-                                        <i class="fas fa-check mr-1"></i>Publier
-                                    </button>
-                                @else
-                                    <button onclick="unpublishActualite({{ $actualite->id }})" 
-                                            class="inline-flex items-center px-3 py-1.5 bg-orange-600 text-white text-xs font-medium rounded-lg hover:bg-orange-700 transition-colors duration-200"
-                                            title="Dépublier">
-                                        <i class="fas fa-pause mr-1"></i>Dépublier
-                                    </button>
-                                @endif
+                                @endcan
                                 
                                 <div class="relative" x-data="{ open: false }">
                                     <button @click="open = !open" 
@@ -530,26 +546,21 @@
                                          x-transition:leave="transition ease-in duration-75"
                                          x-transition:leave-start="transform opacity-100 scale-100"
                                          x-transition:leave-end="transform opacity-0 scale-95">
+                                        @can('update actualites')
                                         <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                             <i class="fas fa-copy mr-2"></i>Dupliquer
                                         </a>
                                         <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                             <i class="fas fa-share mr-2"></i>Partager
                                         </a>
-                                        @if($actualite->urgent)
-                                            <button onclick="removeUrgent({{ $actualite->id }})" class="w-full flex items-center px-4 py-2 text-sm text-orange-700 hover:bg-orange-50">
-                                                <i class="fas fa-fire-extinguisher mr-2"></i>Retirer urgence
-                                            </button>
-                                        @else
-                                            <button onclick="makeUrgent({{ $actualite->id }})" class="w-full flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50">
-                                                <i class="fas fa-fire mr-2"></i>Marquer urgent
-                                            </button>
-                                        @endif
+                                        @endcan
+                                        @can('delete actualites')
                                         <hr class="my-1">
-                                        <button onclick="deleteActualite({{ $actualite->id }})"
+                                        <button onclick="deleteActualite('{{ $actualite->slug }}')"
                                                 class="w-full flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50">
                                             <i class="fas fa-trash mr-2"></i>Supprimer
                                         </button>
+                                        @endcan
                                     </div>
                                 </div>
                             </div>
@@ -676,59 +687,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Fonctions pour les actions
-function publishActualite(id) {
-    if (confirm('Êtes-vous sûr de vouloir publier cette actualité ?')) {
-        fetch('/admin/actualite/' + id + '/publish', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.reload();
-            } else {
-                alert('Erreur: ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('Erreur lors de la publication');
-            console.error('Error:', error);
-        });
-    }
-}
-
-function unpublishActualite(id) {
-    if (confirm('Êtes-vous sûr de vouloir dépublier cette actualité ?')) {
-        fetch('/admin/actualite/' + id + '/unpublish', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.reload();
-            } else {
-                alert('Erreur: ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('Erreur lors de la dépublication');
-            console.error('Error:', error);
-        });
-    }
-}
-
-function deleteActualite(id) {
+function deleteActualite(slug) {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette actualité ? Cette action est irréversible.')) {
-        fetch('/admin/actualite/' + id, {
+        fetch('/admin/actualite/' + slug, {
             method: 'DELETE',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),

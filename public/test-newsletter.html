@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Newsletter - IRI UCBC</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; margin-bottom: 10px; }
+        button { background: #007cba; color: white; padding: 12px 24px; border: none; cursor: pointer; }
+        button:hover { background: #005a8b; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 5px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #cce7ff; border: 1px solid #99d6ff; color: #004085; }
+    </style>
+</head>
+<body>
+    <h1>✅ Problème Résolu - Test Newsletter</h1>
+    <div class="result success">
+        <strong>Bonne nouvelle !</strong><br>
+        Les colonnes manquantes ont été ajoutées à la base de données.<br>
+        Le contrôleur a été simplifié et devrait maintenant fonctionner.
+    </div>
+
+    <h2>Test d'inscription Newsletter</h2>
+    <p>Ce formulaire teste directement l'endpoint de newsletter</p>
+
+    <form action="../newsletter/subscribe" method="POST" id="newsletterForm">
+        <input type="hidden" name="_token" value="">
+        
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required 
+                   placeholder="votre.email@example.com" 
+                   value="test<?= time() ?>@example.com">
+        </div>
+
+        <button type="submit">S'inscrire à la Newsletter</button>
+    </form>
+
+    <div id="result" class="result" style="display: none;"></div>
+
+    <script>
+        // Obtenir le token CSRF si possible
+        fetch('../')
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const token = doc.querySelector('meta[name="csrf-token"]');
+                if (token) {
+                    document.querySelector('input[name="_token"]').value = token.getAttribute('content');
+                }
+            });
+
+        document.getElementById('newsletterForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const form = this;
+            const resultDiv = document.getElementById('result');
+            const formData = new FormData(form);
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.innerHTML = '⏳ Inscription en cours...';
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                redirect: 'manual'
+            })
+            .then(response => {
+                if (response.type === 'opaqueredirect' || response.redirected) {
+                    // Redirection = succès probable
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = '✅ Inscription probablement réussie ! (Redirection détectée)';
+                    return;
+                }
+                return response.text();
+            })
+            .then(data => {
+                if (typeof data === 'string') {
+                    if (data.includes('success') || data.includes('réussie')) {
+                        resultDiv.className = 'result success';
+                        resultDiv.innerHTML = '✅ Inscription réussie !';
+                    } else if (data.includes('error') || data.includes('erreur')) {
+                        resultDiv.className = 'result error';
+                        resultDiv.innerHTML = '❌ Erreur lors de l\'inscription';
+                    } else {
+                        resultDiv.className = 'result info';
+                        resultDiv.innerHTML = '📋 Réponse reçue (voir console pour détails)';
+                        console.log('Réponse:', data.substring(0, 500));
+                    }
+                }
+            })
+            .catch(error => {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '❌ Erreur réseau: ' + error.message;
+            });
+        });
+    </script>
+
+    <hr style="margin: 40px 0;">
+    
+    <h2>✅ Résolution du problème</h2>
+    <div class="result success">
+        <h3>Ce qui a été corrigé :</h3>
+        <ul>
+            <li>✅ Colonnes manquantes ajoutées à la table <code>newsletters</code></li>
+            <li>✅ Contrôleur simplifié avec gestion d'erreurs robuste</li>
+            <li>✅ Validation et insertion directe en base de données</li>
+            <li>✅ Gestion des cas d'abonnements existants</li>
+        </ul>
+        
+        <h3>Le formulaire footer devrait maintenant fonctionner !</h3>
+        <p>Les erreurs "Column not found: preferences" sont résolues.</p>
+    </div>
+
+    <h3>URLs de test</h3>
+    <ul>
+        <li><a href="../" target="_blank">Page d'accueil (avec formulaire footer)</a></li>
+        <li><a href="../newsletter/subscribe" target="_blank">Endpoint newsletter direct</a></li>
+    </ul>
+
+</body>
+</html>

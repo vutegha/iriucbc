@@ -4,7 +4,6 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -23,6 +22,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'active',
+        'email_verified_at',
     ];
 
     /**
@@ -45,39 +46,16 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'active' => 'boolean',
         ];
     }
 
     /**
-     * Les rôles de l'utilisateur
+     * Vérifier si l'utilisateur est super administrateur
      */
-    public function roles(): BelongsToMany
+    public function isSuperAdmin(): bool
     {
-        return $this->belongsToMany(Role::class)->withTimestamps();
-    }
-
-    /**
-     * Vérifier si l'utilisateur a un rôle spécifique
-     */
-    public function hasRole(string $role): bool
-    {
-        return $this->roles->contains('name', $role);
-    }
-
-    /**
-     * Vérifier si l'utilisateur a au moins un des rôles spécifiés
-     */
-    public function hasAnyRole(array $roles): bool
-    {
-        return $this->roles->whereIn('name', $roles)->isNotEmpty();
-    }
-
-    /**
-     * Vérifier si l'utilisateur a une permission spécifique
-     */
-    public function hasPermissionTo(string $permission): bool
-    {
-        return $this->roles->pluck('permissions')->flatten()->contains('name', $permission);
+        return $this->hasRole('super admin');
     }
 
     /**
@@ -85,9 +63,19 @@ class User extends Authenticatable
      */
     public function canModerate(): bool
     {
-        // Utiliser Spatie Laravel Permission
-        return $this->hasPermissionTo('moderate_content') || 
-               $this->hasAnyRole(['super-admin', 'admin', 'moderator']);
+        // Super admin a tous les droits
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+        
+        // Utiliser Spatie Laravel Permission pour vérifier les permissions de modération
+        return $this->hasAnyPermission([
+            'moderate publications',
+            'moderate actualites', 
+            'moderate evenements',
+            'moderate services',
+            'moderate_projet'
+        ]) || $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'gestionnaire_projets']);
     }
 
     /**
@@ -95,8 +83,13 @@ class User extends Authenticatable
      */
     public function canAccessAdmin(): bool
     {
-        return $this->hasPermissionTo('view_admin') ||
-               $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'editor', 'contributor']);
+        // Super admin a accès complet
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+        
+        return $this->hasPermissionTo('view_admin_dashboard') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'editor', 'contributor', 'gestionnaire_projets']);
     }
 
     /**
@@ -104,29 +97,125 @@ class User extends Authenticatable
      */
     public function canManageUsers(): bool
     {
-        return $this->hasPermissionTo('manage_users') ||
+        // Super admin a tous les droits
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+        
+        return $this->hasPermissionTo('manage users') ||
                $this->hasAnyRole(['super-admin', 'admin']);
     }
 
     /**
-     * Assigner un rôle à l'utilisateur
+     * Permissions pour les projets
      */
-    public function assignRole(string $role): void
+    public function canViewProjets(): bool
     {
-        $roleModel = Role::where('name', $role)->first();
-        if ($roleModel && !$this->hasRole($role)) {
-            $this->roles()->attach($roleModel);
-        }
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('view_projets') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'gestionnaire_projets']);
+    }
+
+    public function canCreateProjets(): bool
+    {
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('create_projet') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'gestionnaire_projets']);
+    }
+
+    public function canUpdateProjets(): bool
+    {
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('update_projet') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'gestionnaire_projets']);
+    }
+
+    public function canDeleteProjets(): bool
+    {
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('delete_projet') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'gestionnaire_projets']);
+    }
+
+    public function canModerateProjets(): bool
+    {
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('moderate_projet') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'gestionnaire_projets']);
     }
 
     /**
-     * Retirer un rôle de l'utilisateur
+     * Permissions pour les actualités
      */
-    public function removeRole(string $role): void
+    public function canViewActualites(): bool
     {
-        $roleModel = Role::where('name', $role)->first();
-        if ($roleModel && $this->hasRole($role)) {
-            $this->roles()->detach($roleModel);
-        }
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('view actualites') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'editor', 'contributor', 'gestionnaire_projets']);
+    }
+
+    public function canCreateActualites(): bool
+    {
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('create actualites') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'editor', 'contributor', 'gestionnaire_projets']);
+    }
+
+    public function canUpdateActualites(): bool
+    {
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('update actualites') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'gestionnaire_projets']);
+    }
+
+    public function canDeleteActualites(): bool
+    {
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('delete actualites') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'gestionnaire_projets']);
+    }
+
+    /**
+     * Permissions pour les services
+     */
+    public function canViewServices(): bool
+    {
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('view services') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'editor', 'contributor']);
+    }
+
+    public function canCreateServices(): bool
+    {
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('create services') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'editor', 'contributor']);
+    }
+
+    public function canUpdateServices(): bool
+    {
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('update services') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'moderator']);
+    }
+
+    public function canDeleteServices(): bool
+    {
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('delete services') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'moderator']);
     }
 }

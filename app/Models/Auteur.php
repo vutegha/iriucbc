@@ -9,7 +9,7 @@ class Auteur extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nom', 'email', 'biographie', 'photo'];
+    protected $fillable = ['nom', 'prenom', 'email', 'institution', 'biographie', 'photo'];
 
     public static $rules = [
         'nom' => 'required|string|max:255',

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test du calcul des bénéficiaires</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 200px; }
+        .total { background-color: #f0f0f0; }
+        .result { margin-top: 20px; padding: 10px; background-color: #e8f5e8; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Test du calcul automatique des bénéficiaires</h1>
+    
+    <div class="form-group">
+        <label for="beneficiaires_hommes">Nombre d'hommes :</label>
+        <input type="number" id="beneficiaires_hommes" value="0" min="0">
+    </div>
+    
+    <div class="form-group">
+        <label for="beneficiaires_femmes">Nombre de femmes :</label>
+        <input type="number" id="beneficiaires_femmes" value="0" min="0">
+    </div>
+    
+    <div class="form-group">
+        <label for="beneficiaires_enfants">Nombre d'enfants :</label>
+        <input type="number" id="beneficiaires_enfants" value="0" min="0">
+    </div>
+    
+    <div class="form-group">
+        <label for="beneficiaires_total">Total des bénéficiaires :</label>
+        <input type="number" id="beneficiaires_total" value="0" min="0" class="total" readonly>
+    </div>
+    
+    <div class="result">
+        <strong>Résultat du calcul :</strong> <span id="calculation-result">0</span>
+    </div>
+
+    <script>
+        // Calcul automatique du total des bénéficiaires
+        function calculateBeneficiariesTotal() {
+            const hommes = parseInt(document.getElementById('beneficiaires_hommes')?.value || 0);
+            const femmes = parseInt(document.getElementById('beneficiaires_femmes')?.value || 0);
+            const enfants = parseInt(document.getElementById('beneficiaires_enfants')?.value || 0);
+            
+            const total = hommes + femmes + enfants;
+            
+            const totalField = document.getElementById('beneficiaires_total');
+            if (totalField) {
+                totalField.value = total;
+            }
+            
+            // Afficher aussi dans le résultat
+            document.getElementById('calculation-result').textContent = 
+                `${hommes} + ${femmes} + ${enfants} = ${total}`;
+        }
+        
+        // Ajouter les écouteurs d'événements pour le calcul automatique
+        const beneficiaryFields = ['beneficiaires_hommes', 'beneficiaires_femmes', 'beneficiaires_enfants'];
+        beneficiaryFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.addEventListener('input', calculateBeneficiariesTotal);
+                field.addEventListener('change', calculateBeneficiariesTotal);
+            }
+        });
+        
+        // Calculer le total initial
+        calculateBeneficiariesTotal();
+    </script>
+</body>
+</html>

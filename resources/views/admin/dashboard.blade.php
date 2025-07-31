@@ -169,7 +169,7 @@
                 <i class="fas fa-envelope text-blue-600 mr-2"></i>
                 Messages
             </h3>
-            @php $unreadCount = optional(\App\Models\Contact::where('is_read', false))->count() ?? 0; @endphp
+            @php $unreadCount = optional(\App\Models\Contact::where('statut', 'nouveau'))->count() ?? 0; @endphp
             @if($unreadCount > 0)
                 <div class="text-center p-4 bg-red-50 rounded-lg">
                     <div class="text-2xl font-bold text-red-600">{{ $unreadCount }}</div>
@@ -205,12 +205,26 @@
             </div>
             <div class="ml-4">
                 <p class="text-sm font-medium text-gray-500">Vues totales</p>
-                <p class="text-2xl font-semibold text-gray-900">{{ \App\Models\PageView::count() }}</p>
+                <p class="text-2xl font-semibold text-gray-900">
+                    @php
+                        try {
+                            echo \App\Models\PageView::count();
+                        } catch (\Exception $e) {
+                            echo '0';
+                        }
+                    @endphp
+                </p>
             </div>
         </div>
         <div class="mt-4 flex items-center text-sm">
             <span class="text-blue-600 font-medium">
-                {{ \App\Models\PageView::getTodayViews() }}
+                @php
+                    try {
+                        echo \App\Models\PageView::getTodayViews();
+                    } catch (\Exception $e) {
+                        echo '0';
+                    }
+                @endphp
             </span>
             <span class="text-gray-500 ml-1">aujourd'hui</span>
         </div>
@@ -226,12 +240,26 @@
             </div>
             <div class="ml-4">
                 <p class="text-sm font-medium text-gray-500">Téléchargements</p>
-                <p class="text-2xl font-semibold text-gray-900">{{ \App\Models\PublicationDownload::getTotalDownloads() }}</p>
+                <p class="text-2xl font-semibold text-gray-900">
+                    @php
+                        try {
+                            echo \App\Models\PublicationDownload::getTotalDownloads();
+                        } catch (\Exception $e) {
+                            echo '0';
+                        }
+                    @endphp
+                </p>
             </div>
         </div>
         <div class="mt-4 flex items-center text-sm">
             <span class="text-green-600 font-medium">
-                +{{ \App\Models\PublicationDownload::getMonthDownloads() }}
+                +@php
+                    try {
+                        echo \App\Models\PublicationDownload::getMonthDownloads();
+                    } catch (\Exception $e) {
+                        echo '0';
+                    }
+                @endphp
             </span>
             <span class="text-gray-500 ml-1">ce mois</span>
         </div>
@@ -247,12 +275,26 @@
             </div>
             <div class="ml-4">
                 <p class="text-sm font-medium text-gray-500">Visiteurs uniques</p>
-                <p class="text-2xl font-semibold text-gray-900">{{ \App\Models\VisitorLocation::getTotalUniqueVisitors() }}</p>
+                <p class="text-2xl font-semibold text-gray-900">
+                    @php
+                        try {
+                            echo \App\Models\VisitorLocation::getTotalUniqueVisitors();
+                        } catch (\Exception $e) {
+                            echo '0';
+                        }
+                    @endphp
+                </p>
             </div>
         </div>
         <div class="mt-4 flex items-center text-sm">
             <span class="text-green-600 font-medium">
-                +{{ \App\Models\VisitorLocation::getNewVisitorsThisMonth() }}
+                +@php
+                    try {
+                        echo \App\Models\VisitorLocation::getNewVisitorsThisMonth();
+                    } catch (\Exception $e) {
+                        echo '0';
+                    }
+                @endphp
             </span>
             <span class="text-gray-500 ml-1">ce mois</span>
         </div>
@@ -261,7 +303,7 @@
 </div>
 
 <!-- Alertes en temps réel -->
-@if(optional(\App\Models\Contact::where('is_read', false))->count() > 0)
+@if(optional(\App\Models\Contact::where('statut', 'nouveau'))->count() > 0)
 <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
     <div class="flex">
         <div class="flex-shrink-0">
@@ -269,7 +311,7 @@
         </div>
         <div class="ml-3 flex-1">
             <p class="text-sm text-yellow-700">
-                <strong>{{ optional(\App\Models\Contact::where('is_read', false))->count() ?? 0 }}</strong> nouveau(x) message(s) non lu(s) dans votre messagerie.
+                <strong>{{ optional(\App\Models\Contact::where('statut', 'nouveau'))->count() ?? 0 }}</strong> nouveau(x) message(s) non lu(s) dans votre messagerie.
             </p>
         </div>
         <div class="ml-3">
@@ -427,6 +469,35 @@
                     <span class="text-sm font-medium text-gray-700">Newsletter</span>
                 </a>
             </div>
+            
+            <!-- Outils d'administration -->
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Outils d'administration</h4>
+                <div class="flex flex-wrap gap-2">
+                    @can('viewAny', App\Models\User::class)
+                        <a href="{{ route('admin.email-test.index') }}" 
+                           class="inline-flex items-center px-3 py-2 text-xs font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors">
+                            <i class="fas fa-envelope-open-text mr-2"></i>
+                            Test Email
+                        </a>
+                        <a href="{{ route('admin.email-settings.index') }}" 
+                           class="inline-flex items-center px-3 py-2 text-xs font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition-colors">
+                            <i class="fas fa-cog mr-2"></i>
+                            Config Emails
+                        </a>
+                        <a href="{{ route('admin.users.index') }}" 
+                           class="inline-flex items-center px-3 py-2 text-xs font-medium text-purple-700 bg-purple-100 rounded-lg hover:bg-purple-200 transition-colors">
+                            <i class="fas fa-users mr-2"></i>
+                            Utilisateurs
+                        </a>
+                    @endcan
+                    <a href="{{ route('admin.contacts.index') }}" 
+                       class="inline-flex items-center px-3 py-2 text-xs font-medium text-orange-700 bg-orange-100 rounded-lg hover:bg-orange-200 transition-colors">
+                        <i class="fas fa-inbox mr-2"></i>
+                        Messages
+                    </a>
+                </div>
+            </div>
         </div>
 
         <!-- Messages récents -->
@@ -447,25 +518,25 @@
                 @php $recentMessages = \App\Models\Contact::latest()->limit(5)->get(); @endphp
                 
                 @forelse($recentMessages as $message)
-                <div class="p-4 hover:bg-gray-50 {{ !$message->is_read ? 'bg-blue-50' : '' }}">
+                <div class="p-4 hover:bg-gray-50 {{ $message->statut == 'nouveau' ? 'bg-blue-50' : '' }}">
                     <div class="flex items-start space-x-3">
                         <div class="flex-shrink-0">
                             <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                                 <span class="text-xs font-medium text-blue-600">
-                                    {{ strtoupper(substr($message->name, 0, 1)) }}
+                                    {{ strtoupper(substr($message->nom, 0, 1)) }}
                                 </span>
                             </div>
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between">
-                                <p class="text-sm font-medium text-gray-900 truncate">{{ $message->name }}</p>
-                                @if(!$message->is_read)
+                                <p class="text-sm font-medium text-gray-900 truncate">{{ $message->nom }}</p>
+                                @if($message->statut == 'nouveau')
                                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                         Non lu
                                     </span>
                                 @endif
                             </div>
-                            <p class="text-xs text-gray-500 truncate">{{ $message->subject }}</p>
+                            <p class="text-xs text-gray-500 truncate">{{ $message->sujet }}</p>
                             <p class="text-xs text-gray-400">{{ $message->created_at->diffForHumans() }}</p>
                         </div>
                         <div class="flex-shrink-0">
@@ -501,7 +572,14 @@
             </h3>
         </div>
         <div class="divide-y divide-gray-200 max-h-64 overflow-y-auto">
-            @forelse(\App\Models\PageView::getMostViewedPages() as $page)
+            @php
+                try {
+                    $mostViewedPages = \App\Models\PageView::getMostViewedPages();
+                } catch (\Exception $e) {
+                    $mostViewedPages = collect();
+                }
+            @endphp
+            @forelse($mostViewedPages as $page)
             <div class="p-4">
                 <div class="flex items-center justify-between">
                     <div class="flex-1 min-w-0">
@@ -535,7 +613,14 @@
             </h3>
         </div>
         <div class="divide-y divide-gray-200 max-h-64 overflow-y-auto">
-            @forelse(\App\Models\PublicationDownload::getMostDownloadedPublications() as $publication)
+            @php
+                try {
+                    $mostDownloadedPublications = \App\Models\PublicationDownload::getMostDownloadedPublications();
+                } catch (\Exception $e) {
+                    $mostDownloadedPublications = collect();
+                }
+            @endphp
+            @forelse($mostDownloadedPublications as $publication)
             <div class="p-4">
                 <div class="flex items-center justify-between">
                     <div class="flex-1 min-w-0">
@@ -569,7 +654,14 @@
             </h3>
         </div>
         <div class="divide-y divide-gray-200 max-h-64 overflow-y-auto">
-            @forelse(\App\Models\VisitorLocation::getTopCountries() as $country)
+            @php
+                try {
+                    $topCountries = \App\Models\VisitorLocation::getTopCountries();
+                } catch (\Exception $e) {
+                    $topCountries = collect();
+                }
+            @endphp
+            @forelse($topCountries as $country)
             <div class="p-4">
                 <div class="flex items-center justify-between">
                     <div class="flex-1 min-w-0">

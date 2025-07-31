@@ -21,7 +21,7 @@
     </div>
 @endif
         @php
-        $formAction = route('admin.projets.update', $projet->id);
+        $formAction = route('admin.projets.update', $projet);
         @endphp
         @include('admin.projets._form', ['projet' => $projet])
 </div>

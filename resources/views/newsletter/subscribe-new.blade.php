@@ -151,7 +151,7 @@
                                        class="w-5 h-5 text-coral bg-gray-100 border-gray-300 rounded focus:ring-coral focus:ring-2 mt-0.5">
                                 <div class="ml-3">
                                     <div class="text-sm text-gray-700">
-                                        J'accepte de recevoir des emails de l'Institut de Recherche Interdisciplinaire de l'Université Catholique de Bukavu et je comprends que je peux me désabonner à tout moment.
+                                        J'accepte de recevoir des emails de l'Institut de Recherche Intégré à l'Université Chrétienne Bilingue du Congo et je comprends que je peux me désabonner à tout moment.
                                     </div>
                                 </div>
                             </label>

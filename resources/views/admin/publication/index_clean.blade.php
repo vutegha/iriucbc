@@ -4,21 +4,12 @@
 @section('subtitle', 'Gestion des publications scientifiques')
 
 @section('breadcrumbs')
-<nav class="text-sm" aria-label="Breadcrumb">
-    <ol class="inline-flex items-center space-x-1 md:space-x-3">
-        <li class="inline-flex items-center">
-            <a href="{{ route('admin.dashboard') }}" class="text-white/70 hover:text-white transition-colors duration-200">
-                <i class="bi bi-speedometer2 mr-2"></i>Dashboard
-            </a>
-        </li>
-        <li aria-current="page">
-            <div class="flex items-center">
-                <i class="bi bi-chevron-right mx-2 text-white/50"></i>
-                <span class="text-white font-medium">Publications</span>
-            </div>
-        </li>
-    </ol>
-</nav>
+    <li aria-current="page">
+        <div class="flex items-center">
+            <i class="fas fa-chevron-right mx-2 text-iri-gray/50"></i>
+            <span class="text-iri-primary font-medium">Publications</span>
+        </div>
+    </li>
 @endsection
 
 @section('content')

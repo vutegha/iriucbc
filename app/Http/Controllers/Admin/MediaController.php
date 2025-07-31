@@ -113,6 +113,66 @@ public function destroy(Media $media)
     }
 }
 
+/**
+ * Liste les médias pour CKEditor (format JSON)
+ */
+public function list()
+{
+    $medias = Media::where('type', 'image')
+                   ->orWhere('medias', 'like', '%.jpg')
+                   ->orWhere('medias', 'like', '%.jpeg')
+                   ->orWhere('medias', 'like', '%.png')
+                   ->orWhere('medias', 'like', '%.gif')
+                   ->orWhere('medias', 'like', '%.webp')
+                   ->latest()
+                   ->get()
+                   ->map(function ($media) {
+                       return [
+                           'id' => $media->id,
+                           'url' => asset('storage/' . $media->medias),
+                           'name' => $media->titre ?: basename($media->medias),
+                           'alt' => $media->titre ?: 'Image'
+                       ];
+                   });
+
+    return response()->json($medias);
+}
+
+/**
+ * Upload d'image pour CKEditor
+ */
+public function upload(Request $request)
+{
+    $request->validate([
+        'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240'
+    ]);
+
+    try {
+        $file = $request->file('image');
+        $path = $file->store('assets/media', 'public');
+        
+        // Créer l'entrée en base
+        $media = Media::create([
+            'type' => 'image',
+            'titre' => $file->getClientOriginalName(),
+            'medias' => $path,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'id' => $media->id,
+            'url' => asset('storage/' . $path),
+            'name' => $file->getClientOriginalName(),
+            'message' => 'Image uploadée avec succès'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de l\'upload : ' . $e->getMessage()
+        ], 500);
+    }
+}
+
 
 
 }

@@ -1,57 +1,51 @@
 ﻿@extends('layouts.admin')
 
+@section('title', 'IRI UCBC | Nouvelle Actualité')
+
 @section('breadcrumbs')
-<nav class="text-sm" aria-label="Breadcrumb">
-    <ol class="inline-flex items-center space-x-1 md:space-x-3">
-        <li class="inline-flex items-center">
-            <a href="{{ route('admin.dashboard') }}" class="text-white/70 hover:text-white">
-                <i class="fas fa-home mr-2"></i>Tableau de bord
-            </a>
-        </li>
-        <li>
-            <div class="flex items-center">
-                <i class="fas fa-chevron-right mx-2 text-white/50"></i>
-                <a href="{{ route('admin.actualite.index') }}" class="text-white/70 hover:text-white">actualite</a>
-            </div>
-        </li>
-        <li aria-current="page">
-            <div class="flex items-center">
-                <i class="fas fa-chevron-right mx-2 text-white/50"></i>
-                <span class="text-white">Nouveau</span>
-            </div>
-        </li>
-    </ol>
-</nav>
+    <li>
+        <div class="flex items-center">
+            <i class="fas fa-chevron-right mx-2 text-iri-gray/50"></i>
+            <a href="{{ route('admin.actualite.index') }}" class="text-iri-gray hover:text-iri-primary transition-colors duration-200">Actualités</a>
+        </div>
+    </li>
+    <li aria-current="page">
+        <div class="flex items-center">
+            <i class="fas fa-chevron-right mx-2 text-iri-gray/50"></i>
+            <span class="text-iri-primary font-medium">Nouveau</span>
+        </div>
+    </li>
 @endsection
 
 @section('content')
-@section('title', 'IRI UCBC | Nouvelle ActualitÃ©')
-
-
-<div class="max-w-4xl mx-auto mt-10 bg-white p-6 rounded-xl shadow-md">
-    <h2 class="text-xl font-semibold mb-4">Create - actualites</h2>
-    @if ($errors->any())
-    <div class="mb-6 rounded-lg bg-red-100 border border-red-400 text-red-700 px-4 py-3">
-        <strong class="font-semibold">Une erreur est survenue :</strong>
-        <ul class="mt-2 list-disc list-inside text-sm">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-
-@if (session('alert'))
+<div class="max-w-4xl mx-auto p-6">
     <div class="mb-6">
-        {!! session('alert') !!}
+        <h1 class="text-2xl font-semibold text-gray-900">Créer une actualité</h1>
+        <p class="text-gray-600 mt-1">Ajoutez une nouvelle actualité à votre site</p>
     </div>
-@endif
-    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
-    <h1 class="text-2xl font-semibold text-gray-800 mb-6">CrÃ©er une actualitÃ©</h1>
-    <form action="{{ route('admin.actualite.store') }}" method="POST" enctype="multipart/form-data">
-        @include('admin.actualite._form')
-    </form>
-</div>
+
+    @if ($errors->any())
+        <div class="mb-6 rounded-lg bg-red-100 border border-red-400 text-red-700 px-4 py-3">
+            <strong class="font-semibold">Une erreur est survenue :</strong>
+            <ul class="mt-2 list-disc list-inside text-sm">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if (session('alert'))
+        <div class="mb-6">
+            {!! session('alert') !!}
+        </div>
+    @endif
+
+    @php
+        $formAction = route('admin.actualite.store');
+    @endphp
+    
+    @include('admin.actualite._form')
 </div>
 @endsection
 

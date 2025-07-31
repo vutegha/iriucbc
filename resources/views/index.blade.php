@@ -154,9 +154,10 @@
                                 
                                 <!-- Contenu -->
                                 <div class="p-5">
-                                    <p class="text-gray-600 text-sm leading-relaxed line-clamp-3 group-hover:text-gray-700 transition-colors duration-300">
-                                        {{ Str::limit($service->description, 100) }}
-                                    </p>
+                                    <x-rich-text-excerpt 
+                                        :content="$service->description"
+                                        :limit="100"
+                                        class="text-gray-600 text-sm leading-relaxed line-clamp-3 group-hover:text-gray-700 transition-colors duration-300" />
                                     
                                     <!-- Action indicator modernisé -->
                                     <div class="flex items-center justify-between mt-4">
@@ -473,8 +474,14 @@
                         <div class="space-y-4 mb-8">
                             @forelse($evenements as $evenement)
                                 <div class="bg-gray-50 rounded-lg p-4 relative">
-                                    <!-- Badge distinctif pour événements passés -->
-                                    @if($evenement->est_passe)
+                                    <!-- Badge distinctif pour événements en vedette -->
+                                    @if($evenement->en_vedette)
+                                        <div class="absolute top-2 right-2">
+                                            <span class="bg-gradient-to-r from-iri-gold to-iri-accent text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
+                                                ⭐ En vedette
+                                            </span>
+                                        </div>
+                                    @elseif($evenement->est_passe)
                                         <div class="absolute top-2 right-2">
                                             <span class="bg-gray-400 text-white text-xs font-bold px-2 py-1 rounded-full">
                                                 Passé
@@ -489,20 +496,20 @@
                                     @endif
                                     
                                     <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 {{ $evenement->est_passe ? 'bg-gray-400' : 'bg-iri-primary' }} rounded-lg flex items-center justify-center text-white">
+                                        <div class="w-10 h-10 {{ $evenement->en_vedette ? 'bg-gradient-to-r from-iri-gold to-iri-accent' : ($evenement->est_passe ? 'bg-gray-400' : 'bg-iri-primary') }} rounded-lg flex items-center justify-center text-white">
                                             <span class="text-xs font-bold">
-                                                {{ \Carbon\Carbon::parse($evenement->date_debut)->format('M') }}
+                                                {{ \Carbon\Carbon::parse($evenement->date_evenement)->format('M') }}
                                             </span>
                                         </div>
                                         <div class="flex-1 pr-12">
-                                            <h4 class="font-semibold text-sm {{ $evenement->est_passe ? 'text-gray-600' : 'text-gray-900' }} drop-shadow-sm">
-                                                <a href="{{ route('site.evenement.show', $evenement->id) }}" 
+                                            <h4 class="font-semibold text-sm {{ $evenement->est_passe ? 'text-gray-600' : 'text-gray-900' }} drop-shadow-sm {{ $evenement->en_vedette ? 'text-iri-primary font-bold' : '' }}">
+                                                <a href="{{ route('site.evenement.show', $evenement->slug) }}" 
                                                    class="hover:text-iri-accent transition-colors duration-200 hover:underline">
                                                     {{ $evenement->titre }}
                                                 </a>
                                             </h4>
                                             <p class="text-xs text-gray-500 drop-shadow-sm">
-                                                {{ \Carbon\Carbon::parse($evenement->date_debut)->format('d M Y') }}
+                                                {{ \Carbon\Carbon::parse($evenement->date_evenement)->format('d M Y') }}
                                                 @if($evenement->lieu)
                                                     • {{ $evenement->lieu }}
                                                 @endif

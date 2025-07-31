@@ -10,262 +10,355 @@ use App\Http\Controllers\Admin\RapportController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\ProjetController;
 use App\Http\Controllers\Admin\EvenementController;
+use App\Http\Controllers\Admin\EmailTestController;
 use App\Http\Controllers\Site\SiteController;
 use App\Http\Controllers\NewsletterController as PublicNewsletterController;
 use App\Http\Controllers\Admin\JobOfferController;
 use App\Http\Controllers\Admin\JobApplicationController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\DashboardController;
 
+// ====================================================================
+// ROUTES D'AUTHENTIFICATION (STANDARDS LARAVEL)
+// ====================================================================
 
+// Routes guest (authentification) - URLs standard Laravel
+Route::middleware(['guest'])->group(function () {
+    // Connexion
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    
+    // Inscription
+    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+    Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+    
+    // Réinitialisation de mot de passe
+    Route::get('/password/reset', [AuthController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/password/email', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('/password/reset/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/password/reset', [AuthController::class, 'reset'])->name('password.update');
+});
+
+// Route de déconnexion (utilisateurs authentifiés) - Reste dans l'espace admin
+Route::middleware(['auth'])->group(function () {
+    Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
+});
+
+// ====================================================================
+// ROUTES FRONTEND (PUBLIQUES - SANS AUTHENTIFICATION)
+// ====================================================================
+
+// Routes principales du site public
 Route::get('/', [SiteController::class, 'index'])->name('site.home');
 Route::get('/galerie', [SiteController::class, 'galerie'])->name('site.galerie');
+
+// Services
 Route::get('/service', [SiteController::class, 'services'])->name('site.services');
 Route::get('/service/{slug}', [SiteController::class, 'serviceshow'])->name('site.service.show');
 Route::get('/service/{slug}/projets', [SiteController::class, 'serviceProjects'])->name('site.service.projets');
 Route::get('/service/{slug}/actualites', [SiteController::class, 'serviceActualites'])->name('site.service.actualites');
+
+// Projets
 Route::get('/projets', [SiteController::class, 'projets'])->name('site.projets');
 Route::get('/projet/{slug}', [SiteController::class, 'projetShow'])->name('site.projet.show');
+
+// Publications
 Route::get('/publications', [SiteController::class, 'publications'])->name('site.publications');
 Route::get('/publications/{slug}', [SiteController::class, 'publicationShow'])->name('publication.show');
+Route::get('/convert-image/{publication}', [SiteController::class, 'convertirImageUnique'])->name('publications.convert.single');
+
+// Actualités
 Route::get('/actualites', [SiteController::class, 'actualites'])->name('site.actualites');
-Route::get('/convert', [SiteController::class, 'convertirImage'])->name('site.convert');
 Route::get('/actualite/{slug}', [SiteController::class, 'actualiteShow'])->name('site.actualite.show');
 Route::get('/actualite-id/{id}', [SiteController::class, 'actualiteShowById'])->name('site.actualite.id');
-Route::get('/evenement/{id}', [SiteController::class, 'evenementShow'])->name('site.evenement.show');
+
+// Événements
+Route::get('/evenements', [SiteController::class, 'evenements'])->name('site.evenements');
+Route::get('/evenement/{slug}', [SiteController::class, 'evenementShow'])->name('site.evenement.show');
+
+// Contact
 Route::get('/contact', [SiteController::class, 'contact'])->name('site.contact');
 Route::post('/contact', [SiteController::class, 'storeContact'])->name('site.contact.store');
+
+// Travaillez avec nous et emploi (redirections)
 Route::get('/work-with-us', [SiteController::class, 'workWithUs'])->name('site.work-with-us');
-Route::get('/travaillez-avec-nous', [SiteController::class, 'workWithUs'])->name('site.work-with-us');
-Route::get('/travailler avec nous', function() {
-    return redirect()->route('site.work-with-us');
-});
-Route::get('/travaillez avec nous', function() {
-    return redirect()->route('site.work-with-us');
-});
-Route::get('/travailler-avec-nous', function() {
-    return redirect()->route('site.work-with-us');
-});
-Route::get('/emploi', function() {
-    return redirect()->route('site.work-with-us');
-});
-Route::get('/emplois', function() {
-    return redirect()->route('site.work-with-us');
-});
-Route::get('/carriere', function() {
-    return redirect()->route('site.work-with-us');
-});
-Route::get('/carrieres', function() {
-    return redirect()->route('site.work-with-us');
-});
-Route::get('/partenariats', [SiteController::class, 'partenariats'])->name('site.partenariats');
+Route::get('/travaillez-avec-nous', [SiteController::class, 'workWithUs']);
+Route::get('/travailler avec nous', fn() => redirect()->route('site.work-with-us'));
+Route::get('/travaillez avec nous', fn() => redirect()->route('site.work-with-us'));
+Route::get('/travailler-avec-nous', fn() => redirect()->route('site.work-with-us'));
+Route::get('/emploi', fn() => redirect()->route('site.work-with-us'));
+Route::get('/emplois', fn() => redirect()->route('site.work-with-us'));
+Route::get('/carriere', fn() => redirect()->route('site.work-with-us'));
+Route::get('/carrieres', fn() => redirect()->route('site.work-with-us'));
+
+// Candidatures d'emploi
 Route::get('/jobs/{job}/apply', [SiteController::class, 'showJobApplication'])->name('site.job.apply');
 Route::post('/jobs/{job}/apply', [SiteController::class, 'submitJobApplication'])->name('site.job.apply.submit');
 Route::get('/jobs/{job}/download', [SiteController::class, 'downloadJobDocument'])->name('site.job.download');
-Route::post('/newsletter-subscribe', [SiteController::class, 'subscribeNewsletter'])->name('site.newsletter.subscribe');
+
+// Autres pages
+Route::get('/partenariats', [SiteController::class, 'partenariats'])->name('site.partenariats');
 Route::get('/recherche', [SiteController::class, 'search'])->name('site.search');
-Route::get('/convert-image/{publication}', [SiteController::class, 'convertirImageUnique'])->name('publications.convert.single');
+Route::get('/convert', [SiteController::class, 'convertirImage'])->name('site.convert');
 
+// Newsletter publique
+Route::post('/newsletter-subscribe', [SiteController::class, 'subscribeNewsletter'])->name('site.newsletter.subscribe');
 
+// Routes Newsletter publiques détaillées
+Route::prefix('newsletter')->name('newsletter.')->group(function () {
+    Route::get('/subscribe', fn() => view('newsletter.subscribe'))->name('subscribe');
+    Route::post('/subscribe', [PublicNewsletterController::class, 'subscribe'])->name('subscribe.post');
+    Route::get('/preferences/{token}', [PublicNewsletterController::class, 'preferences'])->name('preferences');
+    Route::put('/preferences/{token}', [PublicNewsletterController::class, 'updatePreferences'])->name('preferences.update');
+    Route::get('/unsubscribe/{token}', [PublicNewsletterController::class, 'unsubscribe'])->name('unsubscribe');
+    Route::post('/unsubscribe/{token}', [PublicNewsletterController::class, 'confirmUnsubscribe'])->name('unsubscribe.confirm');
+    Route::get('/resubscribe/{token}', [PublicNewsletterController::class, 'resubscribe'])->name('resubscribe');
+});
 
-// route backend
+// ====================================================================
+// ROUTES ADMIN (PROTÉGÉES PAR AUTHENTIFICATION)
+// ====================================================================
 
-
-// Groupe d'administration (facultatif à adapter selon tes middleware ou préfixes)
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    // Dashboard principal
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
-
-
-    // Actualite
-    Route::get('/actualite', [ActualiteController::class, 'index'])->name('actualite.index');
-    Route::get('/actualite/create', [ActualiteController::class, 'create'])->name('actualite.create');
-    Route::post('/actualite', [ActualiteController::class, 'store'])->name('actualite.store');
-    // Route::get('/actualite/{id}/edit', [ActualiteController::class, 'edit'])->name('actualite.edit');
-    Route::get('/actualite/{actualite}/edit', [ActualiteController::class, 'edit'])->name('actualite.edit');
-
-    // Route::put('/actualite/{id}', [ActualiteController::class, 'update'])->name('actualite.update');
-    Route::put('/actualite/{actualite}', [ActualiteController::class, 'update'])->name('actualite.update');
-
-    Route::delete('/actualite/{actualite}', [ActualiteController::class, 'destroy'])->name('actualite.destroy');
-    // Route::put('/actualite/{id}/updatefeatures', [ActualiteController::class, 'updateFeatures'])->name('actualite.updatefeatures');
-    Route::put('/actualite/{actualite}/updatefeatures', [ActualiteController::class, 'updateFeatures'])->name('actualite.updatefeatures');
-    Route::get('/actualite/{id}/show', [ActualiteController::class, 'show'])->name('actualite.show');
-    Route::post('/actualite/{actualite}/toggle-une', [ActualiteController::class, 'toggleUne'])->name('actualite.toggle-une');
-    
-    // Routes de modération pour actualités
-    Route::post('/actualite/{actualite}/publish', [ActualiteController::class, 'publish'])->name('actualite.publish');
-    Route::post('/actualite/{actualite}/unpublish', [ActualiteController::class, 'unpublish'])->name('actualite.unpublish');
-    Route::get('/actualite/pending-moderation', [ActualiteController::class, 'pendingModeration'])->name('actualite.pending');
-
-    // publication
-    Route::get('/publication', [PublicationController::class, 'index'])->name('publication.index');
-    Route::get('/publication/create', [PublicationController::class, 'create'])->name('publication.create');
-    Route::post('/publication', [PublicationController::class, 'store'])->name('publication.store');
-    // Route::get('/publication/{id}/edit', [PublicationController::class, 'edit'])->name('publication.edit');
-    Route::get('/publication/{publication}/edit', [PublicationController::class, 'edit'])->name('publication.edit');
-
-    // Route::put('/publication/{id}', [PublicationController::class, 'update'])->name('publication.update');
-    Route::put('/publication/{publication}', [PublicationController::class, 'update'])->name('publication.update');
-
-    Route::delete('/publication/{publication}', [PublicationController::class, 'destroy'])->name('publication.destroy');
-    // Route::put('/publication/{id}/updatefeatures', [PublicationController::class, 'updateFeatures'])->name('publication.updatefeatures');
-    Route::put('/publication/{publication}/updatefeatures', [PublicationController::class, 'updateFeatures'])->name('publication.updatefeatures');
-    Route::get('/publication/{id}/show', [PublicationController::class, 'show'])->name('publication.show');
-    Route::post('/publication/{publication}/toggle-une', [PublicationController::class, 'toggleUne'])->name('publication.toggle-une');
-    
-    // Routes de modération pour publications (protégées)
-    Route::middleware(['can_moderate'])->group(function () {
-        Route::post('/publication/{publication}/publish', [PublicationController::class, 'publish'])->name('publication.publish');
-        Route::post('/publication/{publication}/unpublish', [PublicationController::class, 'unpublish'])->name('publication.unpublish');
-        Route::get('/publication/pending-moderation', [PublicationController::class, 'pendingModeration'])->name('publication.pending');
+    // Test d'email (admin seulement)
+    Route::middleware(['can:viewAny,App\Models\User'])->prefix('email-test')->name('email-test.')->group(function () {
+        Route::get('/', [EmailTestController::class, 'index'])->name('index');
+        Route::post('/send', [EmailTestController::class, 'send'])->name('send');
+        Route::post('/connection', [EmailTestController::class, 'testConnection'])->name('connection');
     });
     
-    // Auteur
-    Route::get('/auteur', [AuteurController::class, 'index'])->name('auteur.index');
-    Route::get('/auteur/create', [AuteurController::class, 'create'])->name('auteur.create');
-    Route::post('/auteur', [AuteurController::class, 'store'])->name('auteur.store');
-    Route::get('/auteur/{auteur}/edit', [AuteurController::class, 'edit'])->name('auteur.edit');
-    Route::put('/auteur/{auteur}', [AuteurController::class, 'update'])->name('auteur.update');
-    Route::delete('/auteur/{auteur}', [AuteurController::class, 'destroy'])->name('auteur.destroy');
-    Route::get('/auteur/{auteur}/show', [AuteurController::class, 'show'])->name('auteur.show');
+    // Gestion des utilisateurs (admin seulement)
+    Route::middleware(['can:manage users'])->prefix('users')->name('users.')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::get('/create', [UserController::class, 'create'])->name('create');
+        Route::post('/', [UserController::class, 'store'])->name('store');
+        Route::get('/{user}', [UserController::class, 'show'])->name('show');
+        Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
+        Route::put('/{user}', [UserController::class, 'update'])->name('update');
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
+        Route::get('/{user}/permissions', [UserController::class, 'managePermissions'])->name('manage-permissions');
+        Route::put('/{user}/permissions', [UserController::class, 'updatePermissions'])->name('update-permissions');
+    });
 
-    // Service
-    Route::get('/service', [ServiceController::class, 'index'])->name('service.index');
-    Route::get('/service/create', [ServiceController::class, 'create'])->name('service.create');
-    Route::post('/service', [ServiceController::class, 'store'])->name('service.store');
-    Route::get('/service/{service}/show', [ServiceController::class, 'show'])->name('service.show');
-    Route::get('/service/{service}/edit', [ServiceController::class, 'edit'])->name('service.edit');
-    Route::put('/service/{service}', [ServiceController::class, 'update'])->name('service.update');
-    Route::delete('/service/{service}', [ServiceController::class, 'destroy'])->name('service.destroy');
+    // ================================
+    // GESTION DES ACTUALITÉS
+    // ================================
+    Route::prefix('actualite')->name('actualite.')->group(function () {
+        Route::get('/', [ActualiteController::class, 'index'])->name('index');
+        Route::get('/create', [ActualiteController::class, 'create'])->name('create');
+        Route::post('/', [ActualiteController::class, 'store'])->name('store');
+        Route::get('/pending-moderation', [ActualiteController::class, 'pendingModeration'])->name('pending');
+        Route::get('/view/{actualite}', [ActualiteController::class, 'show'])->name('show');
+        Route::get('/{actualite}/edit', [ActualiteController::class, 'edit'])->name('edit');
+        Route::put('/{actualite}', [ActualiteController::class, 'update'])->name('update');
+        Route::delete('/{actualite}', [ActualiteController::class, 'destroy'])->name('destroy');
+        Route::put('/{actualite}/updatefeatures', [ActualiteController::class, 'updateFeatures'])->name('updatefeatures');
+        Route::post('/{actualite}/toggle-une', [ActualiteController::class, 'toggleUne'])->name('toggle-une');
+        Route::post('/{actualite}/publish', [ActualiteController::class, 'publish'])->name('publish');
+        Route::post('/{actualite}/unpublish', [ActualiteController::class, 'unpublish'])->name('unpublish');
+        Route::patch('/{actualite}/moderate', [ActualiteController::class, 'moderate'])->name('moderate');
+    });
+
+    // ================================
+    // GESTION DES PUBLICATIONS
+    // ================================
+    Route::prefix('publication')->name('publication.')->group(function () {
+        Route::get('/', [PublicationController::class, 'index'])->name('index');
+        Route::get('/create', [PublicationController::class, 'create'])->name('create');
+        Route::post('/', [PublicationController::class, 'store'])->name('store');
+        Route::get('/{publication}', [PublicationController::class, 'show'])->name('show');
+        Route::get('/{publication}/edit', [PublicationController::class, 'edit'])->name('edit');
+        Route::put('/{publication}', [PublicationController::class, 'update'])->name('update');
+        Route::delete('/{publication}', [PublicationController::class, 'destroy'])->name('destroy');
+        Route::put('/{publication}/updatefeatures', [PublicationController::class, 'updateFeatures'])->name('updatefeatures');
+        Route::post('/{publication}/toggle-une', [PublicationController::class, 'toggleUne'])->name('toggle-une');
+        
+        // Routes de modération (protégées)
+        Route::middleware(['can_moderate'])->group(function () {
+            Route::post('/{publication}/publish', [PublicationController::class, 'publish'])->name('publish');
+            Route::post('/{publication}/unpublish', [PublicationController::class, 'unpublish'])->name('unpublish');
+            Route::get('/pending-moderation', [PublicationController::class, 'pendingModeration'])->name('pending');
+        });
+    });
+
+    // ================================
+    // GESTION DES AUTEURS
+    // ================================
     
-    // Routes de modération pour services
-    Route::post('/service/{service}/publish', [ServiceController::class, 'publish'])->name('service.publish');
-    Route::post('/service/{service}/unpublish', [ServiceController::class, 'unpublish'])->name('service.unpublish');
-    Route::post('/service/{service}/toggle-menu', [ServiceController::class, 'toggleMenu'])->name('service.toggle-menu');
-    Route::get('/service/pending-moderation', [ServiceController::class, 'pendingModeration'])->name('service.pending');
+    // Routes AJAX pour auteurs (pour les modals de publication) - AVANT les routes génériques
+    Route::prefix('auteurs')->name('auteurs.')->group(function () {
+        Route::get('/search', [AuteurController::class, 'search'])->name('search');
+        Route::post('/', [AuteurController::class, 'store'])->name('store-ajax');
+    });
 
-    // Newsletter
-    Route::get('/newsletter', [NewsletterController::class, 'index'])->name('newsletter.index');
-    Route::get('/newsletter/create', [NewsletterController::class, 'create'])->name('newsletter.create');
-    Route::post('/newsletter', [NewsletterController::class, 'store'])->name('newsletter.store');
-    Route::get('/newsletter/{newsletter}/edit', [NewsletterController::class, 'edit'])->name('newsletter.edit');
-    Route::put('/newsletter/{newsletter}', [NewsletterController::class, 'update'])->name('newsletter.update');
-    Route::delete('/newsletter/{newsletter}', [NewsletterController::class, 'destroy'])->name('newsletter.destroy');
+    // Routes CRUD classiques pour auteurs
+    Route::prefix('auteur')->name('auteur.')->group(function () {
+        Route::get('/', [AuteurController::class, 'index'])->name('index');
+        Route::get('/create', [AuteurController::class, 'create'])->name('create');
+        Route::post('/', [AuteurController::class, 'store'])->name('store');
+        Route::get('/{auteur}/edit', [AuteurController::class, 'edit'])->name('edit');
+        Route::put('/{auteur}', [AuteurController::class, 'update'])->name('update');
+        Route::delete('/{auteur}', [AuteurController::class, 'destroy'])->name('destroy');
+        Route::get('/{auteur}/show', [AuteurController::class, 'show'])->name('show');
+    });
 
-    // Categorie
-    Route::get('/categorie', [CategorieController::class, 'index'])->name('categorie.index');
-    Route::get('/categorie/create', [CategorieController::class, 'create'])->name('categorie.create');
-    Route::post('/categorie', [CategorieController::class, 'store'])->name('categorie.store');
-    Route::get('/categorie/{categorie}/edit', [CategorieController::class, 'edit'])->name('categorie.edit');
-    Route::put('/categorie/{categorie}', [CategorieController::class, 'update'])->name('categorie.update');
-    Route::delete('/categorie/{categorie}', [CategorieController::class, 'destroy'])->name('categorie.destroy');
+    // ================================
+    // GESTION DES SERVICES
+    // ================================
+    Route::prefix('service')->name('service.')->group(function () {
+        Route::get('/', [ServiceController::class, 'index'])->name('index');
+        Route::get('/create', [ServiceController::class, 'create'])->name('create');
+        Route::post('/', [ServiceController::class, 'store'])->name('store');
+        Route::get('/{service}/show', [ServiceController::class, 'show'])->name('show');
+        Route::get('/{service}/edit', [ServiceController::class, 'edit'])->name('edit');
+        Route::put('/{service}', [ServiceController::class, 'update'])->name('update');
+        Route::delete('/{service}', [ServiceController::class, 'destroy'])->name('destroy');
+        
+        // Routes de modération
+        Route::post('/{service}/publish', [ServiceController::class, 'publish'])->name('publish');
+        Route::post('/{service}/unpublish', [ServiceController::class, 'unpublish'])->name('unpublish');
+        Route::post('/{service}/toggle-menu', [ServiceController::class, 'toggleMenu'])->name('toggle-menu');
+        Route::get('/pending-moderation', [ServiceController::class, 'pendingModeration'])->name('pending');
+    });
 
-    // Rapport
-    Route::get('/rapports', [RapportController::class, 'index'])->name('rapports.index');
-    Route::get('/rapports/create', [RapportController::class, 'create'])->name('rapports.create');
-    Route::post('/rapports', [RapportController::class, 'store'])->name('rapports.store');
-    Route::get('/rapports/{rapport}', [RapportController::class, 'show'])->name('rapports.show');
-    Route::get('/rapports/{rapport}/edit', [RapportController::class, 'edit'])->name('rapports.edit');
-    Route::put('/rapports/{rapport}', [RapportController::class, 'update'])->name('rapports.update');
-    Route::delete('/rapports/{rapport}', [RapportController::class, 'destroy'])->name('rapports.destroy');
+    // ================================
+    // GESTION DES NEWSLETTERS
+    // ================================
+    Route::prefix('newsletter')->name('newsletter.')->group(function () {
+        Route::get('/', [NewsletterController::class, 'index'])->name('index');
+        Route::get('/create', [NewsletterController::class, 'create'])->name('create');
+        Route::post('/', [NewsletterController::class, 'store'])->name('store');
+        Route::get('/{newsletter}/edit', [NewsletterController::class, 'edit'])->name('edit');
+        Route::put('/{newsletter}', [NewsletterController::class, 'update'])->name('update');
+        Route::delete('/{newsletter}', [NewsletterController::class, 'destroy'])->name('destroy');
+        Route::get('/export', [NewsletterController::class, 'export'])->name('export');
+        Route::get('/{newsletter}', [NewsletterController::class, 'show'])->name('show');
+        Route::patch('/{newsletter}/toggle', [NewsletterController::class, 'toggle'])->name('toggle');
+    });
+
+    // ================================
+    // GESTION DES CATÉGORIES
+    // ================================
     
-    // Routes de modération pour rapports
-    Route::post('/rapports/{rapport}/publish', [RapportController::class, 'publish'])->name('rapports.publish');
-    Route::post('/rapports/{rapport}/unpublish', [RapportController::class, 'unpublish'])->name('rapports.unpublish');
-    Route::get('/rapports/pending-moderation', [RapportController::class, 'pendingModeration'])->name('rapports.pending');
+    // Routes AJAX pour catégories (pour les modals de publication) - AVANT les routes génériques
+    Route::prefix('categories')->name('categories.')->group(function () {
+        Route::post('/', [CategorieController::class, 'store'])->name('store-ajax');
+    });
 
-    // Media
-    Route::get('/media', [MediaController::class, 'index'])->name('media.index');
-    Route::get('/media/create', [MediaController::class, 'create'])->name('media.create');
-    Route::post('/media', [MediaController::class, 'store'])->name('media.store');
-    Route::get('/media/{media}/edit', [MediaController::class, 'edit'])->name('media.edit');
-    Route::put('/media/{media}', [MediaController::class, 'update'])->name('media.update');
-    Route::delete('/media/{media}', [MediaController::class, 'destroy'])->name('media.destroy');
+    // Routes CRUD classiques pour catégories
+    Route::prefix('categorie')->name('categorie.')->group(function () {
+        Route::get('/', [CategorieController::class, 'index'])->name('index');
+        Route::get('/create', [CategorieController::class, 'create'])->name('create');
+        Route::post('/', [CategorieController::class, 'store'])->name('store');
+        Route::get('/{categorie}/edit', [CategorieController::class, 'edit'])->name('edit');
+        Route::put('/{categorie}', [CategorieController::class, 'update'])->name('update');
+        Route::delete('/{categorie}', [CategorieController::class, 'destroy'])->name('destroy');
+    });
 
+    // ================================
+    // GESTION DES RAPPORTS
+    // ================================
+    Route::prefix('rapports')->name('rapports.')->group(function () {
+        Route::get('/', [RapportController::class, 'index'])->name('index');
+        Route::get('/create', [RapportController::class, 'create'])->name('create');
+        Route::post('/', [RapportController::class, 'store'])->name('store');
+        Route::get('/{rapport}', [RapportController::class, 'show'])->name('show');
+        Route::get('/{rapport}/edit', [RapportController::class, 'edit'])->name('edit');
+        Route::put('/{rapport}', [RapportController::class, 'update'])->name('update');
+        Route::delete('/{rapport}', [RapportController::class, 'destroy'])->name('destroy');
+        
+        // Routes de modération
+        Route::post('/{rapport}/publish', [RapportController::class, 'publish'])->name('publish');
+        Route::post('/{rapport}/unpublish', [RapportController::class, 'unpublish'])->name('unpublish');
+        Route::get('/pending-moderation', [RapportController::class, 'pendingModeration'])->name('pending');
+    });
 
-    // projets
-    Route::get('/projets', [ProjetController::class, 'index'])->name('projets.index');
-    Route::get('/projets/create', [ProjetController::class, 'create'])->name('projets.create');
-    Route::post('/projets', [ProjetController::class, 'store'])->name('projets.store');
-    Route::get('/projets/{projet}', [ProjetController::class, 'show'])->name('projets.show');
-    Route::get('/projets/{projet}/edit', [ProjetController::class, 'edit'])->name('projets.edit');
-    Route::put('/projets/{projet}', [ProjetController::class, 'update'])->name('projets.update');
-    Route::delete('/projets/{projet}', [ProjetController::class, 'destroy'])->name('projets.destroy');
-    
-    // Routes de modération pour projets
-    Route::post('/projets/{projet}/publish', [ProjetController::class, 'publish'])->name('projets.publish');
-    Route::post('/projets/{projet}/unpublish', [ProjetController::class, 'unpublish'])->name('projets.unpublish');
-    Route::get('/projets/pending-moderation', [ProjetController::class, 'pendingModeration'])->name('projets.pending');
+    // ================================
+    // GESTION DES MÉDIAS
+    // ================================
+    Route::prefix('media')->name('media.')->group(function () {
+        Route::get('/', [MediaController::class, 'index'])->name('index');
+        Route::get('/create', [MediaController::class, 'create'])->name('create');
+        Route::post('/', [MediaController::class, 'store'])->name('store');
+        Route::get('/{media}/edit', [MediaController::class, 'edit'])->name('edit');
+        Route::put('/{media}', [MediaController::class, 'update'])->name('update');
+        Route::delete('/{media}', [MediaController::class, 'destroy'])->name('destroy');
+        // For CKEditor media integration
+        Route::get('/list', [MediaController::class, 'list'])->name('list');
+        Route::post('/upload', [MediaController::class, 'upload'])->name('upload');
+    });
 
-    // Job Offers - Gestion des offres d'emploi
+    // ================================
+    // GESTION DES PROJETS
+    // ================================
+    Route::prefix('projets')->name('projets.')->group(function () {
+        Route::get('/', [ProjetController::class, 'index'])->name('index');
+        Route::get('/create', [ProjetController::class, 'create'])->name('create');
+        Route::post('/', [ProjetController::class, 'store'])->name('store');
+        Route::get('/{projet}', [ProjetController::class, 'show'])->name('show');
+        Route::get('/{projet}/edit', [ProjetController::class, 'edit'])->name('edit');
+        Route::put('/{projet}', [ProjetController::class, 'update'])->name('update');
+        Route::delete('/{projet}', [ProjetController::class, 'destroy'])->name('destroy');
+        
+        // Routes de modération
+        Route::post('/{projet}/publish', [ProjetController::class, 'publish'])->name('publish');
+        Route::post('/{projet}/unpublish', [ProjetController::class, 'unpublish'])->name('unpublish');
+        Route::get('/pending-moderation', [ProjetController::class, 'pendingModeration'])->name('pending');
+    });
+
+    // ================================
+    // GESTION DES ÉVÉNEMENTS
+    // ================================
+    Route::resource('evenements', EvenementController::class);
+    Route::patch('/evenements/{evenement}/toggle-featured', [EvenementController::class, 'toggleFeatured'])->name('evenements.toggle-featured');
+    Route::patch('/evenements/{evenement}/toggle-published', [EvenementController::class, 'togglePublished'])->name('evenements.toggle-published');
+
+    // ================================
+    // GESTION DES CONTACTS
+    // ================================
+    Route::prefix('contacts')->name('contacts.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\ContactController::class, 'index'])->name('index');
+        Route::get('/{contact}', [\App\Http\Controllers\Admin\ContactController::class, 'show'])->name('show');
+        Route::patch('/{contact}', [\App\Http\Controllers\Admin\ContactController::class, 'update'])->name('update');
+        Route::delete('/{contact}', [\App\Http\Controllers\Admin\ContactController::class, 'destroy'])->name('destroy');
+    });
+
+    // ================================
+    // CONFIGURATION DES EMAILS
+    // ================================
+    Route::prefix('email-settings')->name('email-settings.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\EmailSettingController::class, 'index'])->name('index');
+        Route::put('/{emailSetting}', [\App\Http\Controllers\Admin\EmailSettingController::class, 'update'])->name('update');
+        Route::post('/{emailSetting}/add-email', [\App\Http\Controllers\Admin\EmailSettingController::class, 'addEmail'])->name('add-email');
+        Route::delete('/{emailSetting}/remove-email', [\App\Http\Controllers\Admin\EmailSettingController::class, 'removeEmail'])->name('remove-email');
+        Route::post('/test-email', [\App\Http\Controllers\Admin\EmailSettingController::class, 'testEmail'])->name('test-email');
+    });
+
+    // ================================
+    // GESTION DES OFFRES D'EMPLOI
+    // ================================
     Route::resource('job-offers', JobOfferController::class);
     Route::post('/job-offers/{jobOffer}/duplicate', [JobOfferController::class, 'duplicate'])->name('job-offers.duplicate');
     Route::post('/job-offers/{jobOffer}/change-status', [JobOfferController::class, 'changeStatus'])->name('job-offers.change-status');
     Route::post('/job-offers/{jobOffer}/toggle-featured', [JobOfferController::class, 'toggleFeatured'])->name('job-offers.toggle-featured');
     Route::get('/job-offers-statistics', [JobOfferController::class, 'statistics'])->name('job-offers.statistics');
     
-    // Job Applications - Gestion des candidatures
-    Route::get('/job-applications', [JobApplicationController::class, 'index'])->name('job-applications.index');
-    Route::get('/job-applications/{application}', [JobApplicationController::class, 'show'])->name('job-applications.show');
-    Route::patch('/job-applications/{application}/status', [JobApplicationController::class, 'updateStatus'])->name('job-applications.update-status');
-    Route::get('/job-applications/{application}/download-cv', [JobApplicationController::class, 'downloadCV'])->name('job-applications.download-cv');
-    Route::get('/job-applications/{application}/download-portfolio', [JobApplicationController::class, 'downloadPortfolio'])->name('job-applications.download-portfolio');
-    Route::delete('/job-applications/{application}', [JobApplicationController::class, 'destroy'])->name('job-applications.destroy');
-    Route::get('/job-applications-export', [JobApplicationController::class, 'export'])->name('job-applications.export');
-    Route::post('/job-applications/bulk-review', [JobApplicationController::class, 'bulkReview'])->name('job-applications.bulk-review');
-    Route::get('/job-applications-statistics', [JobApplicationController::class, 'statistics'])->name('job-applications.statistics');
-
+    // ================================
+    // GESTION DES CANDIDATURES
+    // ================================
+    Route::prefix('job-applications')->name('job-applications.')->group(function () {
+        Route::get('/', [JobApplicationController::class, 'index'])->name('index');
+        Route::get('/{application}', [JobApplicationController::class, 'show'])->name('show');
+        Route::patch('/{application}/status', [JobApplicationController::class, 'updateStatus'])->name('update-status');
+        Route::get('/{application}/download-cv', [JobApplicationController::class, 'downloadCV'])->name('download-cv');
+        Route::get('/{application}/download-portfolio', [JobApplicationController::class, 'downloadPortfolio'])->name('download-portfolio');
+        Route::delete('/{application}', [JobApplicationController::class, 'destroy'])->name('destroy');
+        Route::get('/export', [JobApplicationController::class, 'export'])->name('export');
+        Route::post('/bulk-review', [JobApplicationController::class, 'bulkReview'])->name('bulk-review');
+        Route::get('/statistics', [JobApplicationController::class, 'statistics'])->name('statistics');
+    });
 });
-
-
-
-
-// ROUTES BACKEND (ADMIN)
-Route::prefix('admin')->name('admin.')->group(function () {
-    // Dashboard
-    Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
-    
-    // Logout route
-    Route::post('/logout', function () {
-        auth()->logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
-        return redirect('/');
-    })->name('logout');
-    
-    // Gestion des contacts
-    Route::get('/contacts', [\App\Http\Controllers\Admin\ContactController::class, 'index'])->name('contacts.index');
-    Route::get('/contacts/{contact}', [\App\Http\Controllers\Admin\ContactController::class, 'show'])->name('contacts.show');
-    Route::patch('/contacts/{contact}', [\App\Http\Controllers\Admin\ContactController::class, 'update'])->name('contacts.update');
-    Route::delete('/contacts/{contact}', [\App\Http\Controllers\Admin\ContactController::class, 'destroy'])->name('contacts.destroy');
-    
-    // Gestion Événements
-    Route::resource('evenements', EvenementController::class);
-    
-    // Routes de modération pour événements
-    Route::post('/evenements/{evenement}/publish', [EvenementController::class, 'publish'])->name('evenements.publish');
-    Route::post('/evenements/{evenement}/unpublish', [EvenementController::class, 'unpublish'])->name('evenements.unpublish');
-    Route::get('/evenements/pending-moderation', [EvenementController::class, 'pendingModeration'])->name('evenements.pending');
-    
-    // Gestion Newsletter
-    Route::get('/newsletter/export', [NewsletterController::class, 'export'])->name('newsletter.export');
-    Route::get('/newsletter', [NewsletterController::class, 'index'])->name('newsletter.index');
-    Route::get('/newsletter/{newsletter}', [NewsletterController::class, 'show'])->name('newsletter.show');
-    Route::patch('/newsletter/{newsletter}/toggle', [NewsletterController::class, 'toggle'])->name('newsletter.toggle');
-    Route::delete('/newsletter/{newsletter}', [NewsletterController::class, 'destroy'])->name('newsletter.destroy');
-});
-
-// Routes Newsletter publiques
-Route::prefix('newsletter')->name('newsletter.')->group(function () {
-    Route::get('/subscribe', function() { return view('newsletter.subscribe'); })->name('subscribe');
-    Route::post('/subscribe', [PublicNewsletterController::class, 'subscribe'])->name('subscribe.post');
-    Route::get('/preferences/{token}', [PublicNewsletterController::class, 'preferences'])->name('preferences');
-    Route::post('/preferences/{token}', [PublicNewsletterController::class, 'updatePreferences'])->name('preferences.update');
-    Route::get('/unsubscribe/{token}', [PublicNewsletterController::class, 'unsubscribe'])->name('unsubscribe');
-    Route::post('/unsubscribe/{token}', [PublicNewsletterController::class, 'confirmUnsubscribe'])->name('unsubscribe.confirm');
-});
-
-    // Ressources backend
-    // Ajouter d'autres resources si nécessaire...
-
-// Route::prefix('admin')->name('admin.')->group(function () {
-//     Route::get('/publication', [PublicationController::class, 'index'])->name('publication.index');
-// });

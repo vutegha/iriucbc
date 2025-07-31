@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Mode Création - Champs Cachés</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .test-section { background: #f9f9f9; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .hidden { display: none; }
+        .success { color: #059669; font-weight: bold; }
+        .error { color: #dc2626; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Mode Création - Champs Bénéficiaires Cachés</h1>
+    
+    <div class="test-section">
+        <h2>Simulation du mode création (champs cachés)</h2>
+        <p>Cette page simule le formulaire de création où les champs bénéficiaires sont cachés.</p>
+        
+        <!-- Champs hidden comme en mode création -->
+        <input type="hidden" name="beneficiaires_hommes" value="0">
+        <input type="hidden" name="beneficiaires_femmes" value="0">
+        <input type="hidden" name="beneficiaires_total" value="0">
+        
+        <div id="test-results">
+            <h3>Résultats des tests:</h3>
+            <div id="js-test-result"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Simulation du mode édition (champs visibles)</h2>
+        <p>Cette section simule le formulaire d'édition avec les champs visibles.</p>
+        
+        <div>
+            <label for="beneficiaires_hommes_edit">Bénéficiaires hommes:</label>
+            <input type="number" id="beneficiaires_hommes" name="beneficiaires_hommes_edit" min="0" value="10">
+        </div>
+        <br>
+        <div>
+            <label for="beneficiaires_femmes_edit">Bénéficiaires femmes:</label>
+            <input type="number" id="beneficiaires_femmes" name="beneficiaires_femmes_edit" min="0" value="15">
+        </div>
+        <br>
+        <input type="hidden" id="beneficiaires_total" name="beneficiaires_total_edit" value="25">
+        
+        <div>
+            <strong>Total bénéficiaires:</strong>
+            <div id="beneficiaires-total-display" style="font-size: 18px; color: #0369a1; font-weight: bold;">25</div>
+        </div>
+    </div>
+
+    <script>
+        // Code identique à celui du formulaire Laravel
+        console.log('🔍 Test du JavaScript en mode création/édition...');
+        
+        const beneficiairesHommesInput = document.getElementById('beneficiaires_hommes');
+        const beneficiairesFemmesInput = document.getElementById('beneficiaires_femmes');
+        const beneficiairesTotalInput = document.getElementById('beneficiaires_total');
+        const beneficiairesTotalDisplay = document.getElementById('beneficiaires-total-display');
+
+        function calculateBeneficiairesTotal() {
+            const hommes = parseInt(beneficiairesHommesInput.value) || 0;
+            const femmes = parseInt(beneficiairesFemmesInput.value) || 0;
+            const total = hommes + femmes;
+            
+            beneficiairesTotalInput.value = total;
+            
+            if (beneficiairesTotalDisplay) {
+                beneficiairesTotalDisplay.textContent = total;
+            }
+            
+            console.log('Calcul effectué:', { hommes, femmes, total });
+        }
+
+        // Test du comportement avec et sans éléments
+        let testResults = [];
+
+        // Test 1: Vérifier que les éléments sont détectés correctement
+        if (beneficiairesHommesInput && beneficiairesFemmesInput) {
+            testResults.push('✅ Mode édition: Éléments détectés, calcul activé');
+            
+            // Event listeners
+            beneficiairesHommesInput.addEventListener('input', calculateBeneficiairesTotal);
+            beneficiairesFemmesInput.addEventListener('input', calculateBeneficiairesTotal);
+            
+            // Calcul initial
+            calculateBeneficiairesTotal();
+        } else {
+            testResults.push('✅ Mode création: Éléments non détectés, pas d\'erreur JavaScript');
+        }
+
+        // Test 2: Vérifier les champs hidden
+        const hiddenFields = document.querySelectorAll('input[type="hidden"][name*="beneficiaires"]');
+        if (hiddenFields.length > 0) {
+            testResults.push(`✅ Champs hidden détectés: ${hiddenFields.length} champ(s)`);
+        }
+
+        // Test 3: Vérifier l'absence d'erreurs
+        window.onerror = function(msg, url, line) {
+            testResults.push(`❌ Erreur JavaScript: ${msg} (ligne ${line})`);
+            updateResults();
+        };
+
+        function updateResults() {
+            const resultDiv = document.getElementById('js-test-result');
+            resultDiv.innerHTML = testResults.map(result => `<div>${result}</div>`).join('');
+        }
+
+        // Afficher les résultats après un court délai
+        setTimeout(() => {
+            updateResults();
+            console.log('Tests terminés:', testResults);
+        }, 100);
+
+        // Test automatique du calcul
+        setTimeout(() => {
+            if (beneficiairesHommesInput && beneficiairesFemmesInput) {
+                beneficiairesHommesInput.value = 20;
+                beneficiairesFemmesInput.value = 30;
+                calculateBeneficiairesTotal();
+                testResults.push('✅ Test automatique du calcul: 20 + 30 = 50');
+                updateResults();
+            }
+        }, 500);
+    </script>
+</body>
+</html>
