@@ -14,6 +14,8 @@ class EmailSettingController extends Controller
      */
     public function index()
     {
+        $this->authorize('manage_email_settings');
+        
         $emailSettings = EmailSetting::orderBy('key')->get();
         
         $breadcrumbs = [
@@ -29,6 +31,7 @@ class EmailSettingController extends Controller
      */
     public function update(Request $request, EmailSetting $emailSetting)
     {
+        $this->authorize('manage_email_settings');
         $validator = Validator::make($request->all(), [
             'emails' => 'required|array|min:1',
             'emails.*' => 'required|email|max:255',

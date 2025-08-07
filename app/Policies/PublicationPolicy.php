@@ -13,8 +13,13 @@ class PublicationPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Tous les utilisateurs authentifiés peuvent voir la liste
-        return true;
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('view_publications', 'web') ||
+               $user->hasAnyRole(['admin', 'moderator', 'contributeur'], 'web');
     }
 
     /**
@@ -22,8 +27,13 @@ class PublicationPolicy
      */
     public function view(User $user, Publication $publication): bool
     {
-        // Tous les utilisateurs authentifiés peuvent voir les détails
-        return true;
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('view_publications', 'web') ||
+               $user->hasAnyRole(['admin', 'moderator', 'contributeur'], 'web');
     }
 
     /**
@@ -31,8 +41,13 @@ class PublicationPolicy
      */
     public function create(User $user): bool
     {
-        // Tous les utilisateurs authentifiés peuvent créer des publications
-        return true;
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('create_publications', 'web') ||
+               $user->hasAnyRole(['admin', 'contributeur'], 'web');
     }
 
     /**
@@ -40,8 +55,13 @@ class PublicationPolicy
      */
     public function update(User $user, Publication $publication): bool
     {
-        // Tous les utilisateurs authentifiés peuvent modifier (ou seulement les modérateurs selon vos besoins)
-        return true; // ou $user->canModerate() pour être plus restrictif
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('update_publications', 'web') ||
+               $user->hasAnyRole(['admin'], 'web');
     }
 
     /**
@@ -49,52 +69,55 @@ class PublicationPolicy
      */
     public function delete(User $user, Publication $publication): bool
     {
-        // Seuls les modérateurs peuvent supprimer
-        return $user->canModerate();
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('delete_publications', 'web') ||
+               $user->hasAnyRole(['admin'], 'web');
     }
 
     /**
-     * Determine whether the user can restore the model.
+     * Determine whether the user can moderate the model.
      */
-    public function restore(User $user, Publication $publication): bool
+    public function moderate(User $user, ?Publication $publication = null): bool
     {
-        // Seuls les modérateurs peuvent restaurer
-        return $user->canModerate();
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('moderate_publications', 'web') ||
+               $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
     /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Publication $publication): bool
-    {
-        // Seuls les modérateurs peuvent supprimer définitivement
-        return $user->canModerate();
-    }
-
-    /**
-     * Determine whether the user can moderate the publication.
-     */
-    public function moderate(User $user, Publication $publication): bool
-    {
-        // Seuls les modérateurs peuvent modérer (publier/dépublier)
-        return $user->canModerate();
-    }
-
-    /**
-     * Determine whether the user can publish the publication.
+     * Determine whether the user can publish the model.
      */
     public function publish(User $user, Publication $publication): bool
     {
-        // Seuls les modérateurs peuvent publier
-        return $user->canModerate();
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('publish_publications', 'web') ||
+               $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
     /**
-     * Determine whether the user can unpublish the publication.
+     * Determine whether the user can unpublish the model.
      */
     public function unpublish(User $user, Publication $publication): bool
     {
-        // Seuls les modérateurs peuvent dépublier
-        return $user->canModerate();
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('unpublish_publications', 'web') ||
+               $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
-}
+
+                }

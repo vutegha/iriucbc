@@ -1,5 +1,7 @@
 ﻿@extends('layouts.admin')
 
+@section('title', 'Modifier le Média')
+
 @section('breadcrumbs')
 <nav class="text-sm" aria-label="Breadcrumb">
     <ol class="inline-flex items-center space-x-1 md:space-x-3">
@@ -11,7 +13,7 @@
         <li>
             <div class="flex items-center">
                 <i class="fas fa-chevron-right mx-2 text-white/50"></i>
-                <a href="{{ route('admin.media.index') }}" class="text-white/70 hover:text-white">media</a>
+                <a href="{{ route('admin.media.index') }}" class="text-white/70 hover:text-white">Médias</a>
             </div>
         </li>
         <li aria-current="page">
@@ -25,29 +27,32 @@
 @endsection
 
 @section('content')
-<div class="max-w-2xl mx-auto p-6 bg-white shadow mt-10 rounded">
-    <h2 class="text-xl font-semibold mb-4">Modifier le media</h2>
+<div class="min-h-screen bg-gradient-to-br from-iri-light via-white to-iri-light/50">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        
+        {{-- En-tête --}}
+        <div class="mb-8">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-gradient-to-r from-iri-primary to-iri-accent rounded-xl flex items-center justify-center">
+                    <i class="fas fa-edit text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-iri-primary to-iri-accent bg-clip-text text-transparent">
+                        Modifier le média
+                    </h1>
+                    <p class="text-iri-gray">{{ $media->titre ?? 'Média sans titre' }}</p>
+                </div>
+            </div>
+        </div>
 
-@section('title', 'IRI UCBC | Media')
-@if(session('alert'))
-    <div class="mb-4">{!! session('alert') !!}</div>
-@endif
-
-@if($errors->any())
-    <div class="mb-4">
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            <ul class="list-disc pl-5">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+        {{-- Formulaire --}}
+        <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
+            @include('admin.media._form', [
+                'formAction' => route('admin.media.update', $media),
+                'method' => 'PUT'
+            ])
         </div>
     </div>
-@endif
-    @include('admin.media._form', [
-        'formAction' => route('admin.media.update', $media),
-        'media' => $media,
-    ])
 </div>
 @endsection
 

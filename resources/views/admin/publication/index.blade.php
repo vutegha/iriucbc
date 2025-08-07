@@ -24,7 +24,7 @@
                 <p class="text-green-100">Gérez et modérez les publications de votre plateforme</p>
             </div>
             <div class="mt-4 sm:mt-0">
-                @can('create publications')
+                @can('create_publications')
                 <a href="{{ route('admin.publication.create') }}" 
                    class="inline-flex items-center px-4 py-2 bg-white text-iri-primary font-semibold rounded-lg shadow-md hover:bg-gray-50 transition-all duration-200">
                     <i class="fas fa-plus mr-2"></i>
@@ -44,7 +44,7 @@
                 </div>
                 <div class="ml-3">
                     <p class="text-sm text-gray-600">Total</p>
-                    <p class="text-xl font-semibold text-gray-900">{{ $publications->total() }}</p>
+                    <p class="text-xl font-semibold text-gray-900">{{ $stats['total'] }}</p>
                 </div>
             </div>
         </div>
@@ -56,7 +56,7 @@
                 </div>
                 <div class="ml-3">
                     <p class="text-sm text-gray-600">Publiées</p>
-                    <p class="text-xl font-semibold text-gray-900">{{ $publications->where('is_published', true)->count() }}</p>
+                    <p class="text-xl font-semibold text-gray-900">{{ $stats['published'] }}</p>
                 </div>
             </div>
         </div>
@@ -68,7 +68,7 @@
                 </div>
                 <div class="ml-3">
                     <p class="text-sm text-gray-600">En attente</p>
-                    <p class="text-xl font-semibold text-gray-900">{{ $publications->where('is_published', false)->count() }}</p>
+                    <p class="text-xl font-semibold text-gray-900">{{ $stats['pending'] }}</p>
                 </div>
             </div>
         </div>
@@ -80,7 +80,7 @@
                 </div>
                 <div class="ml-3">
                     <p class="text-sm text-gray-600">Brouillons</p>
-                    <p class="text-xl font-semibold text-gray-900">{{ $publications->where('status', 'draft')->count() }}</p>
+                    <p class="text-xl font-semibold text-gray-900">{{ $stats['draft'] }}</p>
                 </div>
             </div>
         </div>
@@ -92,7 +92,7 @@
                 </div>
                 <div class="ml-3">
                     <p class="text-sm text-gray-600">En vedette</p>
-                    <p class="text-xl font-semibold text-gray-900">{{ $publications->where('en_vedette', true)->count() }}</p>
+                    <p class="text-xl font-semibold text-gray-900">{{ $stats['featured'] }}</p>
                 </div>
             </div>
         </div>
@@ -104,7 +104,7 @@
                 </div>
                 <div class="ml-3">
                     <p class="text-sm text-gray-600">Ce mois</p>
-                    <p class="text-xl font-semibold text-gray-900">{{ $publications->where('created_at', '>=', now()->startOfMonth())->count() }}</p>
+                    <p class="text-xl font-semibold text-gray-900">{{ $stats['this_month'] }}</p>
                 </div>
             </div>
         </div>
@@ -112,30 +112,56 @@
 
     <!-- Filtres et recherche -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-        <div class="flex flex-col sm:flex-row gap-4">
+        <form method="GET" action="{{ route('admin.publication.index') }}" class="flex flex-col sm:flex-row gap-4">
             <div class="flex-1">
                 <input type="text" 
-                       id="search-publications" 
+                       name="search"
+                       value="{{ request('search') }}"
                        placeholder="Rechercher une publication..."
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-iri-primary focus:border-iri-primary">
             </div>
             <div class="flex gap-2">
-                <select id="status-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-iri-primary focus:border-iri-primary">
+                <select name="status" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-iri-primary focus:border-iri-primary">
                     <option value="">Tous les statuts</option>
-                    <option value="published">Publiées</option>
-                    <option value="pending">En attente</option>
-                    <option value="draft">Brouillons</option>
+                    <option value="published" {{ request('status') === 'published' ? 'selected' : '' }}>Publiées</option>
+                    <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>En attente</option>
+                    <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Brouillons</option>
                 </select>
+                
+                <button type="submit" class="px-4 py-2 bg-iri-primary text-white rounded-lg hover:bg-iri-secondary transition-colors duration-200">
+                    <i class="fas fa-search mr-1"></i>Rechercher
+                </button>
+                
+                @if(request()->hasAny(['search', 'status']))
+                <a href="{{ route('admin.publication.index') }}" 
+                   class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
+                    <i class="fas fa-times mr-1"></i>Reset
+                </a>
+                @endif
+                
                 <div class="flex bg-gray-100 rounded-lg p-1">
-                    <button id="grid-view" class="px-3 py-1 rounded-md bg-white text-iri-primary font-medium shadow-sm">
+                    <button type="button" id="grid-view" class="px-3 py-1 rounded-md bg-white text-iri-primary font-medium shadow-sm">
                         <i class="fas fa-th"></i>
                     </button>
-                    <button id="list-view" class="px-3 py-1 rounded-md text-gray-600 hover:text-iri-primary">
+                    <button type="button" id="list-view" class="px-3 py-1 rounded-md text-gray-600 hover:text-iri-primary">
                         <i class="fas fa-list"></i>
                     </button>
                 </div>
             </div>
+        </form>
+        
+        @if(request()->hasAny(['search', 'status']))
+        <div class="mt-3 text-sm text-gray-600">
+            <i class="fas fa-info-circle mr-1"></i>
+            {{ $publications->total() }} résultat(s) trouvé(s)
+            @if(request('search'))
+            pour "<strong>{{ request('search') }}</strong>"
+            @endif
+            @if(request('status'))
+            avec le statut "<strong>{{ ucfirst(request('status')) }}</strong>"
+            @endif
         </div>
+        @endif
     </div>
 
     <!-- Vue en grille (par défaut) -->
@@ -144,13 +170,33 @@
         <div class="publication-card bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
             <!-- Image -->
             <div class="relative h-48 bg-gray-100 rounded-t-xl overflow-hidden">
-                @if($publication->image)
+                @if($publication->fichier_pdf)
+                    <!-- Miniature PDF haute résolution générée avec PDF.js -->
+                    <div data-pdf-thumbnail="{{ Storage::url($publication->fichier_pdf) }}" 
+                         data-width="300" 
+                         data-height="192"
+                         class="w-full h-full bg-gray-50 rounded-t-xl overflow-hidden pdf-thumbnail-container">
+                        <!-- Placeholder amélioré pendant le chargement -->
+                        <div class="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gradient-to-br from-blue-50 to-blue-100">
+                            <i class="fas fa-file-pdf text-4xl mb-2 text-blue-500 animate-pulse"></i>
+                            <span class="text-sm font-medium text-blue-600">Génération HD...</span>
+                            <span class="text-xs text-blue-500 mt-1">Résolution optimisée</span>
+                        </div>
+                    </div>
+                    <!-- Badge PDF amélioré -->
+                    <div class="absolute bottom-2 left-2 z-10">
+                        <span class="inline-flex items-center px-2 py-1 rounded bg-red-600 text-white text-xs font-medium shadow-lg">
+                            <i class="fas fa-file-pdf mr-1"></i>PDF HD
+                        </span>
+                    </div>
+                @elseif($publication->image)
                     <img src="{{ Storage::url($publication->image) }}" 
                          alt="{{ $publication->titre }}"
                          class="w-full h-full object-cover">
                 @else
-                    <div class="w-full h-full flex items-center justify-center text-gray-400">
-                        <i class="fas fa-image text-4xl"></i>
+                    <div class="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gradient-to-br from-gray-50 to-gray-100">
+                        <i class="fas fa-image text-4xl mb-2"></i>
+                        <span class="text-sm text-gray-500">Aucune image</span>
                     </div>
                 @endif
                 
@@ -190,19 +236,19 @@
                              x-transition:leave="transition ease-in duration-75"
                              x-transition:leave-start="transform opacity-100 scale-100"
                              x-transition:leave-end="transform opacity-0 scale-95">
-                            @can('view publications')
+                            @can('view_publications')
                             <a href="{{ route('admin.publication.show', $publication) }}" 
                                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                 <i class="fas fa-eye mr-2"></i>Voir
                             </a>
                             @endcan
-                            @can('update publications')
+                            @can('update_publications')
                             <a href="{{ route('admin.publication.edit', $publication) }}" 
                                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                 <i class="fas fa-edit mr-2"></i>Modifier
                             </a>
                             @endcan
-                            @can('delete publications')
+                            @can('delete_publications')
                             <hr class="my-1">
                             <button onclick="deletePublication({{ $publication->id }})"
                                     class="w-full flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50">
@@ -226,7 +272,11 @@
                 <div class="flex items-center justify-between text-xs text-gray-500">
                     <div class="flex items-center">
                         <i class="fas fa-user mr-1"></i>
-                        {{ $publication->auteur->nom ?? 'Anonyme' }}
+                        @if($publication->auteurs->count() > 0)
+                            {{ $publication->auteurs->pluck('nom')->join(', ') }}
+                        @else
+                            Anonyme
+                        @endif
                     </div>
                     <div class="flex items-center">
                         <i class="fas fa-calendar mr-1"></i>
@@ -270,12 +320,30 @@
                         <td class="px-6 py-4">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-16 w-16">
-                                    @if($publication->image)
+                                    @if($publication->fichier_pdf)
+                                        <!-- Miniature PDF haute résolution générée avec PDF.js -->
+                                        <div data-pdf-thumbnail="{{ Storage::url($publication->fichier_pdf) }}" 
+                                             data-width="64" 
+                                             data-height="64"
+                                             class="h-16 w-16 bg-gray-50 rounded-xl overflow-hidden pdf-thumbnail-container relative">
+                                            <!-- Placeholder optimisé pendant le chargement -->
+                                            <div class="h-16 w-16 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col items-center justify-center border border-blue-200">
+                                                <i class="fas fa-file-pdf text-blue-500 text-lg animate-pulse"></i>
+                                                <span class="text-xs text-blue-600 mt-0.5 font-medium">HD</span>
+                                            </div>
+                                            <!-- Badge PDF miniature amélioré -->
+                                            <div class="absolute -bottom-1 -right-1">
+                                                <span class="inline-flex items-center px-1 py-0.5 rounded text-xs bg-red-600 text-white shadow-sm">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    @elseif($publication->image)
                                         <img class="h-16 w-16 rounded-xl object-cover shadow-sm border border-gray-200" 
                                              src="{{ Storage::url($publication->image) }}" 
                                              alt="{{ $publication->titre }}">
                                     @else
-                                        <div class="h-16 w-16 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center border border-gray-200">
+                                        <div class="h-16 w-16 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center border border-gray-200">
                                             <i class="fas fa-image text-gray-400 text-xl"></i>
                                         </div>
                                     @endif
@@ -303,24 +371,34 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-10 w-10">
-                                    @if($publication->auteur && $publication->auteur->avatar)
+                                    @php
+                                        $firstAuteur = $publication->auteurs->first();
+                                    @endphp
+                                    @if($firstAuteur && $firstAuteur->photo)
                                         <img class="h-10 w-10 rounded-full object-cover" 
-                                             src="{{ Storage::url($publication->auteur->avatar) }}" 
-                                             alt="{{ $publication->auteur->nom }}">
+                                             src="{{ Storage::url($firstAuteur->photo) }}" 
+                                             alt="{{ $firstAuteur->nom }}">
                                     @else
                                         <div class="h-10 w-10 rounded-full bg-iri-primary flex items-center justify-center">
                                             <span class="text-white font-medium text-sm">
-                                                {{ substr($publication->auteur->nom ?? 'A', 0, 1) }}
+                                                {{ substr($firstAuteur->nom ?? 'A', 0, 1) }}
                                             </span>
                                         </div>
                                     @endif
                                 </div>
                                 <div class="ml-3">
                                     <div class="text-sm font-medium text-gray-900">
-                                        {{ $publication->auteur->nom ?? 'Anonyme' }}
+                                        @if($publication->auteurs->count() > 0)
+                                            {{ $publication->auteurs->pluck('nom')->join(', ') }}
+                                            @if($publication->auteurs->count() > 1)
+                                                <span class="text-xs text-gray-500">(+{{ $publication->auteurs->count() - 1 }} autres)</span>
+                                            @endif
+                                        @else
+                                            Anonyme
+                                        @endif
                                     </div>
                                     <div class="text-xs text-gray-500">
-                                        {{ $publication->auteur->email ?? 'N/A' }}
+                                        {{ $firstAuteur->email ?? 'N/A' }}
                                     </div>
                                 </div>
                             </div>
@@ -343,7 +421,7 @@
                                     </span>
                                 @endif
                                 
-                                @if($publication->status === 'draft')
+                                @if($publication->isDraft())
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
                                         <i class="fas fa-edit mr-1"></i>Brouillon
                                     </span>
@@ -367,14 +445,14 @@
                         </td>
         <td class="px-6 py-4 whitespace-nowrap text-right">
             <div class="flex items-center justify-end space-x-2">
-                @can('view publications')
+                @can('view_publications')
                 <a href="{{ route('admin.publication.show', $publication) }}" 
                    class="inline-flex items-center px-3 py-1.5 bg-iri-primary text-white text-xs font-medium rounded-lg hover:bg-iri-secondary transition-colors duration-200"
                    title="Voir les détails">
                     <i class="fas fa-eye mr-1"></i>Voir
                 </a>
                 @endcan
-                @can('update publications')
+                @can('update_publications')
                 <a href="{{ route('admin.publication.edit', $publication) }}" 
                    class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
                    title="Modifier">
@@ -397,7 +475,7 @@
                                          x-transition:leave="transition ease-in duration-75"
                                          x-transition:leave-start="transform opacity-100 scale-100"
                                          x-transition:leave-end="transform opacity-0 scale-95">
-                                        @can('update publications')
+                                        @can('update_publications')
                                         <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                             <i class="fas fa-copy mr-2"></i>Dupliquer
                                         </a>
@@ -405,12 +483,17 @@
                                             <i class="fas fa-download mr-2"></i>Exporter
                                         </a>
                                         @endcan
-                                        @can('delete publications')
+                                        @can('delete_publications')
                                         <hr class="my-1">
-                                        <button onclick="deletePublication({{ $publication->id }})"
-                                                class="w-full flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50">
-                                            <i class="fas fa-trash mr-2"></i>Supprimer
-                                        </button>
+                                        <form method="POST" action="{{ route('admin.publication.destroy', $publication) }}" 
+                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette publication ? Cette action est irréversible.')"
+                                              class="w-full">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="w-full flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50">
+                                                <i class="fas fa-trash mr-2"></i>Supprimer
+                                            </button>
+                                        </form>
                                         @endcan
                                     </div>
                                 </div>
@@ -444,6 +527,13 @@ document.addEventListener('DOMContentLoaded', function() {
         gridView.classList.remove('text-gray-600');
         listView.classList.remove('bg-white', 'text-iri-primary', 'shadow-sm');
         listView.classList.add('text-gray-600');
+        
+        // Régénérer les miniatures PDF pour la vue grille
+        if (window.pdfThumbnailGenerator) {
+            setTimeout(() => {
+                window.pdfThumbnailGenerator.generateAllThumbnails();
+            }, 100);
+        }
     });
     
     listView.addEventListener('click', function() {
@@ -453,94 +543,14 @@ document.addEventListener('DOMContentLoaded', function() {
         listView.classList.remove('text-gray-600');
         gridView.classList.remove('bg-white', 'text-iri-primary', 'shadow-sm');
         gridView.classList.add('text-gray-600');
+        
+        // Régénérer les miniatures PDF pour la vue liste
+        if (window.pdfThumbnailGenerator) {
+            setTimeout(() => {
+                window.pdfThumbnailGenerator.generateAllThumbnails();
+            }, 100);
+        }
     });
-    
-    // Recherche en temps réel
-    const searchInput = document.getElementById('search-publications');
-    const statusFilter = document.getElementById('status-filter');
-    
-    function filterPublications() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const statusValue = statusFilter.value;
-        const cards = document.querySelectorAll('.publication-card');
-        const rows = document.querySelectorAll('#list-container tbody tr');
-        
-        // Filtrer les cards (vue grille)
-        cards.forEach(card => {
-            const title = card.querySelector('h3').textContent.toLowerCase();
-            const resume = card.querySelector('p') ? card.querySelector('p').textContent.toLowerCase() : '';
-            const badges = card.querySelectorAll('span');
-            let status = '';
-            
-            badges.forEach(badge => {
-                if (badge.textContent.includes('Publiée')) status = 'published';
-                if (badge.textContent.includes('En attente')) status = 'pending';
-                if (badge.textContent.includes('Brouillon')) status = 'draft';
-            });
-            
-            const matchesSearch = title.includes(searchTerm) || resume.includes(searchTerm);
-            const matchesStatus = statusValue === '' || status === statusValue;
-            
-            if (matchesSearch && matchesStatus) {
-                card.style.display = 'block';
-                card.parentElement.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-        
-        // Filtrer les lignes (vue liste)
-        rows.forEach(row => {
-            const title = row.querySelector('.text-sm.font-medium').textContent.toLowerCase();
-            const resume = row.querySelector('.text-sm.text-gray-500') ? row.querySelector('.text-sm.text-gray-500').textContent.toLowerCase() : '';
-            const badges = row.querySelectorAll('span');
-            let status = '';
-            
-            badges.forEach(badge => {
-                if (badge.textContent.includes('Publiée')) status = 'published';
-                if (badge.textContent.includes('En attente')) status = 'pending';
-                if (badge.textContent.includes('Brouillon')) status = 'draft';
-            });
-            
-            const matchesSearch = title.includes(searchTerm) || resume.includes(searchTerm);
-            const matchesStatus = statusValue === '' || status === statusValue;
-            
-            if (matchesSearch && matchesStatus) {
-                row.style.display = 'table-row';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    }
-    
-    searchInput.addEventListener('input', filterPublications);
-    statusFilter.addEventListener('change', filterPublications);
 });
-
-// Fonctions pour les actions
-function deletePublication(id) {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette publication ? Cette action est irréversible.')) {
-        fetch('/admin/publication/' + id, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.reload();
-            } else {
-                alert('Erreur: ' + data.message);
-            }
-        })
-        .catch(error => {
-            alert('Erreur lors de la suppression');
-            console.error('Error:', error);
-        });
-    }
-}
 </script>
 @endsection

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dynamic Requirements</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'iri-primary': '#1e40af',
+                        'iri-secondary': '#1d4ed8'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
+        <h1 class="text-2xl font-bold mb-6">Test du composant Dynamic Requirements</h1>
+        
+        <div class="mb-6">
+            <label for="requirements-container" class="block text-sm font-medium text-gray-700 mb-2">
+                Exigences et qualifications <span class="text-red-500">*</span>
+            </label>
+            <div id="requirements-container"></div>
+            <p class="mt-1 text-sm text-gray-500">
+                <i class="fas fa-lightbulb mr-1"></i>
+                Ajoutez chaque exigence une par une. Exemple : "Minimum 3 ans d'expérience", "Maîtrise de Laravel", etc.
+            </p>
+        </div>
+        
+        <button onclick="testComponent()" class="bg-blue-500 text-white px-4 py-2 rounded">
+            Initialiser le composant
+        </button>
+        
+        <div id="debug-info" class="mt-4 p-4 bg-gray-100 rounded"></div>
+    </div>
+
+    <script>
+        // Composant pour la gestion dynamique des listes d'exigences
+        class DynamicRequirements {
+            constructor(containerId, options = {}) {
+                console.log('Initialisation DynamicRequirements avec containerId:', containerId);
+                this.container = document.getElementById(containerId);
+                console.log('Container trouvé:', this.container);
+                
+                if (!this.container) {
+                    console.error('Container non trouvé:', containerId);
+                    return;
+                }
+                
+                this.requirements = [];
+                this.options = {
+                    inputPlaceholder: options.inputPlaceholder || 'Saisissez une exigence...',
+                    addButtonText: options.addButtonText || 'Ajouter',
+                    hiddenInputName: options.hiddenInputName || 'requirements',
+                    maxItems: options.maxItems || 20,
+                    ...options
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                console.log('Initialisation du composant...');
+                this.createHTML();
+                this.bindEvents();
+                this.loadExistingData();
+                console.log('Composant initialisé avec succès');
+            }
+            
+            createHTML() {
+                console.log('Création du HTML...');
+                this.container.innerHTML = `
+                    <div class="dynamic-requirements">
+                        <div class="flex gap-2 mb-4">
+                            <input type="text" 
+                                   id="requirement-input" 
+                                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-iri-primary focus:border-iri-primary transition-colors duration-200" 
+                                   placeholder="${this.options.inputPlaceholder}"
+                                   maxlength="500">
+                            <button type="button" 
+                                    id="add-requirement-btn" 
+                                    class="bg-iri-primary hover:bg-iri-secondary text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center">
+                                <i class="fas fa-plus mr-2"></i>
+                                ${this.options.addButtonText}
+                            </button>
+                        </div>
+                        
+                        <div id="requirements-list" class="space-y-2 mb-4">
+                            <!-- Les exigences apparaîtront ici -->
+                        </div>
+                        
+                        <input type="hidden" name="${this.options.hiddenInputName}" id="requirements-json" value="[]">
+                        
+                        <div class="text-sm text-gray-500 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <span id="requirements-count">0</span> exigence(s) ajoutée(s) (maximum ${this.options.maxItems})
+                        </div>
+                    </div>
+                `;
+                console.log('HTML créé');
+            }
+            
+            bindEvents() {
+                console.log('Binding des événements...');
+                const input = document.getElementById('requirement-input');
+                const addBtn = document.getElementById('add-requirement-btn');
+                
+                if (!input || !addBtn) {
+                    console.error('Éléments non trouvés:', {input, addBtn});
+                    return;
+                }
+                
+                // Ajouter par clic sur le bouton
+                addBtn.addEventListener('click', () => {
+                    console.log('Bouton ajouter cliqué');
+                    this.addRequirement();
+                });
+                
+                // Ajouter par Entrée
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        console.log('Touche Entrée pressée');
+                        this.addRequirement();
+                    }
+                });
+                
+                console.log('Événements bindés');
+            }
+            
+            addRequirement() {
+                console.log('Ajout d\'une exigence...');
+                const input = document.getElementById('requirement-input');
+                const text = input.value.trim();
+                
+                console.log('Texte saisi:', text);
+                
+                if (!text) {
+                    this.showMessage('Veuillez saisir une exigence.', 'error');
+                    return;
+                }
+                
+                if (this.requirements.length >= this.options.maxItems) {
+                    this.showMessage(`Maximum ${this.options.maxItems} exigences autorisées.`, 'error');
+                    return;
+                }
+                
+                if (this.requirements.includes(text)) {
+                    this.showMessage('Cette exigence existe déjà.', 'error');
+                    return;
+                }
+                
+                this.requirements.push(text);
+                input.value = '';
+                this.updateDisplay();
+                this.updateHiddenInput();
+                this.showMessage('Exigence ajoutée avec succès.', 'success');
+                console.log('Exigences actuelles:', this.requirements);
+            }
+            
+            removeRequirement(index) {
+                console.log('Suppression exigence index:', index);
+                this.requirements.splice(index, 1);
+                this.updateDisplay();
+                this.updateHiddenInput();
+                this.showMessage('Exigence supprimée.', 'success');
+            }
+            
+            updateDisplay() {
+                console.log('Mise à jour de l\'affichage...');
+                const list = document.getElementById('requirements-list');
+                const count = document.getElementById('requirements-count');
+                
+                if (!list || !count) {
+                    console.error('Éléments d\'affichage non trouvés');
+                    return;
+                }
+                
+                if (this.requirements.length === 0) {
+                    list.innerHTML = `
+                        <div class="text-gray-500 text-center py-4 border-2 border-dashed border-gray-200 rounded-lg">
+                            <i class="fas fa-list-ul text-2xl mb-2"></i>
+                            <p>Aucune exigence ajoutée pour le moment</p>
+                        </div>
+                    `;
+                } else {
+                    list.innerHTML = this.requirements.map((req, index) => `
+                        <div class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-3 group hover:bg-gray-100 transition-colors duration-200">
+                            <div class="flex items-start space-x-3 flex-1">
+                                <i class="fas fa-check-circle text-iri-primary mt-0.5"></i>
+                                <span class="text-gray-800 flex-1">${this.escapeHtml(req)}</span>
+                            </div>
+                            <button type="button" 
+                                    onclick="dynamicRequirements.removeRequirement(${index})"
+                                    class="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors duration-200 opacity-0 group-hover:opacity-100"
+                                    title="Supprimer cette exigence">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    `).join('');
+                }
+                
+                count.textContent = this.requirements.length;
+                console.log('Affichage mis à jour');
+            }
+            
+            updateHiddenInput() {
+                const hiddenInput = document.getElementById('requirements-json');
+                if (hiddenInput) {
+                    hiddenInput.value = JSON.stringify(this.requirements);
+                    console.log('Hidden input mis à jour:', hiddenInput.value);
+                }
+            }
+            
+            loadExistingData() {
+                console.log('Chargement des données existantes...');
+                const hiddenInput = document.getElementById('requirements-json');
+                if (hiddenInput && hiddenInput.value && hiddenInput.value !== '[]') {
+                    try {
+                        this.requirements = JSON.parse(hiddenInput.value) || [];
+                        this.updateDisplay();
+                        console.log('Données existantes chargées:', this.requirements);
+                    } catch (e) {
+                        console.error('Erreur lors du chargement des données existantes:', e);
+                    }
+                } else {
+                    this.updateDisplay();
+                }
+            }
+            
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            showMessage(message, type = 'info') {
+                console.log('Message:', message, type);
+                // Supprimer les anciens messages
+                const existingMessage = this.container.querySelector('.dynamic-message');
+                if (existingMessage) {
+                    existingMessage.remove();
+                }
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `dynamic-message p-2 rounded mb-2 ${
+                    type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' : 
+                    type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+                    'bg-blue-100 text-blue-800 border border-blue-200'
+                }`;
+                messageDiv.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'} mr-1"></i>${message}`;
+                
+                this.container.insertBefore(messageDiv, this.container.firstChild);
+                
+                // Supprimer automatiquement après 3 secondes
+                setTimeout(() => {
+                    if (messageDiv.parentNode) {
+                        messageDiv.remove();
+                    }
+                }, 3000);
+            }
+        }
+
+        // Variable globale pour l'instance
+        let dynamicRequirements;
+
+        function testComponent() {
+            console.log('Test du composant...');
+            const debugInfo = document.getElementById('debug-info');
+            
+            try {
+                // Vérifier que l'élément container existe
+                const container = document.getElementById('requirements-container');
+                debugInfo.innerHTML += `<p>Container trouvé: ${container ? 'OUI' : 'NON'}</p>`;
+                
+                if (!container) {
+                    debugInfo.innerHTML += `<p class="text-red-600">ERREUR: Container 'requirements-container' non trouvé!</p>`;
+                    return;
+                }
+                
+                // Initialiser le composant
+                dynamicRequirements = new DynamicRequirements('requirements-container', {
+                    inputPlaceholder: 'Saisissez une exigence (ex: Minimum 3 ans d\'expérience)',
+                    addButtonText: 'Ajouter',
+                    hiddenInputName: 'requirements',
+                    maxItems: 15
+                });
+                
+                debugInfo.innerHTML += `<p class="text-green-600">Composant initialisé avec succès!</p>`;
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                debugInfo.innerHTML += `<p class="text-red-600">ERREUR: ${error.message}</p>`;
+            }
+        }
+
+        // Auto-initialiser au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM chargé, test automatique...');
+            testComponent();
+        });
+    </script>
+</body>
+</html>

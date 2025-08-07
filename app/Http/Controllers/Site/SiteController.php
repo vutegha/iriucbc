@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\NewsletterSubscriptionRequest;
 use Illuminate\Http\Request;
 use App\Http\Requests\JobApplicationRequest;
 use App\Http\Requests\ContactRequest;
@@ -35,7 +36,7 @@ class SiteController extends Controller
 {
 public function index(Request $request)
 {
-    $query = Publication::published()->with('auteur', 'categorie');
+    $query = Publication::published()->with('auteurs', 'categorie');
 
     if ($request->filled('auteur')) {
         $query->where('auteur_id', $request->auteur);
@@ -411,17 +412,46 @@ public function convertirImageUnique(\App\Models\Publication $publication)
 
 public function publications(Request $request)
 {
-    $query = Publication::published()->with('auteur', 'categorie');
+    // Récupérer les publications
+    $queryPublications = Publication::published()->with('auteurs', 'categorie');
+    
+    // Récupérer les rapports
+    $queryRapports = Rapport::published()->with('categorie');
 
     if ($request->filled('auteur')) {
-        $query->where('auteur_id', $request->auteur);
+        $queryPublications->where('auteur_id', $request->auteur);
+        // Les rapports n'ont pas d'auteur spécifique, donc on les ignore pour ce filtre
     }
 
     if ($request->filled('categorie')) {
-        $query->where('categorie_id', $request->categorie);
+        $queryPublications->where('categorie_id', $request->categorie);
+        $queryRapports->where('categorie_id', $request->categorie);
     }
 
-    $publications = $query->latest()->paginate(20)->appends($request->query());
+    // Récupérer les résultats
+    $publications = $queryPublications->latest()->get();
+    $rapports = $queryRapports->latest()->get();
+    
+    // Combiner les publications et rapports
+    $allDocuments = $publications->merge($rapports)->sortByDesc('created_at');
+    
+    // Paginer manuellement les résultats combinés
+    $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage();
+    $perPage = 20;
+    $currentItems = $allDocuments->slice(($currentPage - 1) * $perPage, $perPage)->values();
+    
+    $publications = new \Illuminate\Pagination\LengthAwarePaginator(
+        $currentItems,
+        $allDocuments->count(),
+        $perPage,
+        $currentPage,
+        [
+            'path' => $request->url(),
+            'pageName' => 'page',
+        ]
+    );
+    
+    $publications->appends($request->query());
 
     // charger les catégories
     $categories = Categorie::all();
@@ -443,7 +473,7 @@ public function search(Request $request)
     $query = $request->input('q', $request->input('search')); // Support des deux paramètres
 
     // Publications
-    $publications = Publication::with('categorie', 'auteur')
+    $publications = Publication::with('categorie', 'auteurs')
         ->where('titre', 'like', "%{$query}%")
         ->orWhere('resume', 'like', "%{$query}%")
         ->get()
@@ -552,7 +582,7 @@ public function convertirDocxEnHtml($fileUrl)
 public function galerie(Request $request)
 {
     // $medias = Media::inRandomOrder()->get(); // Aléatoire
-    $query = Media::query();
+    $query = Media::published(); // Utiliser le scope pour récupérer les médias publiés et publics
 
     if ($request->has('type') && in_array($request->type, ['image', 'video'])) {
         $query->where('type', $request->type);
@@ -569,14 +599,57 @@ public function galerie(Request $request)
     return view('galerie', compact('medias', 'breadcrumbs'));
 }
 
+/**
+ * Télécharger un média publié
+ */
+public function downloadMedia($id)
+{
+    $media = Media::published()
+                  ->where('id', $id)
+                  ->firstOrFail();
+
+    $filePath = storage_path('app/public/' . $media->medias);
+    
+    if (!file_exists($filePath)) {
+        abort(404, 'Fichier non trouvé');
+    }
+
+    $fileName = $media->titre ? Str::slug($media->titre) : 'media';
+    $extension = pathinfo($media->medias, PATHINFO_EXTENSION);
+    $downloadName = $fileName . '.' . $extension;
+
+    return response()->download($filePath, $downloadName);
+}
+
 
 
 public function publicationShow($slug)
 {
+    // Essayer de trouver une publication d'abord
     $publication = Publication::published()
         ->with(['auteurs', 'categorie'])
         ->where('slug', $slug)
-        ->firstOrFail();
+        ->first();
+
+    // Si pas trouvé, chercher dans les rapports
+    if (!$publication) {
+        $rapport = Rapport::published()
+            ->with(['categorie'])
+            ->where('slug', $slug)
+            ->first();
+            
+        if ($rapport) {
+            // Transformer le rapport en format compatible avec la vue
+            $publication = $rapport;
+            $publication->fichier_pdf = $rapport->fichier; // Mapper le champ fichier vers fichier_pdf
+            $publication->resume = $rapport->description; // Mapper description vers resume
+            $publication->auteurs = collect(); // Les rapports n'ont pas d'auteurs
+        }
+    }
+    
+    if (!$publication) {
+        abort(404, 'Document non trouvé');
+    }
 
     $fichierPath = storage_path('app/public/' . $publication->fichier_pdf);
     $extension = strtolower(pathinfo($fichierPath, PATHINFO_EXTENSION));
@@ -590,8 +663,8 @@ public function publicationShow($slug)
         $contenuHtml = $this->convertirDocxEnHtml($fichierPath);
     }
 
-    // Gérer les relations many-to-many avec auteurs
-    if ($publication->auteurs->count() > 0) {
+    // Gérer les relations many-to-many avec auteurs (seulement pour les vraies publications)
+    if ($publication->auteurs && $publication->auteurs->count() > 0) {
         // Prendre le premier auteur pour les publications similaires
         $premierAuteur = $publication->auteurs->first();
         
@@ -641,6 +714,16 @@ public function publicationShow($slug)
 //         return '<p>Erreur lors de la lecture du fichier Word : ' . $e->getMessage() . '</p>';
 //     }
 // }
+
+public function about()
+{
+    // Breadcrumbs
+    $breadcrumbs = [
+        ['title' => 'À propos', 'url' => null]
+    ];
+    
+    return view('about', compact('breadcrumbs'));
+}
 
 public function contact()
 {
@@ -720,32 +803,50 @@ public function storeContact(ContactRequest $request)
 /**
  * Gérer l'inscription newsletter depuis le footer
  */
-public function subscribeNewsletter(Request $request)
+public function subscribeNewsletter(NewsletterSubscriptionRequest $request)
 {
     try {
+        // Protection contre les attaques par force brute
+        $ip = $request->ip();
+        $cacheKey = 'newsletter_attempts_' . $ip;
+        $attempts = cache()->get($cacheKey, 0);
+        
+        if ($attempts > 10) { // Max 10 tentatives par heure par IP
+            return back()->withErrors(['email' => 'Trop de tentatives. Réessayez dans une heure.'])
+                         ->withInput($request->only('email', 'nom'));
+        }
+        
+        cache()->put($cacheKey, $attempts + 1, now()->addHour());
+        
+        // Protection honeypot - Si les champs cachés sont remplis, c'est un bot
+        if (!empty($request->website) || !empty($request->phone)) {
+            \Log::warning('Bot détecté lors de l\'inscription newsletter', [
+                'ip' => $ip,
+                'user_agent' => $request->userAgent()
+            ]);
+            // Ne pas révéler la détection du bot
+            return back()->with('success', 'Inscription réussie ! Vous recevrez bientôt nos actualités.');
+        }
+
         \Log::info('Newsletter subscription attempt', [
-            'email' => $request->email,
-            'nom' => $request->nom,
-            'preferences' => $request->preferences,
-            'all_data' => $request->all()
+            'email' => $request->validated('email'),
+            'nom' => $request->validated('nom'),
+            'preferences' => $request->validated('preferences'),
+            'ip' => $ip,
+            'user_agent' => substr($request->userAgent(), 0, 200)
         ]);
 
-        // Validation flexible
-        $request->validate([
-            'email' => 'required|email|max:255',
-            'nom' => 'nullable|string|max:255', // Le nom est optionnel
-            'preferences' => 'nullable|array', // Les préférences sont optionnelles
-            'preferences.*' => 'in:actualites,publications,rapports,evenements'
-        ]);
+        // Utilisation des données validées et nettoyées
+        $validatedData = $request->validated();
 
         // Préparer les préférences par défaut si aucune n'est fournie
         $preferences = ['actualites' => true, 'publications' => true]; // Valeurs par défaut
         
-        if ($request->has('preferences') && is_array($request->preferences)) {
+        if (!empty($validatedData['preferences']) && is_array($validatedData['preferences'])) {
             // Si des préférences sont envoyées, les utiliser
             $preferences = [];
-            foreach(['actualites', 'publications', 'rapports', 'evenements'] as $type) {
-                $preferences[$type] = in_array($type, $request->preferences);
+            foreach(['actualites', 'publications', 'rapports', 'evenements', 'projets'] as $type) {
+                $preferences[$type] = in_array($type, $validatedData['preferences']);
             }
             
             // S'assurer qu'au moins une préférence est activée
@@ -756,86 +857,102 @@ public function subscribeNewsletter(Request $request)
 
         \Log::info('Prepared preferences', ['preferences' => $preferences]);
 
-        // Vérifier si l'email existe déjà
-        $existing = \DB::table('newsletters')->where('email', $request->email)->first();
+        // Utilisation de transactions pour garantir l'intégrité
+        \DB::beginTransaction();
         
-        if ($existing) {
-            if ($existing->actif) {
-                \Log::info('Newsletter subscription attempt for existing active user', ['email' => $request->email]);
-                return back()->with('info', 'Cette adresse email est déjà inscrite à notre newsletter. Vous recevez déjà nos actualités !');
-            } else {
-                // Réactiver l'abonnement
-                \DB::table('newsletters')
-                    ->where('email', $request->email)
-                    ->update([
-                        'actif' => 1,
-                        'nom' => $request->nom ?: $existing->nom ?: 'Abonné',
-                        'preferences' => json_encode($preferences),
-                        'updated_at' => now()
-                    ]);
-                
-                \Log::info('Newsletter subscription reactivated', ['email' => $request->email]);
-                return back()->with('success', 'Votre abonnement à la newsletter a été réactivé avec succès !');
-            }
-        }
-
-        // Nouvelle inscription
-        $inserted = \DB::table('newsletters')->insert([
-            'email' => $request->email,
-            'nom' => $request->nom ?: 'Abonné', // Nom par défaut si vide
-            'token' => bin2hex(random_bytes(32)),
-            'actif' => 1,
-            'preferences' => json_encode($preferences),
-            'emails_sent_count' => 0,
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
-
-        if ($inserted) {
-            \Log::info('Newsletter subscription successful', [
-                'email' => $request->email,
-                'preferences' => $preferences
-            ]);
+        try {
+            // Vérifier si l'email existe déjà avec requête préparée
+            $existing = \DB::table('newsletters')
+                          ->where('email', $validatedData['email'])
+                          ->lockForUpdate() // Verrouillage pour éviter les conditions de course
+                          ->first();
             
-            // Envoyer l'email de bienvenue pour les nouvelles inscriptions
-            try {
-                // Récupérer l'enregistrement nouvellement créé pour avoir l'ID et le token
-                $newsletter = \DB::table('newsletters')->where('email', $request->email)->first();
-                
-                if ($newsletter) {
-                    // Créer une instance Newsletter pour le service
-                    $newsletterModel = new \App\Models\Newsletter();
-                    $newsletterModel->fill([
-                        'id' => $newsletter->id,
-                        'email' => $newsletter->email,
-                        'nom' => $newsletter->nom,
-                        'token' => $newsletter->token,
-                        'actif' => $newsletter->actif,
-                        'preferences' => json_decode($newsletter->preferences, true)
-                    ]);
-                    $newsletterModel->exists = true; // Indiquer que c'est un modèle existant
+            if ($existing) {
+                if ($existing->actif) {
+                    \DB::rollback();
+                    \Log::info('Newsletter subscription attempt for existing active user', ['email' => $validatedData['email']]);
+                    return back()->with('info', 'Cette adresse email est déjà inscrite à notre newsletter. Vous recevez déjà nos actualités !');
+                } else {
+                    // Réactiver l'abonnement avec requête préparée
+                    \DB::table('newsletters')
+                        ->where('email', $validatedData['email'])
+                        ->update([
+                            'actif' => 1,
+                            'nom' => $validatedData['nom'] ?: $existing->nom ?: 'Abonné',
+                            'preferences' => json_encode($preferences),
+                            'updated_at' => now(),
+                            'ip_address' => $ip,
+                        ]);
                     
-                    $newsletterService = app(\App\Services\NewsletterService::class);
-                    $emailSent = $newsletterService->sendWelcomeEmail($newsletterModel);
-                    
-                    if ($emailSent) {
-                        \Log::info('Newsletter welcome email sent successfully', ['email' => $request->email]);
-                    }
+                    \DB::commit();
+                    \Log::info('Newsletter subscription reactivated', ['email' => $validatedData['email']]);
+                    return back()->with('success', 'Votre abonnement à la newsletter a été réactivé avec succès !');
                 }
-            } catch (\Exception $e) {
-                \Log::error('Newsletter welcome email failed', [
-                    'email' => $request->email,
-                    'error' => $e->getMessage()
-                ]);
-                // Ne pas faire échouer l'inscription si l'email échoue
             }
-            
-            return back()->with('success', 'Inscription réussie ! Merci de vous être abonné à notre newsletter.');
-        } else {
-            \Log::error('Newsletter subscription insert failed');
-            return back()->with('error', 'Erreur lors de l\'enregistrement.');
-        }
 
+            // Nouvelle inscription avec requête préparée
+            $token = bin2hex(random_bytes(32));
+            $inserted = \DB::table('newsletters')->insert([
+                'email' => $validatedData['email'],
+                'nom' => $validatedData['nom'] ?: 'Abonné',
+                'token' => $token,
+                'actif' => 1,
+                'preferences' => json_encode($preferences),
+                'emails_sent_count' => 0,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            if ($inserted) {
+                \DB::commit();
+                \Log::info('Newsletter subscription successful', [
+                    'email' => $validatedData['email'],
+                    'preferences' => $preferences
+                ]);
+                
+                // Envoyer l'email de bienvenue pour les nouvelles inscriptions
+                try {
+                    // Récupérer l'enregistrement nouvellement créé pour avoir l'ID et le token
+                    $newsletter = \DB::table('newsletters')->where('email', $validatedData['email'])->first();
+                    
+                    if ($newsletter) {
+                        // Créer une instance Newsletter pour le service
+                        $newsletterModel = new \App\Models\Newsletter();
+                        $newsletterModel->fill([
+                            'id' => $newsletter->id,
+                            'email' => $newsletter->email,
+                            'nom' => $newsletter->nom,
+                            'token' => $newsletter->token,
+                            'actif' => $newsletter->actif,
+                            'preferences' => json_decode($newsletter->preferences, true)
+                        ]);
+                        $newsletterModel->exists = true; // Indiquer que c'est un modèle existant
+                        
+                        $newsletterService = app(\App\Services\NewsletterService::class);
+                        $emailSent = $newsletterService->sendWelcomeEmail($newsletterModel);
+                        
+                        if ($emailSent) {
+                            \Log::info('Newsletter welcome email sent successfully', ['email' => $validatedData['email']]);
+                        }
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Newsletter welcome email failed', [
+                        'email' => $validatedData['email'],
+                        'error' => $e->getMessage()
+                    ]);
+                    // Ne pas faire échouer l'inscription si l'email échoue
+                }
+                
+                return back()->with('success', 'Inscription réussie ! Merci de vous être abonné à notre newsletter.');
+            } else {
+                \DB::rollback();
+                \Log::error('Newsletter subscription insert failed');
+                return back()->with('error', 'Erreur lors de l\'enregistrement.');
+            }        } catch (\Exception $e) {
+            \DB::rollback(); // Rollback de la transaction en cas d'erreur
+            throw $e; // Relancer l'exception pour les catch suivants
+        }
+        
     } catch (\Illuminate\Validation\ValidationException $e) {
         \Log::warning('Newsletter subscription validation failed', [
             'email' => $request->email ?? 'unknown',
@@ -956,25 +1073,45 @@ public function submitJobApplication(JobApplicationRequest $request, JobOffer $j
         return redirect()->route('site.work-with-us')->with('error', 'Cette offre d\'emploi n\'est plus disponible.');
     }
 
+    // Rate limiting : max 3 candidatures par IP par heure
+    $clientIp = $request->ip();
+    $cacheKey = 'job_applications_' . md5($clientIp);
+    $attemptCount = cache()->get($cacheKey, 0);
+    
+    if ($attemptCount >= 3) {
+        return back()->with('error', 'Trop de tentatives de candidature. Veuillez réessayer dans une heure.');
+    }
+
+    // Vérifier le honeypot anti-spam
+    if ($request->filled('website')) {
+        \Log::warning('Tentative de spam détectée', [
+            'ip' => $clientIp,
+            'user_agent' => $request->userAgent(),
+            'job_id' => $job->id
+        ]);
+        return back()->with('error', 'Erreur lors de la soumission. Veuillez réessayer.');
+    }
+
     try {
-        // Upload des fichiers avec validation supplémentaire
+        // Upload sécurisé des fichiers
         $cvPath = null;
         $portfolioPath = null;
 
         if ($request->hasFile('cv_file')) {
-            $cvFile = $request->file('cv_file');
-            // Générer un nom unique pour éviter les conflits
-            $cvFileName = time() . '_cv_' . $job->id . '_' . Str::slug($request->last_name) . '.' . $cvFile->getClientOriginalExtension();
-            $cvPath = $cvFile->storeAs('job-applications/cv', $cvFileName, 'public');
+            $cvPath = $this->storeFileSecurely($request->file('cv_file'), 'cv', $job->id, $request->last_name);
+            if (!$cvPath) {
+                return back()->with('error', 'Erreur lors du téléchargement du CV. Fichier non autorisé.');
+            }
         }
 
         if ($request->hasFile('portfolio_file')) {
-            $portfolioFile = $request->file('portfolio_file');
-            $portfolioFileName = time() . '_portfolio_' . $job->id . '_' . Str::slug($request->last_name) . '.' . $portfolioFile->getClientOriginalExtension();
-            $portfolioPath = $portfolioFile->storeAs('job-applications/portfolio', $portfolioFileName, 'public');
+            $portfolioPath = $this->storeFileSecurely($request->file('portfolio_file'), 'portfolio', $job->id, $request->last_name);
+            if (!$portfolioPath) {
+                return back()->with('error', 'Erreur lors du téléchargement du portfolio. Fichier non autorisé.');
+            }
         }
 
-        // Créer la candidature avec les données validées
+        // Créer la candidature avec les données validées et nettoyées
         $application = JobApplication::create([
             'job_offer_id' => $job->id,
             'first_name' => $request->first_name,
@@ -997,6 +1134,17 @@ public function submitJobApplication(JobApplicationRequest $request, JobOffer $j
         // Incrémenter le compteur de candidatures
         $job->incrementApplications();
 
+        // Incrémenter le compteur rate limiting
+        cache()->put($cacheKey, $attemptCount + 1, now()->addHour());
+
+        // Logger l'activité pour audit
+        \Log::info('Nouvelle candidature soumise', [
+            'application_id' => $application->id,
+            'job_id' => $job->id,
+            'email' => $request->email,
+            'ip' => $clientIp
+        ]);
+
         // Optionnel : Envoyer un email de confirmation
         // Mail::to($request->email)->send(new JobApplicationConfirmation($application));
 
@@ -1004,9 +1152,91 @@ public function submitJobApplication(JobApplicationRequest $request, JobOffer $j
             ->with('success', 'Votre candidature a été soumise avec succès. Nous vous contacterons bientôt.');
 
     } catch (\Exception $e) {
-        \Log::error('Erreur lors de la soumission de candidature: ' . $e->getMessage());
+        \Log::error('Erreur lors de la soumission de candidature', [
+            'error' => $e->getMessage(),
+            'job_id' => $job->id,
+            'email' => $request->email,
+            'ip' => $clientIp
+        ]);
         return back()->with('error', 'Une erreur est survenue lors de la soumission de votre candidature. Veuillez réessayer.');
     }
+}
+
+/**
+ * Stockage sécurisé des fichiers avec validation avancée
+ */
+private function storeFileSecurely($file, $type, $jobId, $lastName)
+{
+    try {
+        // Validation supplémentaire du fichier
+        if (!$this->isFileSecure($file)) {
+            return null;
+        }
+
+        // Générer un nom de fichier cryptographiquement sécurisé
+        $extension = $file->getClientOriginalExtension();
+        $hash = hash('sha256', $file->getContent() . time() . random_bytes(16));
+        $fileName = $hash . '_' . $type . '_' . $jobId . '.' . $extension;
+        
+        // Stocker dans un répertoire privé (non accessible publiquement)
+        $path = $file->storeAs('private/job-applications/' . $type, $fileName);
+        
+        return $path;
+        
+    } catch (\Exception $e) {
+        \Log::error('Erreur stockage fichier', [
+            'error' => $e->getMessage(),
+            'file_type' => $type,
+            'job_id' => $jobId
+        ]);
+        return null;
+    }
+}
+
+/**
+ * Validation de sécurité avancée des fichiers
+ */
+private function isFileSecure($file)
+{
+    // Vérifier la taille réelle
+    if ($file->getSize() > 10485760) { // 10MB max
+        return false;
+    }
+    
+    // Vérifier le type MIME réel
+    $allowedMimes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/zip',
+        'application/x-zip-compressed'
+    ];
+    
+    if (!in_array($file->getMimeType(), $allowedMimes)) {
+        return false;
+    }
+    
+    // Vérifier que ce n'est pas un exécutable déguisé
+    $content = $file->getContent();
+    $dangerousSignatures = [
+        'MZ', // Exécutable Windows
+        '<!DOCTYPE html', // HTML
+        '<script', // JavaScript
+        '<?php', // PHP
+        'PK', // ZIP potentiel avec exécutable
+    ];
+    
+    foreach ($dangerousSignatures as $signature) {
+        if (strpos($content, $signature) === 0) {
+            \Log::warning('Fichier suspect détecté', [
+                'signature' => $signature,
+                'mime' => $file->getMimeType()
+            ]);
+            return false;
+        }
+    }
+    
+    return true;
 }
 
 /**
@@ -1050,6 +1280,33 @@ public function evenements()
                            ->paginate(12);
 
     return view('site.evenements', compact('evenements'));
+}
+
+/**
+ * Afficher tous les rapports publics
+ */
+public function rapports()
+{
+    $rapports = Rapport::where('statut', 'publie')
+                       ->latest()
+                       ->paginate(12);
+
+    return view('site.rapports', compact('rapports'));
+}
+
+/**
+ * Afficher un rapport spécifique
+ */
+public function rapportShow($slug)
+{
+    $rapport = Rapport::where('slug', $slug)
+                      ->where('statut', 'publie')
+                      ->firstOrFail();
+
+    // Incrémenter les vues
+    $rapport->increment('vues');
+
+    return view('site.rapport', compact('rapport'));
 }
    
 }

@@ -18,7 +18,7 @@
                 Actualités
             </h1>
             <p class="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed drop-shadow-lg">
-                Suivez les dernières nouvelles et développements de l'IRI-UCBC
+                Suivez les dernières nouvelles et développements du programme GRN-UCBC
             </p>
         </div>
     </section>

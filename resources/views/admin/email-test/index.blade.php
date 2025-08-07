@@ -103,7 +103,7 @@
                            id="subject" 
                            name="subject" 
                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                           value="Test de Configuration Email - IRI-UCBC"
+                           value="Test de Configuration Email - GRN-UCBC"
                            required>
                 </div>
 
@@ -119,7 +119,7 @@
                               placeholder="Votre message de test..."
                               required>Bonjour,
 
-Ceci est un email de test envoyé depuis l'interface d'administration de IRI-UCBC.
+Ceci est un email de test envoyé depuis l'interface d'administration de GRN-UCBC.
 
 Configuration testée :
 - Serveur SMTP : {{ $config['host'] }}
@@ -132,7 +132,7 @@ Si vous recevez cet email, la configuration fonctionne correctement !
 Date/Heure : {{ now()->format('d/m/Y H:i:s') }}
 
 Cordialement,
-L'équipe IRI-UCBC</textarea>
+L'équipe GRN-UCBC</textarea>
                 </div>
 
                 <!-- Boutons -->

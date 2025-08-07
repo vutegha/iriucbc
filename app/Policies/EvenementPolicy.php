@@ -4,81 +4,108 @@ namespace App\Policies;
 
 use App\Models\Evenement;
 use App\Models\User;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Auth\Access\Response;
 
 class EvenementPolicy
 {
-    use HandlesAuthorization;
-
     /**
-     * Determine whether the user can view any evenements.
+     * Determine whether the user can view any models.
      */
-    public function viewAny(User $user)
+    public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('view evenements') || 
-               $user->hasAnyRole(['admin', 'super-admin', 'moderateur']);
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('view_evenements', 'web') ||
+               $user->hasAnyRole(['admin', 'moderator', 'contributeur'], 'web');
     }
 
     /**
-     * Determine whether the user can view the evenement.
+     * Determine whether the user can view the model.
      */
-    public function view(User $user, Evenement $evenement)
+    public function view(User $user, Evenement $evenement): bool
     {
-        return $user->hasPermissionTo('view evenements') || 
-               $user->hasAnyRole(['admin', 'super-admin', 'moderateur']);
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('view_evenements', 'web') ||
+               $user->hasAnyRole(['admin', 'moderator', 'contributeur'], 'web');
     }
 
     /**
-     * Determine whether the user can create evenements.
+     * Determine whether the user can create models.
      */
-    public function create(User $user)
+    public function create(User $user): bool
     {
-        return $user->hasPermissionTo('create evenements') || 
-               $user->hasAnyRole(['admin', 'super-admin']);
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('create_evenements', 'web') ||
+               $user->hasAnyRole(['admin', 'contributeur'], 'web');
     }
 
     /**
-     * Determine whether the user can update the evenement.
+     * Determine whether the user can update the model.
      */
-    public function update(User $user, Evenement $evenement)
+    public function update(User $user, Evenement $evenement): bool
     {
-        return $user->hasPermissionTo('edit evenements') || 
-               $user->hasAnyRole(['admin', 'super-admin']);
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('update_evenements', 'web') ||
+               $user->hasAnyRole(['admin'], 'web');
     }
 
     /**
-     * Determine whether the user can delete the evenement.
+     * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Evenement $evenement)
+    public function delete(User $user, Evenement $evenement): bool
     {
-        return $user->hasPermissionTo('delete evenements') || 
-               $user->hasAnyRole(['admin', 'super-admin']);
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('delete_evenements', 'web') ||
+               $user->hasAnyRole(['admin'], 'web');
     }
 
     /**
-     * Determine whether the user can publish the evenement.
+     * Determine whether the user can moderate the model.
      */
-    public function publish(User $user, Evenement $evenement)
+    public function moderate(User $user, ?Evenement $evenement = null): bool
     {
-        return $user->hasPermissionTo('publish evenements') || 
-               $user->hasAnyRole(['admin', 'super-admin', 'moderateur']);
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('moderate_evenements', 'web') ||
+               $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
     /**
-     * Determine whether the user can unpublish the evenement.
+     * Determine whether the user can publish the model.
      */
-    public function unpublish(User $user, Evenement $evenement)
+    public function publish(User $user, Evenement $evenement): bool
     {
-        return $user->hasPermissionTo('unpublish evenements') || 
-               $user->hasAnyRole(['admin', 'super-admin', 'moderateur']);
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('publish_evenements', 'web') ||
+               $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
-    /**
-     * Determine whether the user can moderate the evenement.
-     */
-    public function moderate(User $user, Evenement $evenement)
-    {
-        return $user->hasPermissionTo('moderate evenements') || 
-               $user->hasAnyRole(['admin', 'super-admin', 'moderateur']);
-    }
-}
+
+
+                }

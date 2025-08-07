@@ -1,6 +1,6 @@
 @extends('layouts.iri')
 
-@section('title', 'Projets - Institut de Recherche Intégré')
+@section('title', 'Projets - Programme Gouvernance des Ressources Naturelles')
 
 @section('content')
 <!-- Main Content -->

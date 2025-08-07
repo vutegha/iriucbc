@@ -67,7 +67,8 @@ class NewsletterPreferencesController extends Controller
             'actualites' => $request->has('preferences.actualites'),
             'publications' => $request->has('preferences.publications'),
             'rapports' => $request->has('preferences.rapports'),
-            'evenements' => $request->has('preferences.evenements')
+            'evenements' => $request->has('preferences.evenements'),
+            'projets' => $request->has('preferences.projets')
         ];
         
         if ($this->newsletterService->updatePreferences($newsletter, $preferences)) {

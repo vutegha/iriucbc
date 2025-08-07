@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class JobOffer extends Model
@@ -11,8 +12,8 @@ class JobOffer extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title', 'description', 'type', 'location', 'department',
-        'source', 'partner_name', 'status', 'application_deadline',
+        'title', 'slug', 'description', 'type', 'location', 'department',
+        'source', 'partner_name', 'partner_logo', 'status', 'application_deadline',
         'requirements', 'criteria', 'benefits', 'salary_min', 'salary_max',
         'salary_negotiable', 'positions_available', 'contact_email',
         'contact_phone', 'document_appel_offre', 'document_appel_offre_nom',
@@ -108,6 +109,54 @@ class JobOffer extends Model
         return !empty($this->document_appel_offre);
     }
 
+    // Méthodes helper pour les fichiers
+    public function getDocumentAppelOffreSize()
+    {
+        if (!$this->document_appel_offre || !Storage::disk('public')->exists($this->document_appel_offre)) {
+            return 0;
+        }
+        return Storage::disk('public')->size($this->document_appel_offre);
+    }
+
+    public function getDocumentAppelOffreSizeFormatted()
+    {
+        $size = $this->getDocumentAppelOffreSize();
+        if ($size == 0) return '0 B';
+        
+        $units = ['B', 'KB', 'MB', 'GB'];
+        $power = $size > 0 ? floor(log($size, 1024)) : 0;
+        return number_format($size / pow(1024, $power), 1) . ' ' . $units[$power];
+    }
+
+    public function getDocumentAppelOffreExtension()
+    {
+        if (!$this->document_appel_offre) return null;
+        return strtoupper(pathinfo($this->document_appel_offre, PATHINFO_EXTENSION));
+    }
+
+    public function getPartnerLogoSize()
+    {
+        if (!$this->partner_logo || !Storage::disk('public')->exists($this->partner_logo)) {
+            return 0;
+        }
+        return Storage::disk('public')->size($this->partner_logo);
+    }
+
+    public function getPartnerLogoSizeFormatted()
+    {
+        $size = $this->getPartnerLogoSize();
+        if ($size == 0) return '0 B';
+        
+        $units = ['B', 'KB', 'MB', 'GB'];
+        $power = $size > 0 ? floor(log($size, 1024)) : 0;
+        return number_format($size / pow(1024, $power), 1) . ' ' . $units[$power];
+    }
+
+    public function hasPartnerLogo()
+    {
+        return !empty($this->partner_logo);
+    }
+
     // Methods
     public function incrementViews()
     {
@@ -122,5 +171,64 @@ class JobOffer extends Model
     public function markAsExpired()
     {
         $this->update(['status' => 'expired']);
+    }
+
+    // Génération automatique du slug
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($jobOffer) {
+            if (empty($jobOffer->slug)) {
+                $jobOffer->slug = $jobOffer->generateUniqueSlug($jobOffer->title);
+            }
+        });
+
+        static::updating(function ($jobOffer) {
+            if ($jobOffer->isDirty('title') && empty($jobOffer->slug)) {
+                $jobOffer->slug = $jobOffer->generateUniqueSlug($jobOffer->title);
+            }
+        });
+    }
+
+    /**
+     * Générer un slug unique pour l'offre d'emploi
+     */
+    private function generateUniqueSlug($title)
+    {
+        $baseSlug = \Illuminate\Support\Str::slug($title);
+        $slug = $baseSlug;
+        $counter = 1;
+
+        while (static::where('slug', $slug)->where('id', '!=', $this->id ?? 0)->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
+    }
+
+    /**
+     * Trouver une offre d'emploi par son slug
+     */
+    public static function findBySlug($slug)
+    {
+        return static::where('slug', $slug)->firstOrFail();
+    }
+
+    /**
+     * Obtenir l'URL de l'offre d'emploi
+     */
+    public function getUrlAttribute()
+    {
+        return route('admin.job-offers.show', $this->slug);
+    }
+
+    /**
+     * Spécifier que les routes doivent utiliser le slug au lieu de l'ID
+     */
+    public function getRouteKeyName()
+    {
+        return 'slug';
     }
 }

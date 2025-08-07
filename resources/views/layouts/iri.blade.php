@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Institut de Recherche Intégré - IRI-UCBC')</title>
+    <title>@yield('title', 'Programme Gouvernance des Ressources Naturelles - GRN-UCBC')</title>
     
     <!-- Favicon -->
     @include('partials.favicon')
     
     <!-- Meta Tags pour SEO -->
-    <meta name="description" content="@yield('description', 'Institut de Recherche Intégré de l\'Université Chrétienne Bilingue du Congo - Recherche, Innovation et Développement')">
-    <meta name="keywords" content="@yield('keywords', 'IRI, UCBC, recherche, innovation, développement, Congo, université')">
-    <meta name="author" content="IRI-UCBC">
+    <meta name="description" content="@yield('description', 'Programme Gouvernance des Ressources Naturelles de l\'Université Chrétienne Bilingue du Congo - Sharing The Land, Gouvernance Foncière et Développement')">
+    <meta name="keywords" content="@yield('keywords', 'GRN, UCBC, gouvernance foncière, ressources naturelles, Sharing The Land, Congo, université')">
+    <meta name="author" content="GRN-UCBC">
     
     <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="@yield('title', 'Institut de Recherche Intégré - IRI-UCBC')">
-    <meta property="og:description" content="@yield('description', 'Institut de Recherche Intégré de l\'Université Chrétienne Bilingue du Congo')">
+    <meta property="og:title" content="@yield('title', 'Programme Gouvernance des Ressources Naturelles - GRN-UCBC')">
+    <meta property="og:description" content="@yield('description', 'Programme Gouvernance des Ressources Naturelles de l\'Université Chrétienne Bilingue du Congo')">
     <meta property="og:image" content="{{ asset('assets/img/logos/iri-logo.png') }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:type" content="website">

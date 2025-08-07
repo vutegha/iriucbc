@@ -74,6 +74,7 @@ class User extends Authenticatable
             'moderate actualites', 
             'moderate evenements',
             'moderate services',
+            'moderate_partenaires',
             'moderate_projet'
         ]) || $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'gestionnaire_projets']);
     }
@@ -217,5 +218,59 @@ class User extends Authenticatable
         
         return $this->hasPermissionTo('delete services') ||
                $this->hasAnyRole(['super-admin', 'admin', 'moderator']);
+    }
+
+    /**
+     * Permissions pour les partenaires
+     */
+    public function canViewPartenaires(): bool
+    {
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('view_partenaires') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'editor', 'contributor']);
+    }
+
+    public function canCreatePartenaires(): bool
+    {
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('create_partenaires') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'moderator']);
+    }
+
+    public function canUpdatePartenaires(): bool
+    {
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('update_partenaires') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'moderator']);
+    }
+
+    public function canDeletePartenaires(): bool
+    {
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('delete_partenaires') ||
+               $this->hasAnyRole(['super-admin', 'admin']);
+    }
+
+    public function canModeratePartenaires(): bool
+    {
+        if ($this->isSuperAdmin()) return true;
+        
+        return $this->hasPermissionTo('moderate_partenaires') ||
+               $this->hasAnyRole(['super-admin', 'admin', 'moderator']);
+    }
+
+    /**
+     * Send the password reset notification using our custom template.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new \App\Notifications\CustomResetPasswordNotification($token));
     }
 }

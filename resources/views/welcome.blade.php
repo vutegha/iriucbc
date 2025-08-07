@@ -4,9 +4,9 @@
 <!-- Hero Section -->
 <div class="bg-primary text-white py-5">
     <div class="container text-center">
-        <h1 class="display-4 font-weight-bold">Institut de Recherche Intégrée (IRI-UCBC)</h1>
+        <h1 class="display-4 font-weight-bold">Centre de Gouvernance des Ressources Naturelles (GRN-UCBC)</h1>
         <p class="lead mt-3">
-            Integrated Research Institute at Université Chrétienne Bilingue du Congo (UCBC) dedicated to advancing research and innovation for sustainable development in the DRC.
+            Centre de Gouvernance des Ressources Naturelles à l'Université Chrétienne Bilingue du Congo (UCBC) dédié à l'avancement de la recherche et l'innovation pour le développement durable en RDC.
         </p>
         <a href="#" class="btn btn-light btn-lg mt-4">Discover Our Mission</a>
     </div>
@@ -16,14 +16,14 @@
 <div class="container my-5">
     <div class="row align-items-center">
         <div class="col-md-6">
-            <h2>About IRI-UCBC</h2>
+            <h2>À propos du GRN-UCBC</h2>
             <p>
-                The Institut de Recherche Intégrée (IRI-UCBC) is committed to promoting excellence in education, research, and technology for sustainable development in the Democratic Republic of Congo. As part of UCBC, IRI-UCBC fosters innovation, collaboration, and capacity building to address local and global challenges through impactful research and community engagement.
+                Le Centre de Gouvernance des Ressources Naturelles (GRN-UCBC) s'engage à promouvoir l'excellence en éducation, recherche et technologie pour le développement durable en République Démocratique du Congo. En tant que partie de l'UCBC, le GRN-UCBC favorise l'innovation, la collaboration et le renforcement des capacités pour relever les défis locaux et mondiaux grâce à la recherche impactante et l'engagement communautaire.
             </p>
             <a href="#" class="btn btn-primary mt-3">Learn More</a>
         </div>
         <div class="col-md-6">
-            <img src="https://www.iriucbc.org/images/iriucbc-campus.jpg" alt="IRI-UCBC Campus" class="img-fluid rounded shadow">
+            <img src="https://www.iriucbc.org/images/iriucbc-campus.jpg" alt="GRN-UCBC Campus" class="img-fluid rounded shadow">
         </div>
     </div>
 </div>
@@ -72,7 +72,7 @@
     <div class="row justify-content-center">
         <div class="col-md-8 text-center">
             <h2>Stay Connected</h2>
-            <p>Subscribe to receive updates on research, educational programs, and technology initiatives from IRI-UCBC.</p>
+            <p>Abonnez-vous pour recevoir des mises à jour sur la recherche, les programmes éducatifs et les initiatives technologiques du GRN-UCBC.</p>
             <form class="form-inline justify-content-center">
                 <input type="email" class="form-control mb-2 mr-sm-2" placeholder="Enter your email">
                 <button type="submit" class="btn btn-primary mb-2">Subscribe</button>

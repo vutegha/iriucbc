@@ -26,15 +26,15 @@
             
             <!-- Logo et Identité -->
             <div class="flex items-center space-x-4 flex-shrink-0">
-                <div class="relative">
+                <a href="{{ url('/') }}" class="relative group focus:outline-none focus:ring-2 focus:ring-iri-primary rounded-xl">
                     <img src="{{ asset('assets/img/logos/ucbc-2.png') }}" 
-                         alt="Logo IRI-UCBC" 
-                         class="h-12 w-12 lg:h-14 lg:w-14 rounded-xl object-contain ring-2 ring-olive/20 transition-all duration-300 hover:ring-olive/40 shadow-sm">
-                </div>
+                         alt="Logo GRN-UCBC" 
+                         class="h-12 w-12 lg:h-14 lg:w-14 rounded-xl object-contain ring-2 ring-olive/20 transition-all duration-300 group-hover:ring-olive/40 shadow-sm">
+                </a>
                 <div class="hidden sm:block">
                     <h1 class="text-lg lg:text-xl font-bold text-olive leading-tight">
-                        Institut de Recherche<br>
-                        <span class="text-sm lg:text-base font-medium text-gray-600">Intégré - UCBC</span>
+                        Programme GRN<br>
+                        <a href="https://www.ucbc.edu.cd" target="_blank" class="text-sm lg:text-base font-medium text-gray-600 underline hover:text-iri-primary transition-colors duration-200">UCBC</a>
                     </h1>
                 </div>
             </div>
@@ -52,17 +52,17 @@
                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                     </svg>
-                    Accueil
+                    
                 </a>
 
                 <!-- À propos -->
-                <a href="{{ route('site.home') }}#aboutus" 
+                <a href="{{ route('site.about') }}" 
                    class="flex items-center px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 group relative"
-                   :class="(currentPath === '/' && currentHash === '#aboutus') || currentPath.includes('aboutus') || currentPath.includes('a-propos') ? 
+                   :class="currentPath.includes('/about') || currentPath.includes('/a-propos') ? 
                        'bg-gradient-to-r from-iri-primary to-iri-secondary text-white shadow-lg border-2 border-iri-primary border-l-4 border-l-iri-gold' : 
                        'text-iri-dark hover:text-white hover:bg-gradient-to-r hover:from-iri-primary/80 hover:to-iri-secondary/70 hover:shadow-md border-2 border-transparent hover:border-iri-primary/20 hover:border-l-4 hover:border-l-iri-accent'">
                     <svg class="w-4 h-4 mr-2 transition-colors" 
-                         :class="(currentPath === '/' && currentHash === '#aboutus') || currentPath.includes('aboutus') ? 'text-white' : 'text-iri-gray group-hover:text-white'"
+                         :class="currentPath.includes('/about') || currentPath.includes('/a-propos') ? 'text-white' : 'text-iri-gray group-hover:text-white'"
                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
@@ -84,7 +84,7 @@
                              fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                         </svg>
-                        Programmes
+                        Initiatives
                         <svg class="w-4 h-4 ml-2 transition-transform duration-200" 
                              :class="{ 'rotate-180': open, 'text-white': currentPath.includes('/service'), 'text-iri-gray group-hover:text-white': !currentPath.includes('/service') }" 
                              fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,7 +105,7 @@
                          @click.away="open = false">
                         
                         <div class="px-4 py-2 border-b border-gray-100">
-                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Nos Programmes</p>
+                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Nos Initiatives</p>
                         </div>
                         
                         @if(isset($menuServices) && optional($menuServices)->count() > 0)
@@ -167,17 +167,30 @@
                 </div>
 
                 <!-- Travailler avec nous -->
-                <a href="{{ route('site.work-with-us') }}" 
+                <a href="{{ route('site.publications') }}" 
                    class="flex items-center px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 group relative"
-                   :class="currentPath.includes('work-with-us') || currentPath.includes('partenariats') || currentPath.includes('travailler') ? 
+                   :class="currentPath.includes('/publications') ? 
                        'bg-gradient-to-r from-iri-primary to-iri-secondary text-white shadow-lg border-2 border-iri-primary border-l-4 border-l-iri-gold' : 
                        'text-iri-dark hover:text-white hover:bg-gradient-to-r hover:from-iri-primary/80 hover:to-iri-secondary/70 hover:shadow-md border-2 border-transparent hover:border-iri-primary/20 hover:border-l-4 hover:border-l-iri-accent'">
                     <svg class="w-4 h-4 mr-2 transition-colors" 
-                         :class="currentPath.includes('work-with-us') || currentPath.includes('travailler') ? 'text-white' : 'text-iri-gray group-hover:text-white'"
+                         :class="currentPath.includes('/publications') ? 'text-white' : 'text-iri-gray group-hover:text-white'"
                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6"></path>
                     </svg>
-                    Travailler avec nous
+                    Nos Ressources
+                </a>
+                <!-- Nous contater-->
+                <a href="{{ route('site.contact') }}" 
+                   class="flex items-center px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 group relative"
+                   :class="currentPath.includes('/contact') ? 
+                       'bg-gradient-to-r from-iri-primary to-iri-secondary text-white shadow-lg border-2 border-iri-primary border-l-4 border-l-iri-gold' : 
+                       'text-iri-dark hover:text-white hover:bg-gradient-to-r hover:from-iri-primary/80 hover:to-iri-secondary/70 hover:shadow-md border-2 border-transparent hover:border-iri-primary/20 hover:border-l-4 hover:border-l-iri-accent'">
+                    <svg class="w-4 h-4 mr-2 transition-colors" 
+                         :class="currentPath.includes('/contact-') ? 'text-white' : 'text-iri-gray group-hover:text-white'"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6"></path>
+                    </svg>
+                    Contact
                 </a>
             </div>
 
@@ -326,14 +339,14 @@
                 </a>
 
                 <!-- À propos Mobile -->
-                <a href="{{ route('site.home') }}#aboutus" 
+                <a href="{{ route('site.about') }}" 
                    class="flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group"
-                   :class="(currentPath === '/' && currentHash === '#aboutus') || currentPath.includes('aboutus') || currentPath.includes('a-propos') ? 
+                   :class="currentPath.includes('/about') || currentPath.includes('/a-propos') ? 
                        'bg-gradient-to-r from-iri-primary to-iri-secondary text-white shadow-lg border-l-4 border-iri-accent' : 
                        'text-iri-dark hover:text-white hover:bg-gradient-to-r hover:from-iri-primary/80 hover:to-iri-secondary/70 hover:shadow-md hover:border-l-4 hover:border-iri-accent/50'"
                    @click="mobileOpen = false">
                     <svg class="w-5 h-5 mr-3 transition-colors" 
-                         :class="(currentPath === '/' && currentHash === '#aboutus') || currentPath.includes('aboutus') ? 'text-white' : 'text-iri-gray group-hover:text-white'"
+                         :class="currentPath.includes('/about') || currentPath.includes('/a-propos') ? 'text-white' : 'text-iri-gray group-hover:text-white'"
                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
@@ -452,54 +465,202 @@
 </header>
 
 <script>
-// Fonction de validation de recherche
+// Fonction de nettoyage et sanitisation des entrées
+function sanitizeInput(input) {
+    if (typeof input !== 'string') return '';
+    
+    return input
+        // Supprimer les balises script complètes
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        // Supprimer les attributs d'événements
+        .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '')
+        // Supprimer javascript: dans les URLs
+        .replace(/javascript\s*:/gi, '')
+        // Supprimer les balises HTML dangereuses
+        .replace(/<\s*(script|iframe|object|embed|form|meta|link|style)\b[^>]*>/gi, '')
+        // Nettoyer les caractères dangereux mais garder les caractères accentués
+        .replace(/[<>'"]/g, function(match) {
+            const entities = {'<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;'};
+            return entities[match] || match;
+        })
+        // Limiter la longueur
+        .substring(0, 200)
+        // Nettoyer les espaces multiples
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+// Fonction de validation de recherche améliorée
 function validateSearch(form) {
     const input = form.querySelector('input[name="q"]');
     const searchTerm = input.value.trim();
     
-    if (searchTerm.length < 2) {
-        alert('Veuillez saisir au moins 2 caractères pour effectuer une recherche.');
+    // Protection XSS avancée côté frontend
+    const sanitizedTerm = sanitizeInput(searchTerm);
+    
+    if (sanitizedTerm.length < 2) {
+        showNotification('Veuillez saisir au moins 2 caractères pour effectuer une recherche.', 'warning');
         input.focus();
         return false;
     }
     
-    // Encoder correctement l'URL
-    const url = new URL(form.action);
-    url.searchParams.set('q', searchTerm);
+    // Vérification des caractères suspects
+    const suspiciousPatterns = [
+        /<script/i,
+        /javascript:/i,
+        /on\w+=/i,
+        /data:text\/html/i
+    ];
     
-    // Log pour debug
-    console.log('Recherche pour:', searchTerm);
-    console.log('URL de redirection:', url.toString());
+    if (suspiciousPatterns.some(pattern => pattern.test(searchTerm))) {
+        showNotification('Caractères non autorisés détectés dans la recherche.', 'error');
+        input.focus();
+        return false;
+    }
     
-    // Redirection manuelle pour s'assurer que le paramètre est passé
-    window.location.href = url.toString();
-    return false; // Empêcher la soumission normale du formulaire
+    // Afficher l'état de chargement
+    showLoadingState(form);
+    
+    // Log pour debug (seulement en développement)
+    if (window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1')) {
+        console.log('Recherche pour:', sanitizedTerm);
+    }
+    
+    // Mettre à jour la valeur avec le terme nettoyé
+    input.value = sanitizedTerm;
+    return true;
 }
 
-// Event listeners pour la recherche par clavier
-document.addEventListener('DOMContentLoaded', function() {
-    // Recherche avec Enter sur le champ desktop
-    const desktopSearch = document.getElementById('searchInput');
-    if (desktopSearch) {
-        desktopSearch.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const form = this.closest('form');
-                validateSearch(form);
+// Système de notifications modernes
+function showNotification(message, type = 'info') {
+    // Supprimer les notifications existantes
+    const existingNotifications = document.querySelectorAll('.search-notification');
+    existingNotifications.forEach(notif => notif.remove());
+    
+    // Créer la notification
+    const notification = document.createElement('div');
+    notification.className = `search-notification fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg border-l-4 transform transition-all duration-300 translate-x-full`;
+    
+    const typeClasses = {
+        'success': 'bg-green-50 border-green-400 text-green-800',
+        'warning': 'bg-yellow-50 border-yellow-400 text-yellow-800',
+        'error': 'bg-red-50 border-red-400 text-red-800',
+        'info': 'bg-blue-50 border-blue-400 text-blue-800'
+    };
+    
+    notification.className += ` ${typeClasses[type] || typeClasses.info}`;
+    
+    const icon = {
+        'success': '✅',
+        'warning': '⚠️',
+        'error': '❌',
+        'info': 'ℹ️'
+    };
+    
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <span class="mr-2 text-lg">${icon[type] || icon.info}</span>
+            <span class="font-medium">${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-500 hover:text-gray-700 font-bold">×</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animation d'entrée
+    setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Auto-suppression après 5 secondes
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.classList.add('translate-x-full');
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 5000);
+}
+
+// Fonction d'état de chargement
+function showLoadingState(form) {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const input = form.querySelector('input[name="q"]');
+    
+    if (submitBtn) {
+        const originalContent = submitBtn.innerHTML;
+        submitBtn.innerHTML = `
+            <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Recherche...
+        `;
+        submitBtn.disabled = true;
+        
+        // Rétablir l'état original après 3 secondes si pas de redirection
+        setTimeout(() => {
+            if (submitBtn) {
+                submitBtn.innerHTML = originalContent;
+                submitBtn.disabled = false;
             }
-        });
+        }, 3000);
     }
     
-    // Recherche avec Enter sur le champ mobile
-    const mobileSearch = document.getElementById('searchInputMobile');
-    if (mobileSearch) {
-        mobileSearch.addEventListener('keypress', function(e) {
+    if (input) {
+        input.disabled = true;
+        setTimeout(() => {
+            if (input) input.disabled = false;
+        }, 3000);
+    }
+}
+
+// Consolidation des Event listeners pour la recherche
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion unifiée de la recherche par Enter
+    const searchInputs = document.querySelectorAll('input[name="q"]');
+    
+    searchInputs.forEach(input => {
+        input.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 const form = this.closest('form');
-                validateSearch(form);
+                if (form) {
+                    validateSearch(form);
+                }
             }
         });
-    }
+        
+        // Ajout de debouncing pour éviter les recherches trop fréquentes
+        let timeoutId;
+        input.addEventListener('input', function() {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                // Ici on pourrait ajouter des suggestions en temps réel
+                console.log('Recherche en cours:', this.value);
+            }, 500);
+        });
+    });
+    
+    // Gestion des formulaires de recherche
+    const searchForms = document.querySelectorAll('form[action*="search"]');
+    searchForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (validateSearch(this)) {
+                // Si la validation passe, soumettre le formulaire
+                this.submit();
+            }
+        });
+    });
 });
+
+// Fonction utilitaire pour la protection XSS avancée
+function sanitizeInput(input) {
+    const div = document.createElement('div');
+    div.textContent = input;
+    return div.innerHTML
+        .replace(/[<>]/g, '')
+        .replace(/javascript:/gi, '')
+        .replace(/on\w+=/gi, '');
+}
 </script>

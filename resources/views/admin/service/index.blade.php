@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('title', 'Services')
-@section('subtitle', 'Gestion des services IRI-UCBC')
+@section('subtitle', 'Gestion des services GRN-UCBC')
 
 @section('content')
 <div class="container-fluid px-4 py-6">
@@ -14,7 +14,7 @@
                 {{ optional($services)->count() ?? 0 }} service(s) enregistré(s)
             </p>
         </div>
-        @can('create services')
+        @can('create_services')
         <a href="{{ route('admin.service.create') }}" 
            class="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-iri-primary to-iri-secondary text-white rounded-xl hover:from-iri-secondary hover:to-iri-primary transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 border border-iri-accent/20">
             <i class="fas fa-plus-circle mr-3 text-lg group-hover:rotate-90 transition-transform duration-300"></i>
@@ -172,7 +172,7 @@
                         
                         <!-- Actions -->
                         <div class="flex justify-center space-x-3 pt-4 border-t border-gray-100">
-                            @can('view services')
+                            @can('view_services')
                             <!-- Voir -->
                             <a href="{{ route('admin.service.show', $service) }}" 
                                class="group relative inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-iri-accent to-iri-gold text-white rounded-xl hover:from-iri-gold hover:to-iri-accent transform hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-xl border-2 border-iri-accent/20"
@@ -185,7 +185,7 @@
                             </a>
                             @endcan
                             
-                            @can('update services')
+                            @can('update_services')
                             <!-- Modifier -->
                             <a href="{{ route('admin.service.edit', $service) }}" 
                                class="group relative inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-iri-primary to-iri-secondary text-white rounded-xl hover:from-iri-secondary hover:to-iri-primary transform hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-xl border-2 border-iri-primary/20"
@@ -198,7 +198,7 @@
                             </a>
                             @endcan
                             
-                            @can('delete services')
+                            @can('delete_services')
                             <!-- Supprimer -->
                             <form action="{{ route('admin.service.destroy', $service) }}" method="POST" 
                                   onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce service ?')" 
@@ -229,7 +229,7 @@
                     <i class="fas fa-cogs text-gray-400 text-3xl"></i>
                 </div>
                 <h3 class="text-xl font-semibold text-gray-900 mb-2">Aucun service trouvé</h3>
-                <p class="text-gray-600 mb-6">Commencez par créer votre premier service pour l'IRI-UCBC.</p>
+                <p class="text-gray-600 mb-6">Commencez par créer votre premier service pour le GRN-UCBC.</p>
                 <a href="{{ route('admin.service.create') }}" 
                    class="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-iri-primary to-iri-secondary text-white rounded-xl hover:from-iri-secondary hover:to-iri-primary transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                     <i class="fas fa-plus-circle mr-3 text-lg group-hover:rotate-90 transition-transform duration-300"></i>

@@ -1,6 +1,6 @@
 @extends('layouts.iri')
 
-@section('title', 'Travailler avec nous - Institut de Recherche Intégré')
+@section('title', 'Travailler avec nous - Programme Gouvernance des Ressources Naturelles')
 
 @section('content')
 <!-- Main Content -->
@@ -20,7 +20,7 @@
                 Rejoignez Notre Équipe
             </h1>
             <p class="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed drop-shadow-lg">
-                Participez à notre mission de recherche et de développement pour un impact positif sur nos communautés
+                Participez à notre mission de transformation de la gouvernance foncière pour un impact positif sur nos communautés
             </p>
         </div>
     </section>
@@ -32,7 +32,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div>
                         <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                            Pourquoi travailler avec l'IRI-UCBC ?
+                            Pourquoi travailler avec le programme GRN-UCBC ?
                         </h2>
                         <div class="space-y-4 text-gray-700">
                             <div class="flex items-start space-x-3">
@@ -261,16 +261,18 @@
                                     
                                     <!-- Badge type de contrat -->
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
-                                        {{ $job->type === 'CDI' ? 'bg-green-100 text-green-800' : 
-                                           ($job->type === 'CDD' ? 'bg-blue-100 text-blue-800' : 
-                                           ($job->type === 'Stage' ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800')) }}">
-                                        {{ $job->type }}
+                                        {{ $job->type === 'temps_plein' ? 'bg-green-100 text-green-800' : 
+                                           ($job->type === 'temps_partiel' ? 'bg-blue-100 text-blue-800' : 
+                                           ($job->type === 'stage' ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800')) }}">
+                                        {{ $job->type === 'temps_plein' ? 'Temps plein' : 
+                                           ($job->type === 'temps_partiel' ? 'Temps partiel' : 
+                                           ($job->type === 'stage' ? 'Stage' : ucfirst($job->type))) }}
                                     </span>
 
                                     <!-- Badge source -->
                                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
                                         {{ $job->source === 'interne' ? 'bg-iri-primary/10 text-iri-primary' : 'bg-gray-100 text-gray-800' }}">
-                                        {{ $job->source === 'interne' ? 'IRI-UCBC' : ($job->partner_name ?: 'Partenaire') }}
+                                        {{ $job->source === 'interne' ? 'GRN-UCBC' : ($job->partner_name ?: 'Partenaire') }}
                                     </span>
 
                                     <!-- Badge featured -->
@@ -339,7 +341,7 @@
                                 </button>
                                 
                                 @if(!$job->is_expired)
-                                    <a href="{{ route('site.job.apply', $job->id) }}" 
+                                    <a href="{{ route('site.job.apply', $job->slug) }}" 
                                        class="bg-gradient-to-r from-iri-primary to-iri-secondary hover:from-iri-secondary hover:to-iri-accent text-white font-medium py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
                                         <i class="fas fa-paper-plane mr-2"></i>
                                         Postuler en ligne
@@ -424,7 +426,7 @@
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <a href="{{ route('site.job.download', $job->id) }}" 
+                                                <a href="{{ route('site.job.download', $job->slug) }}" 
                                                    class="bg-gradient-to-r from-iri-primary to-iri-secondary hover:from-iri-secondary hover:to-iri-accent text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center space-x-2">
                                                     <i class="fas fa-download"></i>
                                                     <span>Télécharger</span>

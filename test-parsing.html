@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Parsing des Exigences Multiples</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'iri-primary': '#1e40af',
+                        'iri-secondary': '#1d4ed8'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow">
+        <h1 class="text-2xl font-bold mb-6">Test Parsing des Exigences Multiples</h1>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Entrée -->
+            <div>
+                <h2 class="text-lg font-semibold mb-4">Entrée</h2>
+                
+                <div class="mb-4">
+                    <label for="test-input" class="block text-sm font-medium text-gray-700 mb-2">
+                        Testez différents formats :
+                    </label>
+                    <textarea id="test-input" 
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-iri-primary focus:border-iri-primary" 
+                              rows="8"
+                              placeholder="Collez votre texte ici..."></textarea>
+                </div>
+                
+                <button onclick="testParsing()" class="bg-iri-primary text-white px-4 py-2 rounded hover:bg-iri-secondary">
+                    Tester le parsing
+                </button>
+                
+                <div class="mt-4 text-sm space-y-2">
+                    <p><strong>Exemples à tester :</strong></p>
+                    <div class="bg-gray-50 p-3 rounded space-y-2">
+                        <button onclick="loadExample(1)" class="text-blue-600 hover:underline text-left block">1. Liste avec tirets</button>
+                        <button onclick="loadExample(2)" class="text-blue-600 hover:underline text-left block">2. Liste avec numéros</button>
+                        <button onclick="loadExample(3)" class="text-blue-600 hover:underline text-left block">3. Liste avec puces</button>
+                        <button onclick="loadExample(4)" class="text-blue-600 hover:underline text-left block">4. Séparateurs virgules</button>
+                        <button onclick="loadExample(5)" class="text-blue-600 hover:underline text-left block">5. Multi-lignes simples</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sortie -->
+            <div>
+                <h2 class="text-lg font-semibold mb-4">Résultat</h2>
+                <div id="results" class="space-y-3">
+                    <p class="text-gray-500">Utilisez le bouton "Tester le parsing" pour voir les résultats.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Copie de la méthode parseMultipleRequirements
+        function parseMultipleRequirements(text) {
+            // Séparer par retours à la ligne
+            let lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line);
+            
+            // Si une seule ligne, vérifier s'il y a des séparateurs
+            if (lines.length === 1) {
+                const singleLine = lines[0];
+                
+                // Chercher des patterns de listes à puces
+                const bulletPatterns = [
+                    /(?:^|\s)[-•*]\s*(.+?)(?=\s[-•*]|$)/g,  // - • * en début ou après espace
+                    /(?:^|\s)\d+\.\s*(.+?)(?=\s\d+\.|$)/g,  // 1. 2. 3. etc.
+                    /(?:^|\s)[a-z]\)\s*(.+?)(?=\s[a-z]\)|$)/gi // a) b) c) etc.
+                ];
+                
+                for (const pattern of bulletPatterns) {
+                    const matches = [...singleLine.matchAll(pattern)];
+                    if (matches.length > 1) {
+                        return matches.map(match => match[1].trim()).filter(item => item);
+                    }
+                }
+                
+                // Vérifier s'il y a des virgules ou points-virgules comme séparateurs
+                if (singleLine.includes(',') || singleLine.includes(';')) {
+                    const separator = singleLine.includes(';') ? ';' : ',';
+                    const parts = singleLine.split(separator).map(part => part.trim()).filter(part => part);
+                    if (parts.length > 1) {
+                        return parts;
+                    }
+                }
+            }
+            
+            // Traiter chaque ligne séparément et nettoyer les puces
+            const cleanedLines = lines.map(line => {
+                // Supprimer les puces au début de chaque ligne
+                return line.replace(/^[-•*]\s*/, '')           // - • * 
+                              .replace(/^\d+\.\s*/, '')            // 1. 2. 3.
+                              .replace(/^[a-z]\)\s*/i, '')         // a) b) c)
+                              .trim();
+            }).filter(line => line);
+            
+            return cleanedLines.length > 0 ? cleanedLines : [text];
+        }
+
+        function testParsing() {
+            const input = document.getElementById('test-input');
+            const results = document.getElementById('results');
+            const text = input.value.trim();
+            
+            if (!text) {
+                results.innerHTML = '<p class="text-red-500">Veuillez saisir du texte à tester.</p>';
+                return;
+            }
+            
+            const parsed = parseMultipleRequirements(text);
+            
+            let html = `
+                <div class="bg-green-50 border border-green-200 rounded p-3">
+                    <h3 class="font-semibold text-green-800 mb-2">
+                        <i class="fas fa-check-circle mr-1"></i>
+                        ${parsed.length} exigence${parsed.length > 1 ? 's' : ''} détectée${parsed.length > 1 ? 's' : ''}
+                    </h3>
+                    <ul class="space-y-1">
+            `;
+            
+            parsed.forEach((item, index) => {
+                html += `<li class="text-green-700"><strong>${index + 1}.</strong> ${escapeHtml(item)}</li>`;
+            });
+            
+            html += `
+                    </ul>
+                </div>
+                <div class="bg-blue-50 border border-blue-200 rounded p-3">
+                    <h4 class="font-semibold text-blue-800 mb-2">JSON résultant :</h4>
+                    <pre class="text-xs text-blue-700 bg-blue-100 p-2 rounded overflow-x-auto">${JSON.stringify(parsed, null, 2)}</pre>
+                </div>
+            `;
+            
+            results.innerHTML = html;
+        }
+        
+        function loadExample(num) {
+            const input = document.getElementById('test-input');
+            
+            const examples = {
+                1: `- Minimum 3 ans d'expérience en développement web
+- Maîtrise de Laravel et PHP
+- Connaissance de JavaScript et Vue.js
+- Expérience avec MySQL et PostgreSQL
+- Capacité à travailler en équipe`,
+                
+                2: `1. Bachelor en informatique ou équivalent
+2. 5 ans d'expérience minimum
+3. Certification AWS ou Azure
+4. Anglais courant requis
+5. Disponibilité pour déplacements`,
+                
+                3: `• Expertise en React et Node.js
+• Portfolio démontrant des projets complexes
+• Maîtrise des outils DevOps (Docker, CI/CD)
+• Excellentes compétences en communication
+• Passion pour l'innovation technologique`,
+                
+                4: `PHP/Laravel, JavaScript/Vue.js, MySQL/PostgreSQL, Git/GitHub, Docker, AWS/Azure, Méthodologies Agile, Tests unitaires`,
+                
+                5: `Diplôme en génie logiciel
+Experience de 2-3 ans
+Maîtrise de Python et Django
+Connaissance des bases de données
+Esprit analytique et créatif`
+            };
+            
+            input.value = examples[num] || '';
+            input.focus();
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Auto-test au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            loadExample(1);
+        });
+    </script>
+</body>
+</html>

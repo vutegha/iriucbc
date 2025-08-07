@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Déjà désabonné - Newsletter IRI-UCBC</title>
+    <title>Déjà désabonné - Newsletter GRN-UCBC</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
@@ -18,7 +18,7 @@
             <h1 class="text-2xl font-bold text-gray-800 mb-4">Déjà désabonné</h1>
             
             <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                <p class="text-yellow-700">Vous êtes déjà désabonné(e) de la newsletter IRI-UCBC.</p>
+                <p class="text-yellow-700">Vous êtes déjà désabonné(e) de la newsletter GRN-UCBC.</p>
             </div>
             
             <p class="text-gray-600 mb-6">

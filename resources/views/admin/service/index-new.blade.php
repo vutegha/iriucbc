@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('title', 'Services')
-@section('subtitle', 'Gestion des services IRI-UCBC')
+@section('subtitle', 'Gestion des services GRN-UCBC')
 
 @section('content')
 
@@ -73,7 +73,7 @@
 <!-- Composant Table Admin -->
 <x-admin-table 
     :title="'Services'"
-    :subtitle="'Gestion des services IRI-UCBC'"
+    :subtitle="'Gestion des services GRN-UCBC'"
     :items="$services"
     :create-route="route('admin.service.create')"
     :create-label="'Nouveau Service'"

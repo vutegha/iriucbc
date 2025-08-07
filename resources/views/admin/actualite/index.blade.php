@@ -73,7 +73,7 @@
                 <p class="text-green-100">Gérez les actualités et informations importantes</p>
             </div>
             <div class="mt-4 sm:mt-0">
-                @can('create actualites')
+                @can('create_actualites')
                 <a href="{{ route('admin.actualite.create') }}" 
                    class="inline-flex items-center px-4 py-2 bg-white text-iri-primary font-semibold rounded-lg shadow-md hover:bg-gray-50 transition-all duration-200">
                     <i class="fas fa-plus mr-2"></i>
@@ -93,7 +93,7 @@
                 </div>
                 <div class="ml-3">
                     <p class="text-sm text-gray-600">Total</p>
-                    <p class="text-xl font-semibold text-gray-900">{{ $actualites->total() }}</p>
+                    <p class="text-xl font-semibold text-gray-900">{{ $stats['total'] }}</p>
                 </div>
             </div>
         </div>
@@ -105,7 +105,7 @@
                 </div>
                 <div class="ml-3">
                     <p class="text-sm text-gray-600">Publiées</p>
-                    <p class="text-xl font-semibold text-gray-900">{{ $actualites->where('is_published', true)->count() }}</p>
+                    <p class="text-xl font-semibold text-gray-900">{{ $stats['published'] }}</p>
                 </div>
             </div>
         </div>
@@ -117,7 +117,7 @@
                 </div>
                 <div class="ml-3">
                     <p class="text-sm text-gray-600">En attente</p>
-                    <p class="text-xl font-semibold text-gray-900">{{ $actualites->where('is_published', false)->count() }}</p>
+                    <p class="text-xl font-semibold text-gray-900">{{ $stats['pending'] }}</p>
                 </div>
             </div>
         </div>
@@ -140,8 +140,8 @@
                     <i class="fas fa-exclamation-triangle text-red-600 text-lg"></i>
                 </div>
                 <div class="ml-3">
-                    <p class="text-sm text-gray-600">Urgentes</p>
-                    <p class="text-xl font-semibold text-gray-900">{{ $actualites->where('urgent', true)->count() }}</p>
+                    <p class="text-sm text-gray-600">À la une</p>
+                    <p class="text-xl font-semibold text-gray-900">{{ $stats['featured'] }}</p>
                 </div>
             </div>
         </div>
@@ -153,29 +153,50 @@
                 </div>
                 <div class="ml-3">
                     <p class="text-sm text-gray-600">Cette semaine</p>
-                    <p class="text-xl font-semibold text-gray-900">{{ $actualites->where('created_at', '>=', now()->startOfWeek())->count() }}</p>
+                    <p class="text-xl font-semibold text-gray-900">{{ $stats['this_week'] }}</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Filtres et vues -->
+    <!-- Filtres et recherche -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-        <div class="flex flex-col sm:flex-row gap-4">
+        <form method="GET" action="{{ route('admin.actualite.index') }}" class="flex flex-col sm:flex-row gap-4">
             <div class="flex-1">
                 <input type="text" 
+                       name="search"
                        id="search-actualites" 
-                       placeholder="Rechercher une actualité..."
+                       value="{{ request('search') }}"
+                       placeholder="Rechercher dans toute la base de données..."
                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-iri-primary focus:border-iri-primary">
             </div>
             <div class="flex gap-2">
-                <select id="status-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-iri-primary focus:border-iri-primary">
+                <select name="status" id="status-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-iri-primary focus:border-iri-primary">
                     <option value="">Tous les statuts</option>
-                    <option value="published">Publiées</option>
-                    <option value="pending">En attente</option>
-                    <option value="urgent">Urgentes</option>
+                    <option value="published" {{ request('status') === 'published' ? 'selected' : '' }}>Publiées</option>
+                    <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>En attente</option>
+                    <option value="featured" {{ request('status') === 'featured' ? 'selected' : '' }}>À la une</option>
+                    <option value="urgent" {{ request('status') === 'urgent' ? 'selected' : '' }}>Urgentes</option>
                 </select>
-                <div class="flex bg-gray-100 rounded-lg p-1">
+                <button type="submit" class="px-4 py-2 bg-iri-primary text-white rounded-lg hover:bg-iri-secondary transition-colors duration-200">
+                    <i class="fas fa-search mr-2"></i>Rechercher
+                </button>
+                @if(request()->hasAny(['search', 'status']))
+                <a href="{{ route('admin.actualite.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+                    <i class="fas fa-times mr-2"></i>Reset
+                </a>
+                @endif
+            </div>
+        </form>
+        <div class="mt-4 flex justify-between items-center">
+            <div class="text-sm text-gray-600">
+                @if(request('search'))
+                    Résultats pour "<strong>{{ request('search') }}</strong>" : {{ $actualites->total() }} actualité(s) trouvée(s)
+                @else
+                    {{ $actualites->total() }} actualité(s) au total
+                @endif
+            </div>
+            <div class="flex bg-gray-100 rounded-lg p-1">
                     <button id="timeline-view" class="px-3 py-1 rounded-md bg-white text-iri-primary font-medium shadow-sm">
                         <i class="fas fa-stream"></i>
                     </button>
@@ -248,19 +269,19 @@
                                 
                                 <div x-show="open" @click.away="open = false"
                                      class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                                    @can('view actualites')
+                                    @can('view_actualites')
                                     <a href="{{ route('admin.actualite.show', $actualite) }}" 
                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                         <i class="fas fa-eye mr-2"></i>Voir
                                     </a>
                                     @endcan
-                                    @can('update actualites')
+                                    @can('update_actualites')
                                     <a href="{{ route('admin.actualite.edit', $actualite) }}" 
                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                         <i class="fas fa-edit mr-2"></i>Modifier
                                     </a>
                                     @endcan
-                                    @can('delete actualites')
+                                    @can('delete_actualites')
                                     <hr class="my-1">
                                     <button onclick="deleteActualite('{{ $actualite->slug }}')"
                                             class="w-full flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50">
@@ -351,21 +372,21 @@
                 <!-- Actions -->
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-2">
-                        @can('view actualites')
+                        @can('view_actualites')
                         <a href="{{ route('admin.actualite.show', $actualite) }}" 
                            class="text-iri-primary hover:text-iri-secondary p-1 rounded-md hover:bg-iri-primary/10 transition-colors duration-200"
                            title="Voir">
                             <i class="fas fa-eye"></i>
                         </a>
                         @endcan
-                        @can('update actualites')
+                        @can('update_actualites')
                         <a href="{{ route('admin.actualite.edit', $actualite) }}" 
                            class="text-blue-600 hover:text-blue-900 p-1 rounded-md hover:bg-blue-50 transition-colors duration-200"
                            title="Modifier">
                             <i class="fas fa-edit"></i>
                         </a>
                         @endcan
-                        @can('delete actualites')
+                        @can('delete_actualites')
                         <button onclick="deleteActualite('{{ $actualite->slug }}')" 
                                 class="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-50 transition-colors duration-200"
                                 title="Supprimer">
@@ -516,14 +537,14 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right">
                             <div class="flex items-center justify-end space-x-2">
-                                @can('view actualites')
+                                @can('view_actualites')
                                 <a href="{{ route('admin.actualite.show', $actualite) }}" 
                                    class="inline-flex items-center px-3 py-1.5 bg-iri-primary text-white text-xs font-medium rounded-lg hover:bg-iri-secondary transition-colors duration-200"
                                    title="Voir les détails">
                                     <i class="fas fa-eye mr-1"></i>Voir
                                 </a>
                                 @endcan
-                                @can('update actualites')
+                                @can('update_actualites')
                                 <a href="{{ route('admin.actualite.edit', $actualite) }}" 
                                    class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
                                    title="Modifier">
@@ -546,7 +567,7 @@
                                          x-transition:leave="transition ease-in duration-75"
                                          x-transition:leave-start="transform opacity-100 scale-100"
                                          x-transition:leave-end="transform opacity-0 scale-95">
-                                        @can('update actualites')
+                                        @can('update_actualites')
                                         <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                                             <i class="fas fa-copy mr-2"></i>Dupliquer
                                         </a>
@@ -554,7 +575,7 @@
                                             <i class="fas fa-share mr-2"></i>Partager
                                         </a>
                                         @endcan
-                                        @can('delete actualites')
+                                        @can('delete_actualites')
                                         <hr class="my-1">
                                         <button onclick="deleteActualite('{{ $actualite->slug }}')"
                                                 class="w-full flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50">
@@ -621,69 +642,6 @@ document.addEventListener('DOMContentLoaded', function() {
         listView.classList.add('bg-white', 'text-iri-primary', 'shadow-sm');
         listView.classList.remove('text-gray-600');
     });
-    
-    // Recherche en temps réel
-    const searchInput = document.getElementById('search-actualites');
-    const statusFilter = document.getElementById('status-filter');
-    
-    function filterActualites() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const statusValue = statusFilter.value;
-        const cards = document.querySelectorAll('.actualite-card');
-        const rows = document.querySelectorAll('#list-container tbody tr');
-        
-        // Filtrer les cards (vue timeline et grille)
-        cards.forEach(card => {
-            const title = card.querySelector('h3').textContent.toLowerCase();
-            const content = card.querySelector('p') ? card.querySelector('p').textContent.toLowerCase() : '';
-            const badges = card.querySelectorAll('span');
-            let status = '';
-            
-            badges.forEach(badge => {
-                if (badge.textContent.includes('Publiée')) status = 'published';
-                if (badge.textContent.includes('En attente')) status = 'pending';
-                if (badge.textContent.includes('Brouillon')) status = 'draft';
-                if (badge.textContent.includes('Urgent')) status = 'urgent';
-            });
-            
-            const matchesSearch = title.includes(searchTerm) || content.includes(searchTerm);
-            const matchesStatus = statusValue === '' || status === statusValue;
-            
-            if (matchesSearch && matchesStatus) {
-                card.style.display = 'block';
-                if (card.parentElement) card.parentElement.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-        
-        // Filtrer les lignes (vue liste)
-        rows.forEach(row => {
-            const title = row.querySelector('.text-sm.font-medium') ? row.querySelector('.text-sm.font-medium').textContent.toLowerCase() : '';
-            const content = row.querySelector('.text-sm.text-gray-500') ? row.querySelector('.text-sm.text-gray-500').textContent.toLowerCase() : '';
-            const badges = row.querySelectorAll('span');
-            let status = '';
-            
-            badges.forEach(badge => {
-                if (badge.textContent.includes('Publiée')) status = 'published';
-                if (badge.textContent.includes('En attente')) status = 'pending';
-                if (badge.textContent.includes('Brouillon')) status = 'draft';
-                if (badge.textContent.includes('Urgent')) status = 'urgent';
-            });
-            
-            const matchesSearch = title.includes(searchTerm) || content.includes(searchTerm);
-            const matchesStatus = statusValue === '' || status === statusValue;
-            
-            if (matchesSearch && matchesStatus) {
-                row.style.display = 'table-row';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    }
-    
-    searchInput.addEventListener('input', filterActualites);
-    statusFilter.addEventListener('change', filterActualites);
 });
 
 // Fonctions pour les actions

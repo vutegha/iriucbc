@@ -92,7 +92,7 @@
                 <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-green-100 text-sm font-medium">Budget</p>
+                            <p class="text-green-100 text-sm font-medium">Budget (USD)</p>
                             <p class="text-3xl font-bold">
                                 @if($projet->budget)
                                     ${{ number_format($projet->budget, 0) }}
@@ -216,10 +216,27 @@
                 </div>
             </div>
 
+            <!-- Résumé du projet (affiché avant la description) -->
+            @if($projet->resume)
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+                <div class="px-6 py-4 bg-gradient-to-r from-iri-accent to-iri-gold">
+                    <h2 class="text-xl font-semibold text-white flex items-center">
+                        <i class="fas fa-clipboard-list mr-3"></i>
+                        Résumé du projet
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="p-4 bg-gradient-to-r from-iri-accent/10 to-iri-gold/10 rounded-lg border border-iri-accent/20">
+                        <em class="text-iri-dark leading-relaxed text-lg">{{ $projet->resume }}</em>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- Description Rich Text -->
             @if($projet->description)
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-                <div class="px-6 py-4 bg-gradient-to-r from-iri-accent to-iri-gold">
+                <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600">
                     <h2 class="text-xl font-semibold text-white flex items-center">
                         <i class="fas fa-align-left mr-3"></i>
                         Description
@@ -227,23 +244,6 @@
                 </div>
                 <div class="p-6">
                     <x-rich-text-display :content="$projet->description" />
-                </div>
-            </div>
-            @endif
-
-            <!-- Résumé du projet -->
-            @if($projet->resume)
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-                <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600">
-                    <h2 class="text-xl font-semibold text-white flex items-center">
-                        <i class="fas fa-file-alt mr-3"></i>
-                        Résumé du projet
-                    </h2>
-                </div>
-                <div class="p-6">
-                    <div class="text-gray-700 leading-relaxed">
-                        {{ $projet->resume }}
-                    </div>
                 </div>
             </div>
             @endif
@@ -308,37 +308,178 @@
                 <div class="px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600">
                     <h2 class="text-lg font-semibold text-white flex items-center">
                         <i class="fas fa-gavel mr-3"></i>
-                        Actions
+                        Actions de Modération
                     </h2>
                 </div>
-                <div class="p-6 space-y-3">
-                    @can('publish projets')
-                    @if(!$projet->is_published)
-                        <button onclick="moderateProjet('publish')" 
-                                class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg">
-                            <i class="fas fa-eye mr-2"></i>
-                            Publier
-                        </button>
+                <div class="p-6 space-y-4">
+                    <!-- Historique et statut de modération -->
+                    <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Statut actuel -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                                Statut de modération
+                            </h4>
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">État:</span>
+                                    @if($projet->is_published)
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <i class="fas fa-check-circle mr-1"></i> Publié
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <i class="fas fa-clock mr-1"></i> En attente
+                                        </span>
+                                    @endif
+                                </div>
+                                
+                                @if($projet->published_at)
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Date de publication:</span>
+                                    <span class="text-sm font-medium text-gray-900">{{ $projet->published_at->format('d/m/Y à H:i') }}</span>
+                                </div>
+                                @endif
+                                
+                                @if($projet->publishedBy)
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Modéré par:</span>
+                                    <span class="text-sm font-medium text-gray-900">{{ $projet->publishedBy->name }}</span>
+                                </div>
+                                @endif
+                                
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Créé le:</span>
+                                    <span class="text-sm font-medium text-gray-900">{{ $projet->created_at->format('d/m/Y à H:i') }}</span>
+                                </div>
+                                
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Dernière modification:</span>
+                                    <span class="text-sm font-medium text-gray-900">{{ $projet->updated_at->format('d/m/Y à H:i') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Informations de l'auteur -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                <i class="fas fa-user mr-2 text-purple-500"></i>
+                                Informations de l'auteur
+                            </h4>
+                            <div class="space-y-2">
+                                @if($projet->service)
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Service:</span>
+                                    <span class="text-sm font-medium text-gray-900">{{ $projet->service->nom }}</span>
+                                </div>
+                                @endif
+                                
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">État du projet:</span>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+                                        {{ $projet->etat === 'en cours' ? 'bg-blue-100 text-blue-800' : 
+                                           ($projet->etat === 'terminé' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') }}">
+                                        @if($projet->etat === 'en cours')
+                                            <i class="fas fa-play mr-1"></i>
+                                        @elseif($projet->etat === 'terminé')
+                                            <i class="fas fa-check mr-1"></i>
+                                        @else
+                                            <i class="fas fa-pause mr-1"></i>
+                                        @endif
+                                        {{ ucfirst($projet->etat) }}
+                                    </span>
+                                </div>
+                                
+                                @if($projet->budget)
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Budget:</span>
+                                    <span class="text-sm font-medium text-gray-900">{{ number_format($projet->budget, 2, ',', ' ') }} €</span>
+                                </div>
+                                @endif
+                                
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Visibilité:</span>
+                                    <span class="text-sm font-medium text-gray-900">
+                                        {{ $projet->is_published ? 'Public' : 'Privé' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Commentaire de modération actuel -->
+                    @if($projet->moderation_comment)
+                    <div class="mb-4 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-comment-dots text-yellow-600 mt-1"></i>
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <h4 class="text-yellow-800 font-medium mb-2">Commentaire de modération</h4>
+                                <div class="bg-white/60 rounded-lg p-3 border border-yellow-200">
+                                    <p class="text-yellow-700 text-sm whitespace-pre-wrap">{{ $projet->moderation_comment }}</p>
+                                </div>
+                                @if($projet->publishedBy || $projet->published_at)
+                                <div class="mt-3 flex items-center justify-between text-xs text-yellow-600">
+                                    @if($projet->publishedBy)
+                                    <span class="flex items-center">
+                                        <i class="fas fa-user-shield mr-1"></i>
+                                        Par {{ $projet->publishedBy->name }}
+                                    </span>
+                                    @endif
+                                    @if($projet->published_at)
+                                    <span class="flex items-center">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        {{ $projet->published_at->format('d/m/Y à H:i') }}
+                                    </span>
+                                    @endif
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @else
+                    <div class="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-info-circle text-gray-400 mr-3"></i>
+                            <span class="text-gray-600 text-sm">Aucun commentaire de modération</span>
+                        </div>
+                    </div>
                     @endif
-                    @endcan
-                    
-                    @can('unpublish projets')
-                    @if($projet->is_published)
-                        <button onclick="moderateProjet('unpublish')" 
-                                class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-md hover:shadow-lg">
-                            <i class="fas fa-eye-slash mr-2"></i>
-                            Dépublier
-                        </button>
+
+                    <!-- Boutons d'action -->
+                    @if(auth()->user()->canModerate())
+                        @if(!$projet->is_published)
+                            <button onclick="moderateProjet('publish')" 
+                                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg">
+                                <i class="fas fa-eye mr-2"></i>
+                                Publier
+                            </button>
+                        @endif
+                        
+                        @if($projet->is_published)
+                            <button onclick="moderateProjet('unpublish')" 
+                                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-md hover:shadow-lg">
+                                <i class="fas fa-eye-slash mr-2"></i>
+                                Dépublier
+                            </button>
+                        @endif
+                        
+                        @can('delete', $projet)
+                            <button onclick="moderateProjet('delete')" 
+                                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg">
+                                <i class="fas fa-trash mr-2"></i>
+                                Supprimer
+                            </button>
+                        @endcan
+                    @else
+                        <div class="p-4 bg-gray-50 rounded-lg border">
+                            <p class="text-gray-600 text-sm text-center">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Vous n'avez pas les permissions nécessaires pour modérer ce contenu.
+                            </p>
+                        </div>
                     @endif
-                    @endcan
-                    
-                    @can('delete projets')
-                        <button onclick="moderateProjet('delete')" 
-                                class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg">
-                            <i class="fas fa-trash mr-2"></i>
-                            Supprimer
-                        </button>
-                    @endcan
                 </div>
             </div>
             @endcan

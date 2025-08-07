@@ -28,9 +28,9 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold text-white">Gestion des Événements</h1>
-                    <p class="text-white/80 mt-1">Organisation et gestion des événements IRI-UCBC</p>
+                    <p class="text-white/80 mt-1">Organisation et gestion des événements GRN-UCBC</p>
                 </div>
-                @can('create evenements')
+                @can('create_evenements')
                 <a href="{{ route('admin.evenements.create') }}" 
                    class="inline-flex items-center px-4 py-2 bg-white text-iri-primary rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-md hover:shadow-lg">
                     <i class="fas fa-plus mr-2"></i>
@@ -219,7 +219,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex items-center justify-end space-x-2">
-                                    @can('view evenements')
+                                    @can('view_evenements')
                                     <a href="{{ route('admin.evenements.show', $evenement) }}" 
                                        class="inline-flex items-center p-2 text-iri-primary hover:text-iri-secondary hover:bg-iri-primary/10 rounded-lg transition-all duration-200"
                                        title="Voir les détails">
@@ -227,7 +227,7 @@
                                     </a>
                                     @endcan
                                     
-                                    @can('update evenements')
+                                    @can('update_evenements')
                                     <!-- Action Mettre en vedette / Retirer de la vedette -->
                                     <form action="{{ route('admin.evenements.toggle-featured', $evenement) }}" method="POST" class="inline">
                                         @csrf
@@ -240,14 +240,14 @@
                                     </form>
                                     @endcan
                                     
-                                    @can('update evenements')
+                                    @can('update_evenements')
                                     <a href="{{ route('admin.evenements.edit', $evenement) }}" 
                                        class="inline-flex items-center p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
                                        title="Modifier">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     @endcan
-                                    @can('delete evenements')
+                                    @can('delete_evenements')
                                     <form action="{{ route('admin.evenements.destroy', $evenement) }}" method="POST" class="inline" 
                                           onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')">
                                         @csrf
@@ -271,7 +271,7 @@
                                     </div>
                                     <h3 class="text-lg font-medium text-iri-dark mb-2">Aucun événement trouvé</h3>
                                     <p class="text-iri-gray mb-4">Commencez par créer votre premier événement.</p>
-                                    @can('create evenements')
+                                    @can('create_evenements')
                                     <a href="{{ route('admin.evenements.create') }}" 
                                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-iri-primary to-iri-secondary text-white rounded-lg hover:from-iri-secondary hover:to-iri-primary transition-all duration-200">
                                         <i class="fas fa-plus mr-2"></i>

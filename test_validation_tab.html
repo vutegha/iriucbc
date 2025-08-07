@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Validation Navigation Tab</title>
+    <style>
+        .error { border-color: red; }
+        .error-message { color: red; font-size: 12px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; }
+        button { background: #007cba; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Test Navigation Tab - Validation Douce</h1>
+    <p>Utilisez la touche Tab pour naviguer entre les champs. La validation ne doit PAS s'afficher immédiatement.</p>
+    
+    <form id="test-form">
+        <div class="form-group">
+            <label for="nom">Nom du projet (min 3 caractères) :</label>
+            <input type="text" id="nom" name="nom">
+            <div class="error-message" id="nom-error"></div>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Description (min 50 caractères) :</label>
+            <textarea id="description" name="description" rows="4"></textarea>
+            <div class="error-message" id="description-error"></div>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email :</label>
+            <input type="email" id="email" name="email">
+            <div class="error-message" id="email-error"></div>
+        </div>
+        
+        <button type="submit">Valider le formulaire</button>
+    </form>
+
+    <script>
+        // Appliquer la même logique que dans notre correction
+        const form = document.getElementById('test-form');
+        
+        form.querySelectorAll('input, textarea').forEach(field => {
+            let hasUserInteracted = false;
+            
+            // Marquer l'interaction utilisateur lors de la saisie
+            field.addEventListener('input', () => {
+                hasUserInteracted = true;
+                clearFieldError(field);
+            });
+            
+            // Validation seulement après interaction utilisateur
+            field.addEventListener('blur', () => {
+                if (hasUserInteracted && field.value.trim() !== '') {
+                    validateFieldSilently(field);
+                }
+            });
+        });
+        
+        // Validation lors de la soumission avec affichage des erreurs
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const isValid = validateForm(true);
+            if (isValid) {
+                alert('Formulaire valide ! ✅');
+            } else {
+                alert('Formulaire invalide ! ❌ Corrigez les erreurs.');
+            }
+        });
+        
+        function validateFieldSilently(field) {
+            const fieldId = field.id;
+            const value = field.value.trim();
+            
+            switch(fieldId) {
+                case 'nom':
+                    return value.length >= 3;
+                case 'description':
+                    return value.length >= 50;
+                case 'email':
+                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+                default:
+                    return true;
+            }
+        }
+        
+        function validateForm(showErrors = false) {
+            let isValid = true;
+            
+            // Validation du nom
+            const nom = document.getElementById('nom');
+            if (!nom || nom.value.trim().length < 3) {
+                if (showErrors) markFieldAsError(nom, 'Le nom doit contenir au moins 3 caractères.');
+                isValid = false;
+            } else {
+                if (showErrors) clearFieldError(nom);
+            }
+            
+            // Validation de la description
+            const description = document.getElementById('description');
+            if (!description || description.value.trim().length < 50) {
+                if (showErrors) markFieldAsError(description, 'La description doit contenir au moins 50 caractères.');
+                isValid = false;
+            } else {
+                if (showErrors) clearFieldError(description);
+            }
+            
+            // Validation de l'email
+            const email = document.getElementById('email');
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+                if (showErrors) markFieldAsError(email, 'Veuillez saisir un email valide.');
+                isValid = false;
+            } else {
+                if (showErrors) clearFieldError(email);
+            }
+            
+            return isValid;
+        }
+        
+        function markFieldAsError(field, message) {
+            field.classList.add('error');
+            const errorElement = document.getElementById(field.id + '-error');
+            if (errorElement) {
+                errorElement.textContent = message;
+            }
+        }
+        
+        function clearFieldError(field) {
+            field.classList.remove('error');
+            const errorElement = document.getElementById(field.id + '-error');
+            if (errorElement) {
+                errorElement.textContent = '';
+            }
+        }
+    </script>
+</body>
+</html>

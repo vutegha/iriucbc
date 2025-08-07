@@ -149,7 +149,7 @@
             </div>
 
             <!-- Actions de modération -->
-            @can('moderate actualites')
+            @can('moderate_actualites')
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
                 <div class="px-6 py-4 bg-gradient-to-r from-iri-accent to-iri-gold">
                     <h2 class="text-lg font-semibold text-white flex items-center">
@@ -159,7 +159,7 @@
                 </div>
                 <div class="p-6 space-y-3">
                     @if($actualite->statut !== 'publie')
-                        @can('publish actualites')
+                        @can('publish_actualites')
                         <form action="{{ route('admin.actualite.publish', $actualite) }}" method="POST" class="w-full">
                             @csrf
                             @method('POST')
@@ -171,7 +171,7 @@
                         </form>
                         @endcan
                     @else
-                        @can('unpublish actualites')
+                        @can('unpublish_actualites')
                         <form action="{{ route('admin.actualite.unpublish', $actualite) }}" method="POST" class="w-full">
                             @csrf
                             @method('POST')
@@ -184,7 +184,7 @@
                         @endcan
                     @endif
 
-                    @can('moderate actualites')
+                    @can('moderate_actualites')
                     @if(isset($actualite->a_la_une) && !$actualite->a_la_une)
                         <form action="{{ route('admin.actualite.toggle-une', $actualite) }}" method="POST" class="w-full">
                             @csrf
@@ -220,7 +220,7 @@
                     </h2>
                 </div>
                 <div class="p-6 space-y-3">
-                    @can('view actualites')
+                    @can('view_actualites')
                     <a href="{{ route('actualite.show', $actualite) }}" target="_blank" 
                        class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg">
                         <i class="fas fa-external-link-alt mr-2"></i>
@@ -228,7 +228,7 @@
                     </a>
                     @endcan
                     
-                    @can('update actualites')
+                    @can('update_actualites')
                     <a href="{{ route('admin.actualite.edit', $actualite) }}" 
                        class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-iri-primary to-iri-secondary text-white rounded-lg hover:from-iri-secondary hover:to-iri-primary transition-all duration-200 shadow-md hover:shadow-lg">
                         <i class="fas fa-edit mr-2"></i>
@@ -236,7 +236,7 @@
                     </a>
                     @endcan
                     
-                    @can('delete actualites')
+                    @can('delete_actualites')
                     <form action="{{ route('admin.actualite.destroy', $actualite) }}" method="POST" 
                           onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette actualité ?')" 
                           class="w-full">

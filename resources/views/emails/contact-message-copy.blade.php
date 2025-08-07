@@ -225,7 +225,7 @@
                 <h4>📞 Autres moyens de nous contacter</h4>
                 <div style="color: #424242;">
                     <p><strong>Téléphone:</strong> +243 XX XXX XXXX</p>
-                    <p><strong>Email:</strong> iri@ucbc.org</p>
+                    <p><strong>Email:</strong> grn@ucbc.org</p>
                     <p><strong>Adresse:</strong> Université Catholique du Congo, Kinshasa</p>
                     <p><strong>Site web:</strong> <a href="{{ url('/') }}" style="color: #1976d2;">{{ url('/') }}</a></p>
                 </div>
@@ -233,7 +233,7 @@
         </div>
         
         <div class="footer">
-            <p><strong>Institut de Recherche Intégré à l'Université Chrétienne Bilingue du Congo</strong></p>
+            <p><strong>Centre de Gouvernance des Ressources Naturelles - Université Chrétienne Bilingue du Congo</strong></p>
             <p>Merci de nous avoir contactés. Nous apprécions votre intérêt pour nos activités.</p>
             <p style="color: #adb5bd; font-size: 12px;">
                 Ceci est un email automatique de confirmation. Ne pas répondre à cette adresse.

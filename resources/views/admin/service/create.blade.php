@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('title', 'Nouveau Service')
-@section('subtitle', 'Créer un nouveau service IRI-UCBC')
+@section('subtitle', 'Créer un nouveau service GRN-UCBC')
 
 @section('breadcrumbs')
     <li class="flex items-center">

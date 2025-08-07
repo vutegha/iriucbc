@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Modal Modération</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="csrf-token" content="test-token">
+</head>
+<body>
+    <div class="p-8">
+        <h1 class="text-2xl font-bold mb-4">Test du Modal de Modération</h1>
+        
+        <button onclick="moderateRapport('publish')" 
+                class="bg-green-500 text-white px-4 py-2 rounded mr-2">
+            Test Publier
+        </button>
+        
+        <button onclick="moderateRapport('unpublish')" 
+                class="bg-orange-500 text-white px-4 py-2 rounded mr-2">
+            Test Dépublier
+        </button>
+        
+        <button onclick="moderateRapport('delete')" 
+                class="bg-red-500 text-white px-4 py-2 rounded">
+            Test Supprimer
+        </button>
+    </div>
+
+    <!-- Modal de modération -->
+    <div id="moderationModal" class="hidden fixed inset-0 bg-gray-900/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-8 border w-full max-w-md bg-white rounded-2xl shadow-2xl">
+            <div class="flex items-center justify-between mb-6">
+                <h3 id="modal-title" class="text-xl font-bold text-blue-600">Action de Modération</h3>
+                <button onclick="closeModerationModal()" class="text-gray-600 hover:text-blue-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="mb-6">
+                <p id="modal-description" class="text-gray-600 mb-4">Êtes-vous sûr de vouloir effectuer cette action ?</p>
+                
+                <div class="mb-4">
+                    <label for="moderation_comment" class="block text-sm font-semibold text-blue-600 mb-2">
+                        <i class="fas fa-comment mr-2"></i>Commentaire de modération (optionnel)
+                    </label>
+                    <textarea id="moderation_comment" rows="3" 
+                              class="w-full p-3 border-2 border-gray-300 rounded-lg"
+                              placeholder="Ajoutez un commentaire sur cette action..."></textarea>
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <button onclick="closeModerationModal()" 
+                        class="px-6 py-3 bg-gray-500 text-white rounded-lg">
+                    Annuler
+                </button>
+                <button onclick="confirmModerationAction()" 
+                        class="px-6 py-3 bg-blue-600 text-white rounded-lg">
+                    Confirmer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentModerationAction = null;
+        let currentRapportId = 123; // Test ID
+
+        function moderateRapport(action) {
+            currentModerationAction = action;
+            
+            const modal = document.getElementById('moderationModal');
+            const title = document.getElementById('modal-title');
+            const description = document.getElementById('modal-description');
+            const commentField = document.getElementById('moderation_comment');
+            
+            // Configurer le modal selon l'action
+            if (action === 'publish') {
+                title.textContent = 'Publier le Rapport';
+                description.textContent = 'Êtes-vous sûr de vouloir publier ce rapport ?';
+            } else if (action === 'unpublish') {
+                title.textContent = 'Dépublier le Rapport';
+                description.textContent = 'Êtes-vous sûr de vouloir dépublier ce rapport ?';
+            } else if (action === 'delete') {
+                title.textContent = 'Supprimer le Rapport';
+                description.textContent = 'Êtes-vous sûr de vouloir supprimer définitivement ce rapport ?';
+            }
+            
+            // Réinitialiser le commentaire
+            commentField.value = '';
+            
+            // Afficher le modal
+            modal.classList.remove('hidden');
+            
+            console.log('Modal ouvert pour action:', action);
+        }
+
+        function closeModerationModal() {
+            const modal = document.getElementById('moderationModal');
+            modal.classList.add('hidden');
+            currentModerationAction = null;
+            console.log('Modal fermé');
+        }
+
+        function confirmModerationAction() {
+            if (!currentModerationAction || !currentRapportId) {
+                console.error('Action ou ID manquant:', currentModerationAction, currentRapportId);
+                alert('Erreur: Action ou ID manquant');
+                return;
+            }
+
+            const comment = document.getElementById('moderation_comment').value;
+            console.log('Action confirmée:', currentModerationAction, 'Commentaire:', comment);
+            
+            // Afficher un indicateur de chargement
+            const confirmButton = event.target;
+            const originalText = confirmButton.innerHTML;
+            confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Traitement...';
+            confirmButton.disabled = true;
+
+            // Simulation d'une requête
+            setTimeout(() => {
+                alert(`Action "${currentModerationAction}" effectuée avec succès!\nCommentaire: ${comment || 'Aucun'}`);
+                closeModerationModal();
+                
+                // Restaurer le bouton
+                confirmButton.innerHTML = originalText;
+                confirmButton.disabled = false;
+            }, 2000);
+        }
+
+        // Test au chargement
+        console.log('Script chargé. Variables:', {
+            currentModerationAction,
+            currentRapportId
+        });
+    </script>
+</body>
+</html>

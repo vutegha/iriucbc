@@ -301,7 +301,7 @@
                 </div>
                 <div class="p-6 space-y-3">
                     <!-- Actions de modération (nécessitent des permissions spéciales) -->
-                    @can('moderate services')
+                    @can('moderate_services')
                     <div class="bg-gray-50 rounded-lg p-4 mb-4">
                         <h3 class="text-sm font-medium text-gray-700 mb-3 flex items-center">
                             <i class="fas fa-shield-alt mr-2"></i>Actions de modération
@@ -323,14 +323,14 @@
                     @endcan
 
                     <!-- Actions d'édition standard -->
-                    @can('update services')
+                    @can('update_services')
                     <a href="{{ route('admin.service.edit', $service) }}" 
                        class="w-full flex items-center justify-center px-4 py-2 bg-iri-primary text-white rounded-lg hover:bg-iri-secondary transition-colors">
                         <i class="fas fa-edit mr-2"></i>Modifier
                     </a>
                     @endcan
 
-                    @can('delete services')
+                    @can('delete_services')
                     <form action="{{ route('admin.service.destroy', $service) }}" method="POST" 
                           onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce service ?')" class="w-full">
                         @csrf

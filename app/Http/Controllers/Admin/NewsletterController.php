@@ -11,7 +11,9 @@ class NewsletterController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Newsletter::with('preferences');
+        
+        $this->authorize('viewAny', Newsletter::class);
+$query = Newsletter::query(); // Retirer with('preferences') car c'est un attribut JSON
         
         // Filtres
         if ($request->filled('search')) {
@@ -41,13 +43,34 @@ class NewsletterController extends Controller
             'confirmes' => Newsletter::whereNotNull('confirme_a')->count(),
         ];
         
-        return view('admin.newsletter.index', compact('newsletters', 'stats'));
+        // Types de préférences disponibles
+        $preferenceTypes = [
+            'actualites' => 'Actualités',
+            'evenements' => 'Événements',
+            'projets' => 'Projets',
+            'publications' => 'Publications',
+            'newsletters' => 'Newsletters',
+            'rapports' => 'Rapports'
+        ];
+        
+        return view('admin.newsletter.index', compact('newsletters', 'stats', 'preferenceTypes'));
     }
 
     public function show(Newsletter $newsletter)
     {
-        $newsletter->load('preferences');
-        return view('admin.newsletter.show', compact('newsletter'));
+        
+        $this->authorize('view', $Newsletter);
+// Types de préférences disponibles
+        $preferenceTypes = [
+            'actualites' => 'Actualités',
+            'evenements' => 'Événements',
+            'projets' => 'Projets',
+            'publications' => 'Publications',
+            'newsletters' => 'Newsletters',
+            'rapports' => 'Rapports'
+        ];
+        
+        return view('admin.newsletter.show', compact('newsletter', 'preferenceTypes'));
     }
     
     public function toggle(Newsletter $newsletter)
@@ -61,7 +84,7 @@ class NewsletterController extends Controller
     
     public function export(Request $request)
     {
-        $query = Newsletter::with('preferences');
+        $query = Newsletter::query(); // Retirer with('preferences') car c'est un attribut JSON
         
         // Appliquer les mêmes filtres que l'index
         if ($request->filled('search')) {
@@ -86,7 +109,7 @@ class NewsletterController extends Controller
         $csv = "Email,Nom,Statut,Date d'inscription,Publications,Actualités,Projets\n";
         
         foreach ($newsletters as $newsletter) {
-            $preferences = $newsletter->preferences->pluck('type')->toArray();
+            $preferences = array_keys(array_filter($newsletter->preferences ?? []));
             $csv .= sprintf(
                 "%s,%s,%s,%s,%s,%s,%s\n",
                 $newsletter->email,
@@ -106,7 +129,9 @@ class NewsletterController extends Controller
 
     public function destroy(Newsletter $newsletter)
     {
-        $newsletter->preferences()->delete();
+        
+        $this->authorize('delete', $Newsletter);
+// Les preferences sont un attribut JSON, pas une relation
         $newsletter->delete();
         
         return redirect()->route('admin.newsletter.index')

@@ -45,12 +45,6 @@ class Publication extends Model
         return $this->belongsToMany(Auteur::class);
     }
 
-    // Ancienne relation pour compatibilité (peut être supprimée)
-    public function auteur()
-    {
-        return $this->belongsTo(Auteur::class);
-    }
-
     public function categorie()
     {
         return $this->belongsTo(Categorie::class);
@@ -77,6 +71,57 @@ class Publication extends Model
         static::creating(function ($model) {
             $model->slug = now()->format('Ymd') . '-' . Str::slug($model->nom ?? $model->titre);
         });
+    }
+
+    /**
+     * Détermine si cette publication est un brouillon
+     */
+    public function isDraft()
+    {
+        return !$this->is_published && (
+            !$this->fichier_pdf || 
+            Str::startsWith($this->titre, ['Brouillon', 'Draft']) || 
+            !$this->resume ||
+            !$this->categorie_id
+        );
+    }
+
+    /**
+     * Scope pour les brouillons
+     */
+    public function scopeDraft($query)
+    {
+        return $query->where('is_published', false)
+                    ->where(function($subQuery) {
+                        $subQuery->whereNull('fichier_pdf')
+                                 ->orWhere('titre', 'like', 'Brouillon%')
+                                 ->orWhere('titre', 'like', 'Draft%')
+                                 ->orWhereNull('resume')
+                                 ->orWhereNull('categorie_id');
+                    });
+    }
+
+    /**
+     * Obtient l'URL de la miniature du PDF (première page)
+     * Note: Cette méthode est désormais obsolète car nous utilisons PDF.js côté client
+     * Conservée pour la compatibilité
+     */
+    public function getThumbnailUrl()
+    {
+        // Les miniatures sont maintenant générées côté client avec PDF.js
+        // Cette méthode retourne null pour forcer l'utilisation de PDF.js
+        return null;
+    }
+
+    /**
+     * Vérifie si une miniature existe pour cette publication
+     * Note: Cette méthode est désormais obsolète car nous utilisons PDF.js côté client
+     * Conservée pour la compatibilité
+     */
+    public function hasThumbnail()
+    {
+        // Les miniatures sont maintenant générées côté client avec PDF.js
+        return false;
     }
 
     /**

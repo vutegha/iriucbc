@@ -338,7 +338,60 @@
                         Actions
                     </h2>
                 </div>
-                <div class="p-6 space-y-3">
+                <div class="p-6 space-y-4">
+                    <!-- Historique de modération -->
+                    @if($publication->moderation_comment || $publication->published_at || $publication->published_by)
+                    <div class="bg-blue-50 rounded-lg p-4 mb-4 border border-blue-200">
+                        <h3 class="text-sm font-medium text-blue-800 mb-3 flex items-center">
+                            <i class="fas fa-history mr-2"></i>Historique de modération
+                        </h3>
+                        <div class="space-y-2 text-sm">
+                            <!-- Statut actuel -->
+                            <div class="flex items-center">
+                                <i class="fas {{ $publication->is_published ? 'fa-check-circle text-green-600' : 'fa-clock text-yellow-600' }} mr-2"></i>
+                                <span class="font-medium {{ $publication->is_published ? 'text-green-800' : 'text-yellow-800' }}">
+                                    {{ $publication->is_published ? 'Publié' : 'En attente de modération' }}
+                                </span>
+                            </div>
+
+                            <!-- Date et modérateur -->
+                            @if($publication->published_at)
+                            <div class="flex items-center text-gray-700">
+                                <i class="fas fa-calendar mr-2 text-gray-500"></i>
+                                <span>{{ $publication->published_at->format('d/m/Y à H:i') }}</span>
+                            </div>
+                            @endif
+
+                            @if($publication->published_by)
+                                @php
+                                    $moderator = \App\Models\User::find($publication->published_by);
+                                @endphp
+                                @if($moderator)
+                                <div class="flex items-center text-gray-700">
+                                    <i class="fas fa-user-shield mr-2 text-gray-500"></i>
+                                    <span>par {{ $moderator->prenom }} {{ $moderator->nom }}</span>
+                                </div>
+                                @endif
+                            @endif
+
+                            <!-- Commentaire de modération -->
+                            @if($publication->moderation_comment)
+                            <div class="mt-3 p-3 bg-white rounded border-l-4 border-blue-400">
+                                <div class="flex items-start">
+                                    <i class="fas fa-comment-dots mr-2 text-blue-600 mt-0.5"></i>
+                                    <div>
+                                        <div class="text-xs text-gray-500 mb-1">Commentaire du modérateur :</div>
+                                        <div class="text-gray-800 italic">
+                                            "{{ $publication->moderation_comment }}"
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+
                     <!-- Actions de modération (nécessitent des permissions spéciales) -->
                     @can('moderate', $publication)
                     <div class="bg-gray-50 rounded-lg p-4 mb-4">
@@ -398,13 +451,25 @@
             </div>
             <div class="mt-2 px-2 py-3">
                 <p id="modal-description" class="text-sm text-gray-500 mb-4"></p>
+                
+                <!-- Affichage du commentaire existant -->
+                @if($publication->moderation_comment)
+                <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="text-xs text-blue-600 font-medium mb-1">Commentaire actuel :</div>
+                    <div class="text-sm text-blue-800 italic">"{{ $publication->moderation_comment }}"</div>
+                </div>
+                @endif
+                
                 <div class="mb-4">
                     <label for="moderation_comment" class="block text-sm font-medium text-gray-700 mb-2">
-                        Commentaire (optionnel)
+                        {{ $publication->moderation_comment ? 'Nouveau commentaire (optionnel)' : 'Commentaire (optionnel)' }}
                     </label>
                     <textarea id="moderation_comment" rows="3" 
                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-iri-primary focus:border-iri-primary"
-                              placeholder="Ajoutez un commentaire sur cette action..."></textarea>
+                              placeholder="{{ $publication->moderation_comment ? 'Ajoutez un nouveau commentaire ou laissez vide pour conserver l\'actuel...' : 'Ajoutez un commentaire sur cette action...' }}"></textarea>
+                    <div class="text-xs text-gray-500 mt-1">
+                        {{ $publication->moderation_comment ? 'Laisser vide conservera le commentaire actuel' : 'Ce commentaire sera visible dans l\'historique de modération' }}
+                    </div>
                 </div>
             </div>
             <div class="flex items-center justify-end space-x-2">

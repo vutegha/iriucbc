@@ -133,12 +133,11 @@
                     </h2>
                 </div>
                 <div class="p-6">
-                    @if(optional($newsletter->preferences)->count() ?? 0 > 0)
+                    @if(is_array($newsletter->preferences) && count($newsletter->preferences) > 0)
                         <div class="space-y-4">
-                            @foreach(\App\Models\NewsletterPreference::TYPES as $type => $label)
+                            @foreach($preferenceTypes as $type => $label)
                                 @php
-                                    $preference = $newsletter->preferences->where('type', $type)->first();
-                                    $isActive = $preference && $preference->actif;
+                                    $isActive = isset($newsletter->preferences[$type]) && $newsletter->preferences[$type] === true;
                                 @endphp
                                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
                                     <div class="flex items-center space-x-3">
@@ -149,6 +148,12 @@
                                                 <i class="fas fa-newspaper text-white text-sm"></i>
                                             @elseif($type === 'projets')
                                                 <i class="fas fa-rocket text-white text-sm"></i>
+                                            @elseif($type === 'evenements')
+                                                <i class="fas fa-calendar text-white text-sm"></i>
+                                            @elseif($type === 'rapports')
+                                                <i class="fas fa-file-alt text-white text-sm"></i>
+                                            @else
+                                                <i class="fas fa-envelope text-white text-sm"></i>
                                             @endif
                                         </div>
                                         <div>
@@ -159,7 +164,13 @@
                                                 @elseif($type === 'actualites')
                                                     Notifications pour les actualités importantes
                                                 @elseif($type === 'projets')
-                                                    Notifications pour les nouveaux projets de recherche
+                                                    Notifications pour les projets et initiatives
+                                                @elseif($type === 'evenements')
+                                                    Notifications pour les événements et formations
+                                                @elseif($type === 'rapports')
+                                                    Notifications pour les rapports de recherche
+                                                @else
+                                                    Notifications diverses
                                                 @endif
                                             </p>
                                         </div>
@@ -250,7 +261,7 @@
                             <span class="font-medium">Préférences actives</span>
                         </div>
                         <span class="text-sm text-iri-gray">
-                            {{ optional($newsletter->preferences)->where('actif', true)->count() ?? 0 }} / {{ count(\App\Models\NewsletterPreference::TYPES) }}
+                            {{ count(array_filter($newsletter->preferences ?? [])) }} / {{ count(\App\Models\NewsletterPreference::TYPES) }}
                         </span>
                     </div>
 

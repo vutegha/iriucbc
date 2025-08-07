@@ -47,7 +47,8 @@ class PublicationNewsletter extends Mailable implements ShouldQueue
             with: [
                 'publication' => $this->publication,
                 'subscriber' => $this->subscriber,
-                'preferencesUrl' => route('newsletter.preferences', $this->subscriber->token)
+                'preferencesUrl' => route('newsletter.preferences', $this->subscriber->token),
+                'unsubscribeUrl' => route('newsletter.unsubscribe', $this->subscriber->token)
             ]
         );
     }

@@ -1,0 +1,97 @@
+&lt;!DOCTYPE html&gt;
+&lt;html lang="fr"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Test Formulaire Actualité - Action URL&lt;/title&gt;
+    &lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body class="bg-gray-50 p-8"&gt;
+    &lt;div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow"&gt;
+        &lt;h1 class="text-2xl font-bold mb-6"&gt;Test Action URL Formulaire Actualité&lt;/h1&gt;
+        
+        &lt;div class="mb-6"&gt;
+            &lt;h2 class="text-lg font-semibold mb-2"&gt;Informations sur les URLs&lt;/h2&gt;
+            &lt;div class="space-y-2 text-sm"&gt;
+                &lt;p&gt;&lt;strong&gt;URL actuelle :&lt;/strong&gt; &lt;code&gt;http://127.0.0.1:8000/admin/actualite/create&lt;/code&gt;&lt;/p&gt;
+                &lt;p&gt;&lt;strong&gt;Action attendue :&lt;/strong&gt; &lt;code&gt;http://127.0.0.1:8000/admin/actualite&lt;/code&gt; (POST)&lt;/p&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;form action="http://127.0.0.1:8000/admin/actualite" method="POST" class="space-y-4"&gt;
+            &lt;input type="hidden" name="_token" value="test-token"&gt;
+            
+            &lt;div&gt;
+                &lt;label for="titre" class="block text-sm font-medium text-gray-700 mb-1"&gt;Titre&lt;/label&gt;
+                &lt;input type="text" 
+                       id="titre" 
+                       name="titre" 
+                       value="Test titre actualité" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                       required&gt;
+            &lt;/div&gt;
+            
+            &lt;div&gt;
+                &lt;label for="texte" class="block text-sm font-medium text-gray-700 mb-1"&gt;Contenu&lt;/label&gt;
+                &lt;textarea id="texte" 
+                          name="texte" 
+                          rows="4" 
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          required&gt;Ceci est un contenu de test pour l'actualité. Il contient suffisamment de caractères pour passer la validation.&lt;/textarea&gt;
+            &lt;/div&gt;
+            
+            &lt;div class="flex items-center space-x-4"&gt;
+                &lt;label class="flex items-center"&gt;
+                    &lt;input type="checkbox" name="a_la_une" value="1" class="mr-2"&gt;
+                    À la une
+                &lt;/label&gt;
+                
+                &lt;label class="flex items-center"&gt;
+                    &lt;input type="checkbox" name="en_vedette" value="1" class="mr-2"&gt;
+                    En vedette
+                &lt;/label&gt;
+            &lt;/div&gt;
+            
+            &lt;div class="pt-4"&gt;
+                &lt;button type="submit" 
+                        class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"&gt;
+                    Tester Enregistrement
+                &lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/form&gt;
+        
+        &lt;div class="mt-6 p-4 bg-gray-100 rounded"&gt;
+            &lt;h3 class="font-medium mb-2"&gt;Instructions de test :&lt;/h3&gt;
+            &lt;ol class="list-decimal list-inside text-sm space-y-1"&gt;
+                &lt;li&gt;Cliquer sur "Tester Enregistrement"&lt;/li&gt;
+                &lt;li&gt;Si le bouton fonctionne, vous devriez voir une erreur CSRF ou être redirigé&lt;/li&gt;
+                &lt;li&gt;Si rien ne se passe, le problème vient du JavaScript&lt;/li&gt;
+            &lt;/ol&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script&gt;
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const button = document.querySelector('button[type="submit"]');
+        
+        console.log('Form trouvé:', !!form);
+        console.log('Button trouvé:', !!button);
+        console.log('Action du form:', form?.action);
+        
+        button.addEventListener('click', function(e) {
+            console.log('=== CLIC BOUTON ===');
+            console.log('Événement:', e);
+        });
+        
+        form.addEventListener('submit', function(e) {
+            console.log('=== SOUMISSION FORM ===');
+            console.log('Action:', this.action);
+            console.log('Méthode:', this.method);
+            
+            // Laisser le formulaire se soumettre pour le test
+        });
+    });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;

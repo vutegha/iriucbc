@@ -1,6 +1,6 @@
 @extends('layouts.iri')
 
-@section('title', 'Partenariats & Collaborations - Institut de Recherche Intégré')
+@section('title', 'Partenariats & Collaborations - Programme Gouvernance des Ressources Naturelles')
 
 @section('content')
 <!-- Main Content -->
@@ -85,7 +85,7 @@
                     Types de Collaborations
                 </h2>
                 <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-                    Découvrez les différentes façons de collaborer avec l'IRI-UCBC
+                    Découvrez les différentes façons de collaborer avec le programme GRN-UCBC
                 </p>
             </div>
 
@@ -102,7 +102,7 @@
                     <div class="space-y-4 mb-6">
                         <div class="flex items-start space-x-3">
                             <i class="fas fa-check-circle text-green-500 text-lg mt-1"></i>
-                            <p class="text-gray-700">Accès aux ressources de recherche de l'IRI-UCBC</p>
+                            <p class="text-gray-700">Accès aux ressources de recherche du programme GRN-UCBC</p>
                         </div>
                         <div class="flex items-start space-x-3">
                             <i class="fas fa-check-circle text-green-500 text-lg mt-1"></i>

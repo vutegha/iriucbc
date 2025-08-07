@@ -31,7 +31,7 @@
                     @endcan
 
                     {{-- Publications --}}
-                    @can('view publications')
+                    @can('view_publications')
                         <a href="{{ route('admin.publications.index') }}" class="hover:text-gray-300">
                             📄 Publications
                         </a>
@@ -45,7 +45,7 @@
                     @endif
 
                     {{-- Événements --}}
-                    @can('view evenements')
+                    @can('view_evenements')
                         <a href="{{ route('admin.evenements.index') }}" class="hover:text-gray-300">
                             📅 Événements
                         </a>
@@ -75,12 +75,12 @@
                                 </svg>
                             </button>
                             <div class="absolute left-0 mt-2 w-48 bg-gray-700 rounded-md shadow-lg hidden group-hover:block z-10">
-                                @can('moderate publications')
+                                @can('moderate_publications')
                                     <a href="{{ route('admin.moderation.publications') }}" class="block px-4 py-2 hover:bg-gray-600">
                                         Publications en attente
                                     </a>
                                 @endcan
-                                @can('moderate actualites')
+                                @can('moderate_actualites')
                                     <a href="{{ route('admin.moderation.actualites') }}" class="block px-4 py-2 hover:bg-gray-600">
                                         Actualités en attente
                                     </a>

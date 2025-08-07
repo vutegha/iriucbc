@@ -1,67 +1,74 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nouvelle Publication - IRI-UCBC</title>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f4f4f4; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, #ee6751, #505c10); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; margin: -20px -20px 20px -20px; }
-        .content { padding: 20px 0; }
-        .button { display: inline-block; background: #ee6751; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
-        .footer { background: #f8f9fa; padding: 15px; margin: 20px -20px -20px -20px; border-radius: 0 0 10px 10px; font-size: 12px; color: #666; }
-        .unsubscribe { font-size: 11px; color: #999; margin-top: 10px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>📚 Nouvelle Publication</h1>
-            <p>Institut de Recherche Intégré à l'Université Chrétienne Bilingue du Congo</p>
+@extends('emails.newsletter.layout')
+
+@section('title', 'Nouvelle publication - ' . $publication->titre)
+
+@section('content')
+    <div class="greeting">
+        Bonjour {{ $newsletter->nom ?? 'Cher(e) abonné(e)' }},
+    </div>
+    
+    <div class="content-text">
+        <strong>Une nouvelle publication est disponible sur GRN-UCBC !</strong>
+    </div>
+    
+    <div class="publication-card">
+        <div class="publication-title">
+            {{ $publication->titre }}
         </div>
-
-        <div class="content">
-            <p>Bonjour {{ $subscriber->nom ?? 'Cher abonné' }},</p>
-            
-            <p>Nous avons le plaisir de vous annoncer la publication de :</p>
-            
-            <h2 style="color: #ee6751;">{{ $publication->titre }}</h2>
-            
-            @if($publication->resume)
-                <p><strong>Résumé :</strong></p>
-                <p style="background: #f8f9fa; padding: 15px; border-left: 4px solid #ee6751; margin: 15px 0;">
-                    {{ $publication->resume }}
-                </p>
-            @endif
-
-            @if($publication->auteurs && $publication->auteurs->count() > 0)
-                <p><strong>Auteur(s) :</strong> 
-                    {{ $publication->auteurs->pluck('nom')->join(', ') }}
-                </p>
-            @endif
-
+        
+        <div class="publication-meta">
+            📚 Publication • Publié le {{ $publication->created_at->format('d/m/Y') }}
             @if($publication->categorie)
-                <p><strong>Catégorie :</strong> {{ $publication->categorie->nom }}</p>
+                • Catégorie: {{ $publication->categorie->nom }}
             @endif
-
-            <p style="text-align: center; margin: 30px 0;">
-                <a href="{{ route('site.home') }}" class="button">Consulter sur notre site</a>
-            </p>
         </div>
-
-        <div class="footer">
-            <p><strong>Institut de Recherche Intégré à l'Université Chrétienne Bilingue du Congo</strong></p>
-            <p>Congo Initiative-Université Chrétienne Bilingue du Congo</p>
-            
-            <div class="unsubscribe">
-                <p>
-                    <a href="{{ $preferencesUrl }}">Gérer mes préférences</a> | 
-                    <a href="{{ route('newsletter.unsubscribe', $subscriber->token) }}">Se désabonner</a>
-                </p>
-                <p>Vous recevez cet email car vous êtes abonné à nos notifications de publications.</p>
+        
+        @if($publication->auteurs && $publication->auteurs->count() > 0)
+            <div style="margin: 15px 0; padding: 12px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #1e472f;">
+                <strong>Auteur(s) :</strong> {{ $publication->auteurs->pluck('nom')->join(', ') }}
             </div>
+        @endif
+        
+        @if($publication->resume)
+            <div class="publication-excerpt">
+                {{ $publication->resume }}
+            </div>
+        @elseif($publication->description)
+            <div class="publication-excerpt">
+                {!! Str::limit(strip_tags($publication->description), 300) !!}
+            </div>
+        @endif
+        
+        <div style="text-align: center; margin-top: 25px;">
+            <a href="{{ route('publication.show', $publication->slug ?? $publication->id) }}" class="btn">
+                📖 Consulter la publication
+            </a>
+            
+            @if($publication->fichier)
+                <a href="{{ asset('storage/' . $publication->fichier) }}" class="btn btn-secondary" target="_blank">
+                    📥 Télécharger le PDF
+                </a>
+            @endif
         </div>
     </div>
-</body>
-</html>
+    
+    <div class="content-text">
+        Cette publication fait partie de nos travaux de recherche en gouvernance des ressources naturelles. 
+        Nous espérons qu'elle enrichira vos connaissances et vos réflexions.
+    </div>
+    
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="{{ route('site.publications') }}" class="btn btn-secondary">
+            Voir toutes nos publications
+        </a>
+    </div>
+    
+    <div class="content-text">
+        Merci de votre intérêt pour nos travaux !
+    </div>
+    
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-style: italic; color: #6b7280;">
+        L'équipe de recherche GRN-UCBC<br>
+        Centre de Gouvernance des Ressources Naturelles
+    </div>
+@endsection

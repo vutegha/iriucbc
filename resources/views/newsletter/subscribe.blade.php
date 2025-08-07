@@ -1,6 +1,6 @@
 @extends('layouts.iri')
 
-@section('title', 'Newsletter IRI-UCBC')
+@section('title', 'Newsletter GRN-UCBC')
 
 @section('content')
 <div class="min-h-screen bg-gray-50 py-12">
@@ -11,7 +11,7 @@
             <div class="w-20 h-20 bg-gradient-to-br from-coral to-olive rounded-full mx-auto mb-6 flex items-center justify-center">
                 <i class="fas fa-envelope text-white text-2xl"></i>
             </div>
-            <h1 class="text-3xl font-bold text-gray-800 mb-3">Newsletter IRI-UCBC</h1>
+            <h1 class="text-3xl font-bold text-gray-800 mb-3">Newsletter GRN-UCBC</h1>
             <p class="text-gray-600 leading-relaxed">
                 Restez informé de nos dernières actualités, publications et découvertes scientifiques
             </p>
@@ -119,17 +119,20 @@
                                                 <div class="text-sm font-medium text-gray-800">{{ $label }}</div>
                                                 <div class="text-xs text-gray-500 mt-1">
                                                     @switch($type)
+                                                        @case('actualites')
+                                                            Actualités de l'institut et informations importantes
+                                                            @break
                                                         @case('publications')
                                                             Publications académiques et articles de recherche
                                                             @break
-                                                        @case('actualites')
-                                                            Actualités de l'institut et événements
-                                                            @break
-                                                        @case('newsletters')
-                                                            Bulletins d'information périodiques
+                                                        @case('rapports')
+                                                            Rapports d'activité et analyses approfondies
                                                             @break
                                                         @case('projets')
                                                             Nouveaux projets et collaborations
+                                                            @break
+                                                        @case('evenements')
+                                                            Événements, conférences et formations
                                                             @break
                                                         @default
                                                             Notifications générales
@@ -151,7 +154,7 @@
                                        class="w-5 h-5 text-coral bg-gray-100 border-gray-300 rounded focus:ring-coral focus:ring-2 mt-0.5">
                                 <div class="ml-3">
                                     <div class="text-sm text-gray-700">
-                                        J'accepte de recevoir des emails de l'Institut de Recherche Intégré à l'Université Chrétienne Bilingue du Congo et je comprends que je peux me désabonner à tout moment.
+                                        J'accepte de recevoir des emails du Centre de Gouvernance des Ressources Naturelles - Université Chrétienne Bilingue du Congo et je comprends que je peux me désabonner à tout moment.
                                     </div>
                                 </div>
                             </label>

@@ -13,7 +13,13 @@ class ActualitePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->canViewActualites();
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('view_actualites', 'web') ||
+               $user->hasAnyRole(['admin', 'moderator', 'contributeur'], 'web');
     }
 
     /**
@@ -21,7 +27,13 @@ class ActualitePolicy
      */
     public function view(User $user, Actualite $actualite): bool
     {
-        return $user->canViewActualites();
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('view_actualites', 'web') ||
+               $user->hasAnyRole(['admin', 'moderator', 'contributeur'], 'web');
     }
 
     /**
@@ -29,7 +41,13 @@ class ActualitePolicy
      */
     public function create(User $user): bool
     {
-        return $user->canCreateActualites();
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('create_actualites', 'web') ||
+               $user->hasAnyRole(['admin', 'contributeur'], 'web');
     }
 
     /**
@@ -37,8 +55,13 @@ class ActualitePolicy
      */
     public function update(User $user, Actualite $actualite): bool
     {
-        // L'utilisateur peut modifier ses propres actualités ou s'il a les permissions admin
-        return $user->canUpdateActualites() || $actualite->auteur_id === $user->id;
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('update_actualites', 'web') ||
+               $user->hasAnyRole(['admin'], 'web');
     }
 
     /**
@@ -46,16 +69,27 @@ class ActualitePolicy
      */
     public function delete(User $user, Actualite $actualite): bool
     {
-        // L'utilisateur peut supprimer ses propres actualités ou s'il a les permissions admin
-        return $user->canDeleteActualites() || $actualite->auteur_id === $user->id;
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('delete_actualites', 'web') ||
+               $user->hasAnyRole(['admin'], 'web');
     }
 
     /**
-     * Determine whether the user can moderate actualites.
+     * Determine whether the user can moderate the model.
      */
-    public function moderate(User $user): bool
+    public function moderate(User $user, ?Actualite $actualite = null): bool
     {
-        return $user->canModerate();
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('moderate_actualites', 'web') ||
+               $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
     /**
@@ -63,8 +97,13 @@ class ActualitePolicy
      */
     public function publish(User $user, Actualite $actualite): bool
     {
-        return $user->hasPermissionTo('publish actualites') || 
-               $user->hasAnyRole(['admin', 'super-admin', 'moderateur']);
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('publish_actualites', 'web') ||
+               $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
     /**
@@ -72,23 +111,13 @@ class ActualitePolicy
      */
     public function unpublish(User $user, Actualite $actualite): bool
     {
-        return $user->hasPermissionTo('unpublish actualites') || 
-               $user->hasAnyRole(['admin', 'super-admin', 'moderateur']);
+        // Super-admin a tous les droits
+        if ($user->hasRole('super-admin', 'web')) {
+            return true;
+        }
+        
+        return $user->hasPermissionTo('unpublish_actualites', 'web') ||
+               $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Actualite $actualite): bool
-    {
-        return $user->canDeleteActualites();
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Actualite $actualite): bool
-    {
-        return $user->canDeleteActualites();
-    }
-}
+                }

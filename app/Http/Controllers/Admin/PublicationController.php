@@ -7,8 +7,10 @@ use Illuminate\Http\Request;
 use App\Models\Publication;
 use App\Models\Auteur;
 use App\Models\Categorie;
+use App\Events\PublicationFeaturedCreated;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class PublicationController extends Controller
@@ -67,7 +69,23 @@ class PublicationController extends Controller
     }
     public function index(Request $request)
     {
-        $query = Publication::with('auteur', 'categorie');
+        $this->authorize('viewAny', Publication::class);
+        
+        $query = Publication::with('auteurs', 'categorie');
+
+        // Recherche globale
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('titre', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('resume', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('citation', 'LIKE', "%{$searchTerm}%")
+                  ->orWhereHas('auteurs', function($q) use ($searchTerm) {
+                      $q->where('nom', 'LIKE', "%{$searchTerm}%")
+                        ->orWhere('prenom', 'LIKE', "%{$searchTerm}%");
+                  });
+            });
+        }
 
         if ($request->filled('auteur')) {
             $query->where('auteur_id', $request->auteur);
@@ -77,16 +95,43 @@ class PublicationController extends Controller
             $query->where('categorie_id', $request->categorie);
         }
 
+        // Filtre par statut
+        if ($request->filled('status')) {
+            switch ($request->status) {
+                case 'published':
+                    $query->where('is_published', true);
+                    break;
+                case 'pending':
+                    $query->where('is_published', false);
+                    break;
+                case 'draft':
+                    $query->draft();
+                    break;
+            }
+        }
+
         $publications = $query->latest()->paginate(10)->appends($request->query());
+
+        // Statistiques globales (sur toute la base, pas juste la pagination)
+        $stats = [
+            'total' => Publication::count(),
+            'published' => Publication::where('is_published', true)->count(),
+            'pending' => Publication::where('is_published', false)->count(),
+            'draft' => Publication::draft()->count(),
+            'featured' => Publication::where('en_vedette', true)->count(),
+            'this_month' => Publication::where('created_at', '>=', now()->startOfMonth())->count(),
+        ];
 
         $auteurs = Auteur::all();
         $categories = Categorie::all();
 
-        return view('admin.publication.index', compact('publications', 'auteurs', 'categories', 'request'));
+        return view('admin.publication.index', compact('publications', 'auteurs', 'categories', 'request', 'stats'));
     }
 
     public function create()
     {
+        $this->authorize('create', Publication::class);
+        
         $auteurs = Auteur::all();
         $categories = Categorie::all();
         return view('admin.publication.create', compact('auteurs', 'categories'));
@@ -94,6 +139,7 @@ class PublicationController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', Publication::class);
         try {
             // Log de debug
             Log::info('Début création publication', [
@@ -175,6 +221,12 @@ class PublicationController extends Controller
             }
             $publication->auteurs()->attach($auteursWithOrder);
 
+            // NOTE: L'événement PublicationFeaturedCreated sera déclenché uniquement 
+            // lors de l'action de modération "publier" pour respecter le workflow
+
+            // Note: Les miniatures PDF sont maintenant générées côté client avec PDF.js
+            // Pas besoin de job en arrière-plan
+
             Log::info('Publication créée avec succès', ['id' => $publication->id, 'fichier' => $validated['fichier_pdf']]);
 
             return redirect()->route('admin.publication.index')
@@ -205,7 +257,7 @@ class PublicationController extends Controller
      */
     public function show(Publication $publication)
     {
-        // Vérifier les permissions
+        
         $this->authorize('view', $publication);
         
         // Charger les relations nécessaires
@@ -216,7 +268,7 @@ class PublicationController extends Controller
 
     public function edit(Publication $publication)
     {
-        // Vérifier les permissions
+        
         $this->authorize('update', $publication);
         
         $auteurs = Auteur::all();
@@ -227,7 +279,7 @@ class PublicationController extends Controller
 
     public function update(Request $request, Publication $publication)
     {
-        // Vérifier les permissions
+        
         $this->authorize('update', $publication);
         
         try {
@@ -291,6 +343,10 @@ class PublicationController extends Controller
             $auteurs = $validated['auteurs'];
             unset($validated['auteurs']);
 
+            // Vérifier si la publication vient d'être mise en avant
+            $wasFeatured = !$publication->is_featured && $validated['is_featured'] ?? false;
+            $wasPublished = !$publication->is_published && $validated['is_published'] ?? false;
+            
             // Mise à jour de la publication
             $publication->update($validated);
 
@@ -300,6 +356,12 @@ class PublicationController extends Controller
                 $auteursWithOrder[$auteurId] = ['ordre' => $index + 1];
             }
             $publication->auteurs()->sync($auteursWithOrder);
+
+            // NOTE: L'événement PublicationFeaturedCreated sera déclenché uniquement 
+            // lors de l'action de modération "publier" pour respecter le workflow
+
+            // Note: Les miniatures PDF sont maintenant générées côté client avec PDF.js
+            // Pas besoin de job en arrière-plan pour les nouveaux fichiers
 
             $message = 'Publication mise à jour avec succès.';
             if (isset($path)) {
@@ -344,7 +406,7 @@ class PublicationController extends Controller
 
     public function destroy(Publication $publication)
     {
-        // Vérifier les permissions
+        
         $this->authorize('delete', $publication);
         
         try {
@@ -372,6 +434,18 @@ class PublicationController extends Controller
      */
     public function publish(Request $request, Publication $publication)
     {
+        // DEBUG: Log de début d'action
+        Log::info('🚀 DÉBUT ACTION PUBLISH', [
+            'publication_id' => $publication->id,
+            'user_id' => auth()->id(),
+            'user_email' => auth()->user()->email ?? 'unknown',
+            'publication_titre' => $publication->titre,
+            'is_published_avant' => $publication->is_published,
+            'request_comment' => $request->input('comment'),
+            'request_method' => $request->method(),
+            'request_url' => $request->fullUrl()
+        ]);
+
         // Vérifier les permissions
         $this->authorize('publish', $publication);
 
@@ -382,6 +456,39 @@ class PublicationController extends Controller
                 'published_by' => auth()->id(),
                 'moderation_comment' => $request->input('comment')
             ]);
+
+            Log::info('✅ PUBLICATION MISE À JOUR', [
+                'publication_id' => $publication->id,
+                'is_published_apres' => $publication->fresh()->is_published,
+                'published_at' => $publication->fresh()->published_at ? $publication->fresh()->published_at->format('Y-m-d H:i:s') : null,
+                'published_by' => $publication->fresh()->published_by
+            ]);
+
+            // Déclencher l'événement newsletter pour toutes les publications publiées
+            try {
+                Log::info('🎯 AVANT DISPATCH ÉVÉNEMENT', [
+                    'publication_id' => $publication->id,
+                    'jobs_avant' => DB::table('jobs')->count()
+                ]);
+                
+                PublicationFeaturedCreated::dispatch($publication);
+                
+                sleep(1); // Attendre un peu pour que l'événement soit traité
+                
+                Log::info('✅ ÉVÉNEMENT DISPATCHÉ', [
+                    'publication_id' => $publication->id,
+                    'titre' => $publication->titre,
+                    'en_vedette' => $publication->en_vedette,
+                    'a_la_une' => $publication->a_la_une,
+                    'jobs_apres' => DB::table('jobs')->count()
+                ]);
+            } catch (\Exception $e) {
+                Log::error('❌ ERREUR DISPATCH ÉVÉNEMENT', [
+                    'publication_id' => $publication->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+            }
 
             if ($request->expectsJson()) {
                 return response()->json([

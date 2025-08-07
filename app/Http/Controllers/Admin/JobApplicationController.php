@@ -16,7 +16,9 @@ class JobApplicationController extends Controller
      */
     public function index(Request $request)
     {
-        $query = JobApplication::with(['jobOffer'])
+        
+        $this->authorize('viewAny', JobApplication::class);
+$query = JobApplication::with(['jobOffer'])
             ->orderBy('created_at', 'desc');
 
         // Filtres
@@ -24,6 +26,24 @@ class JobApplicationController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Gérer les filtres par offre d'emploi (slug ou ID)
+        if ($request->filled('job_offer')) {
+            $jobOfferIdentifier = $request->job_offer;
+            
+            // Vérifier si c'est un slug ou un ID
+            if (is_numeric($jobOfferIdentifier)) {
+                // C'est un ID
+                $query->where('job_offer_id', $jobOfferIdentifier);
+            } else {
+                // C'est un slug, trouver l'ID correspondant
+                $jobOffer = JobOffer::where('slug', $jobOfferIdentifier)->first();
+                if ($jobOffer) {
+                    $query->where('job_offer_id', $jobOffer->id);
+                }
+            }
+        }
+
+        // Support de l'ancien paramètre job_offer_id pour compatibilité
         if ($request->filled('job_offer_id')) {
             $query->where('job_offer_id', $request->job_offer_id);
         }
@@ -38,9 +58,17 @@ class JobApplicationController extends Controller
         }
 
         $applications = $query->paginate(20);
-        $jobOffers = JobOffer::active()->pluck('title', 'id');
+        $jobOffers = JobOffer::orderBy('title')->get();
 
-        return view('admin.job-applications.index', compact('applications', 'jobOffers'));
+        // Pour la sélection dans le filtre, déterminer quelle offre est sélectionnée
+        $selectedJobOffer = null;
+        if ($request->filled('job_offer')) {
+            $selectedJobOffer = is_numeric($request->job_offer) 
+                ? JobOffer::find($request->job_offer)
+                : JobOffer::where('slug', $request->job_offer)->first();
+        }
+
+        return view('admin.job-applications.index', compact('applications', 'jobOffers', 'selectedJobOffer'));
     }
 
     /**
@@ -48,7 +76,9 @@ class JobApplicationController extends Controller
      */
     public function show(JobApplication $application)
     {
-        $application->load(['jobOffer', 'reviewer']);
+        
+        $this->authorize('view', $JobApplication);
+$application->load(['jobOffer', 'reviewer']);
         
         return view('admin.job-applications.show', compact('application'));
     }
@@ -117,7 +147,9 @@ class JobApplicationController extends Controller
      */
     public function destroy(JobApplication $application)
     {
-        // Supprimer les fichiers associés
+        
+        $this->authorize('delete', $JobApplication);
+// Supprimer les fichiers associés
         if ($application->cv_path) {
             Storage::disk('public')->delete($application->cv_path);
         }

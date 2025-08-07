@@ -80,7 +80,7 @@
         
         <!-- Actions -->
         <div class="flex space-x-3">
-            @can('update actualites')
+            @can('update_actualites')
             <a href="{{ route('admin.actualite.edit', $actualite) }}" 
                class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-iri-primary to-iri-secondary text-white rounded-lg hover:from-iri-secondary hover:to-iri-primary transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                 <i class="fas fa-edit mr-2"></i>
@@ -116,11 +116,20 @@
                     @endif
                     
                     <div class="prose max-w-none">
-                        <div class="space-y-4">
-                            <div class="text-sm text-iri-gray flex items-center">
+                        <div>
+                            <div class="text-sm text-iri-gray flex items-center mb-4">
                                 <i class="fas fa-calendar mr-2"></i>
                                 Publié le {{ $actualite->created_at ? $actualite->created_at->format('d/m/Y à H:i') : 'Date non disponible' }}
                             </div>
+                            
+                            @if($actualite->resume)
+                            <div class="p-3 bg-gradient-to-r from-iri-accent/10 to-iri-gold/10 rounded-lg">
+                                <h3 class="text-sm font-medium text-iri-gray mb-2">
+                                    <i class="fas fa-clipboard-list mr-2"></i>Résumé
+                                </h3>
+                                <p class="text-iri-dark italic">{{ $actualite->resume }}</p>
+                            </div>
+                            @endif
                             
                             @if($actualite->texte)
                             <div class="text-iri-dark leading-relaxed prose prose-lg max-w-none prose-headings:text-iri-primary prose-links:text-iri-secondary prose-strong:text-iri-dark prose-ul:text-iri-dark prose-ol:text-iri-dark">
@@ -133,37 +142,22 @@
             </div>
 
             <!-- Détails de l'actualité -->
-            @if($actualite->resume || $actualite->auteur)
+            @if($actualite->auteur)
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="px-6 py-4 bg-gradient-to-r from-iri-accent to-iri-gold">
                     <h2 class="text-xl font-semibold text-white flex items-center">
                         <i class="fas fa-info-circle mr-3"></i>
-                        Détails de l'actualité
+                        Informations supplémentaires
                     </h2>
                 </div>
                 <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        @if($actualite->auteur)
-                        <div>
-                            <label class="block text-sm font-medium text-iri-gray mb-2">
-                                <i class="fas fa-user-edit mr-2"></i>Auteur
-                            </label>
-                            <div class="p-3 bg-gray-50 rounded-lg border">
-                                {{ $actualite->auteur }}
-                            </div>
+                    <div>
+                        <label class="block text-sm font-medium text-iri-gray mb-2">
+                            <i class="fas fa-user-edit mr-2"></i>Auteur
+                        </label>
+                        <div class="p-3 bg-gray-50 rounded-lg border">
+                            {{ $actualite->auteur }}
                         </div>
-                        @endif
-
-                        @if($actualite->resume)
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-iri-gray mb-2">
-                                <i class="fas fa-clipboard-list mr-2"></i>Résumé
-                            </label>
-                            <div class="p-3 bg-gradient-to-r from-iri-accent/10 to-iri-gold/10 rounded-lg border border-iri-accent/20">
-                                <em class="text-iri-dark">{{ $actualite->resume }}</em>
-                            </div>
-                        </div>
-                        @endif
                     </div>
                 </div>
             </div>
@@ -306,7 +300,7 @@
                             </h2>
                         </div>
                         <div class="p-6 space-y-3">
-                            @can('publish actualites')
+                            @can('publish_actualites')
                             @if(!$actualite->is_published)
                                 <button onclick="moderateActualite('publish')" 
                                         class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg">
@@ -316,7 +310,7 @@
                             @endif
                             @endcan
                             
-                            @can('unpublish actualites')
+                            @can('unpublish_actualites')
                             @if($actualite->is_published)
                                 <button onclick="moderateActualite('unpublish')" 
                                         class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-md hover:shadow-lg">
@@ -326,7 +320,7 @@
                             @endif
                             @endcan
                             
-                            @can('delete actualites')
+                            @can('delete_actualites')
                                 <button onclick="moderateActualite('delete')" 
                                         class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg">
                                     <i class="fas fa-trash mr-2"></i>
@@ -354,7 +348,7 @@
                         Voir sur le site
                     </a>
                     
-                    @can('update actualites')
+                    @can('update_actualites')
                     <a href="{{ route('admin.actualite.edit', $actualite) }}" 
                        class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-iri-primary to-iri-secondary text-white rounded-lg hover:from-iri-secondary hover:to-iri-primary transition-all duration-200 shadow-md hover:shadow-lg">
                         <i class="fas fa-edit mr-2"></i>

@@ -88,6 +88,16 @@ class Actualite extends Model
         return $this->belongsTo(Service::class);
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function auteur()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     /**
      * Détermine le type de contenu pour la newsletter
      */

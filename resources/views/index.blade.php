@@ -17,14 +17,16 @@
         <div class="absolute top-0 left-0 right-0 z-20 px-4 sm:px-6 lg:px-8 pt-0 hidden lg:block">
             <!-- Barre horizontale des actualités - Container full width -->
             <div class="bg-black/40 backdrop-blur-sm rounded-lg p-2 shadow-lg">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2">
-                    @foreach($actualites as $actualite)
-                        <div class="flex items-center space-x-2 hover:bg-white/10 rounded-lg p-2 transition-all duration-300 min-h-[60px]">
-                            <!-- Image circulaire -->
-                            <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-orange-400 shadow-md flex-shrink-0">
-                                <img src="{{ asset('storage/'.$actualite->image) }}" 
-                                     alt="{{ $actualite->titre }}"
-                                     class="w-full h-full object-cover">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+                    @if(isset($actualites) && $actualites->count() > 0)
+                        @foreach($actualites as $actualite)
+                            <div class="flex items-center space-x-2 hover:bg-white/10 rounded-lg p-2 transition-all duration-300 min-h-[60px]">
+                                <!-- Image circulaire -->
+                                <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-orange-400 shadow-md flex-shrink-0">
+                                    <img src="{{ asset('storage/'.$actualite->image) }}" 
+                                         alt="{{ $actualite->titre }}"
+                                         class="w-full h-full object-cover"
+                                         loading="lazy">
                             </div>
                             
                             <!-- Titre avec wrap -->
@@ -35,7 +37,13 @@
                                 </a>
                             </div>
                         </div>
-                    @endforeach
+                        @endforeach
+                    @else
+                        <!-- Message par défaut si aucune actualité -->
+                        <div class="col-span-full text-center py-8">
+                            <p class="text-white/70 text-sm">Aucune actualité disponible pour le moment.</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -44,21 +52,20 @@
         <div class="relative z-10 flex items-center justify-center h-full">
             <div class="text-center text-white max-w-5xl mx-auto px-6">
                 <div class="bg-gradient-to-r from-black/60 via-black/40 to-black/60 backdrop-blur-sm p-8 lg:p-12 rounded-2xl shadow-2xl">
-                    <!-- Titre principal -->
                     <h1 class="text-3xl sm:text-4xl lg:text-6xl font-bold leading-tight mb-6">
                         <span class="bg-gradient-to-r from-iri-accent via-iri-gold to-iri-accent bg-clip-text text-transparent">
-                            La recherche appliquée
+                            Gouvernance de Ressources Naturelles
                         </span>
                         <br>
                         <span class="text-white">
-                            en réponse aux besoins sociétaux
+                            Une tenure foncière sécurisée pour tous
                         </span>
                     </h1>
 
                     <!-- Sous-titre -->
                     <p class="text-lg sm:text-xl lg:text-2xl text-gray-200 max-w-4xl mx-auto mb-8 leading-relaxed">
-                        Nous développons des solutions concrètes, ancrées dans les réalités congolaises,
-                        pour bâtir des communautés résilientes et durables.
+                        Nous transformons la gouvernance foncière, forestière et minière par la participation communautaire, 
+                        l'inclusion et l'innovation technologique pour des communautés résilientes et durables.
                     </p>
 
                     <!-- Boutons d'action -->
@@ -68,15 +75,15 @@
                             <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M8 5v14l11-7z"/>
                             </svg>
-                            Qui sommes-nous ?
+                            À propos du programme
                         </a>
                         
                         <a href="{{ url('/services') }}" 
                            class="inline-flex items-center px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-iri-primary font-bold rounded-lg transition-all duration-300 transform hover:scale-105">
                             <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            Nos services
+                            Nos interventions
                         </a>
                     </div>
                 </div>
@@ -97,11 +104,11 @@
             <div class="text-center mb-20">
                 
                 <h2 class="text-4xl md:text-5xl font-bold primary-text mb-6 font-poppins">
-                    Recherche <span class="text-iri-accent">Appliquée</span> & Innovation
+                    Gouvernance des <span class="text-iri-accent">Ressources Naturelles</span>
                 </h2>
                 <p class="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-                    Découvrez notre engagement pour la recherche scientifique et nos domaines d'expertise 
-                    au service du développement durable en République Démocratique du Congo
+                    Découvrez notre engagement pour la transformation de la gouvernance foncière, forestière et minière 
+                    au service des communautés en République Démocratique du Congo
                 </p>
             </div>
 
@@ -112,7 +119,9 @@
                     <div class="p-6 space-y-4">
                         <h3 class="text-2xl font-bold">Notre Mission</h3>
                         <p class="text-md font-light mt-2">
-                            L'Institut de Recherche Intégré à l'Université Chrétienne Bilingue du Congo (IRI-UCBC) a pour mission de promouvoir la recherche scientifique, l'innovation et le développement durable au service de la société congolaise et africaine. À travers des projets interdisciplinaires, l'institut vise à renforcer les capacités, encourager la collaboration et produire des connaissances utiles pour répondre aux défis locaux au sein des communautés locales en République Démocratique du Congo.
+                            Le programme « Gouvernance des Ressources Naturelles » (GRN) est une initiative de l'Université Chrétienne Bilingue du Congo (UCBC). 
+                            Depuis 2015, à travers le projet phare « Sharing The Land », nous combinons recherche scientifique, engagement communautaire, technologies innovantes et plaidoyer politique pour transformer la gouvernance foncière, forestière et minière dans une approche participative. 
+                            Notre objectif est de garantir aux communautés, en particulier aux groupes marginalisés (femmes, jeunes, peuples autochtones), un accès sécurisé, équitable et durable aux ressources naturelles.
                         </p>
                     </div>
                 </div>
@@ -123,13 +132,14 @@
                         <div class="w-12 h-12 bg-gradient-to-br from-iri-accent to-iri-gold rounded-xl flex items-center justify-center mr-4">
                             <i class="fas fa-cogs text-white text-xl"></i>
                         </div>
-                        <h4 class="text-2xl font-bold primary-text">Nos Secteurs d'interets</h4>
+                        <h4 class="text-2xl font-bold primary-text">Nos Secteurs d'intervention</h4>
                     </div>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        @foreach($services as $service)
-                        <a href="{{ route('site.service.show', ['slug' => $service->slug]) }}" 
-                           class="group cursor-pointer block">
+                        @if(isset($services) && $services->count() > 0)
+                            @foreach($services as $service)
+                            <a href="{{ route('site.service.show', ['slug' => $service->slug]) }}" 
+                               class="group cursor-pointer block">
                             
                             <div class="relative overflow-hidden rounded-2xl bg-white border-2 border-gray-100 hover:border-iri-accent/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 transform">
                                 <!-- Header moderne avec couleurs IRI -->
@@ -173,6 +183,12 @@
                             </div>
                         </a>
                         @endforeach
+                        @else
+                            <!-- Message par défaut si aucun service -->
+                            <div class="col-span-2 text-center py-8">
+                                <p class="text-gray-500">Aucun secteur d'intervention disponible pour le moment.</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -189,13 +205,13 @@
 
         <div class="max-w-7xl mx-auto px-4 relative z-10">
             <!-- Header principal -->
-            <div class="text-center mb-&-">
+            <div class="text-center mb-16">
                 
                 <h2 class="text-4xl md:text-5xl font-bold primary-text mb-6 font-poppins">
                     Nos <span class="text-iri-accent">Ressources</span> & Actualités
                 </h2>
                 <p class="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-                    Découvrez nos dernières publications de recherche, rapports d'activités et événements marquants de l'IRI-UCBC
+                    Découvrez nos dernières recherches, rapports d'activités et événements marquants du programme GRN-UCBC
                 </p>
             </div>
 
@@ -218,7 +234,10 @@
                     </div>
 
                     <!-- Carousel des publications et rapports modernisé -->
-                    <div class="splide publication-carousel" id="project-carousel">
+                    <div class="splide publication-carousel" 
+                         id="project-carousel"
+                         role="region" 
+                         aria-label="Publications et rapports récents">
                         <div class="splide__track">
                             <ul class="splide__list">
                                 @foreach($documentsRecents as $document)
@@ -266,50 +285,36 @@
                                                         </span>
                                                     </div>
                                                     
-                                                    <!-- Titre -->
-                                                    <h4 class="font-bold text-white text-lg leading-tight mb-3 group-hover:text-iri-gold transition-colors duration-300">
-                                                        @if($document instanceof \App\Models\Publication)
-                                                            <a href="{{ route('publication.show', ['slug' => $document->slug]) }}" class="hover:underline">
-                                                                {{ $document->titre }}
-                                                            </a>
-                                                        @else
-                                                            <a href="{{ asset('storage/'.$document->fichier) }}" target="_blank" class="hover:underline">
-                                                                {{ $document->titre }}
-                                                            </a>
-                                                        @endif
-                                                    </h4>
-                                                    
-                                                    <!-- Actions en bas -->
-                                                    <div class="flex items-center justify-between">
-                                                        <div class="flex items-center space-x-2">
-                                                            @if($document instanceof \App\Models\Publication)
-                                                                <span class="bg-white/20 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
-                                                                    Par {{ $document->auteur->nom ?? 'IRI-UCBC' }}
-                                                                </span>
-                                                            @else
-                                                                <span class="bg-white/20 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
-                                                                    {{ $document->created_at->diffForHumans() }}
-                                                                </span>
-                                                            @endif
-                                                        </div>
-                                                        
-                                                        <!-- Bouton d'action -->
-                                                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                            @if($document instanceof \App\Models\Publication)
-                                                                <a href="{{ route('publication.show', ['slug' => $document->slug]) }}" 
-                                                                   class="bg-iri-accent hover:bg-iri-gold text-white px-4 py-2 rounded-full font-semibold text-xs transition-all duration-300 flex items-center">
-                                                                    <i class="fas fa-eye mr-2"></i>
-                                                                    Consulter
-                                                                </a>
-                                                            @else
-                                                                <a href="{{ asset('storage/'.$document->fichier) }}" target="_blank"
-                                                                   class="bg-iri-accent hover:bg-iri-gold text-white px-4 py-2 rounded-full font-semibold text-xs transition-all duration-300 flex items-center">
-                                                                    <i class="fas fa-download mr-2"></i>
-                                                                    Télécharger
-                                                                </a>
-                                                            @endif
-                                                        </div>
-                                                    </div>
+                                    <!-- Titre -->
+                                    <h4 class="font-bold text-gray-900 text-lg leading-tight mb-3 group-hover:text-iri-primary transition-colors duration-300 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg">
+                                        <a href="{{ route('publication.show', ['slug' => $document->slug]) }}" class="hover:underline">
+                                            {{ $document->titre }}
+                                        </a>
+                                    </h4>
+                                    
+                                    <!-- Actions en bas -->
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-2">
+                                            @if($document instanceof \App\Models\Publication)
+                                                <span class="bg-white/20 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+                                                    Par {{ $document->auteurs->first()->nom ?? 'GRN-UCBC' }}
+                                                </span>
+                                            @else
+                                                <span class="bg-white/20 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+                                                    {{ $document->created_at->diffForHumans() }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        
+                                        <!-- Bouton d'action unifié -->
+                                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            <a href="{{ route('publication.show', ['slug' => $document->slug]) }}" 
+                                               class="bg-iri-accent hover:bg-iri-gold text-white px-4 py-2 rounded-full font-semibold text-xs transition-all duration-300 flex items-center">
+                                                <i class="fas fa-eye mr-2"></i>
+                                                {{ $document instanceof \App\Models\Publication ? 'Consulter' : 'Voir le rapport' }}
+                                            </a>
+                                        </div>
+                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -525,7 +530,7 @@
                                             <span class="text-xs font-bold">JUL</span>
                                         </div>
                                         <div>
-                                            <h4 class="font-semibold text-sm drop-shadow-sm">Conférence IRI 2025</h4>
+                                            <h4 class="font-semibold text-sm drop-shadow-sm">Conférence GRN 2025</h4>
                                             <p class="text-xs text-gray-500 drop-shadow-sm">25 Juillet 2025</p>
                                         </div>
                                     </div>
@@ -537,7 +542,7 @@
                                             <span class="text-xs font-bold">AUG</span>
                                         </div>
                                         <div>
-                                            <h4 class="font-semibold text-sm drop-shadow-sm">Formation Recherche</h4>
+                                            <h4 class="font-semibold text-sm drop-shadow-sm">Formation Gouvernance Foncière</h4>
                                             <p class="text-xs text-gray-500 drop-shadow-sm">15 Août 2025</p>
                                         </div>
                                     </div>
@@ -553,7 +558,7 @@
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-blue-900 text-sm drop-shadow-sm">Actualités Twitter</h4>
-                                    <p class="text-xs text-blue-600 drop-shadow-sm">Suivez-nous @IRI_UCBC</p>
+                                    <p class="text-xs text-blue-600 drop-shadow-sm">Suivez-nous @GRN_UCBC</p>
                                 </div>
                             </div>
                             
@@ -563,14 +568,14 @@
                                         "Nouveau partenariat stratégique avec l'Université de Kinshasa 🤝 #Innovation #Recherche"
                                     </p>
                                     <div class="flex items-center justify-between mt-2">
-                                        <span class="text-xs text-blue-500 font-medium drop-shadow-sm">@IRI_UCBC</span>
+                                        <span class="text-xs text-blue-500 font-medium drop-shadow-sm">@GRN_UCBC</span>
                                         <span class="text-xs text-gray-400 drop-shadow-sm">Il y a 2h</span>
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="mt-4 text-center">
-                                <a href="https://twitter.com/IRI_UCBC" target="_blank" 
+                                <a href="https://twitter.com/GRN_UCBC" target="_blank" 
                                    class="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 font-semibold transition-colors">
                                     <i class="fab fa-twitter mr-1"></i>
                                     Suivre sur Twitter
@@ -584,98 +589,151 @@
 
     </section>
 
-    <!-- Section partenaires -->
-    <section class="bg-gray-50 py-8">
-        <div class="max-w-6xl mx-auto px-4">
-            <h2 class="text-center text-2xl font-semibold text-gray-800 mb-6">Nos partenaires</h2>
+    <!-- Section partenaires moderne avec défilement horizontal -->
+    <section class="bg-gradient-to-b from-gray-50 to-white py-16">
+        <div class="max-w-7xl mx-auto px-4">
+            <!-- En-tête de section -->
+            <div class="text-center mb-12">
+                <div class="inline-block p-2 bg-iri-primary/10 rounded-lg mb-4">
+                    <i class="fas fa-handshake text-iri-primary text-2xl"></i>
+                </div>
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Nos Partenaires</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    Nous collaborons avec des organisations de renom pour promouvoir la Gouvernance des Ressources Naturelles en République Démocratique du Congo.
+                </p>
+                <div class="w-24 h-1 bg-gradient-to-r from-iri-primary to-iri-accent mx-auto mt-6 rounded-full"></div>
+            </div>
+
             @if(optional($partenaires)->count() > 0)
-                <div class="overflow-hidden relative w-full">
-                    <div class="animate-scroll-infinite flex gap-8" style="width: fit-content;">
+                <!-- Conteneur de défilement avec effet de fondu -->
+                <div class="relative overflow-hidden">
+                    <!-- Effets de fondu sur les côtés -->
+                    <div class="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+                    <div class="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+                    
+                    <!-- Conteneur de défilement -->
+                    <div class="flex animate-scroll-smooth gap-12 py-8" style="animation-duration: 60s;" id="partners-scroll">
                         <!-- Première série de logos -->
                         @foreach($partenaires as $partenaire)
-                            <img src="{{ $partenaire->logo_url }}" 
-                                 alt="{{ $partenaire->nom }}" 
-                                 title="{{ $partenaire->nom }}"
-                                 class="partner-logo h-16 object-contain flex-shrink-0 transition-all duration-300"
-                                 onerror="this.style.display='none'"
-                                 onload="this.style.opacity='1'"
-                                 style="opacity: 0; filter: grayscale(30%);"/>
+                            <div class="partner-item flex-shrink-0 group">
+                                @if($partenaire->site_web)
+                                    <a href="{{ $partenaire->site_web }}" 
+                                       target="_blank" 
+                                       rel="noopener noreferrer"
+                                       class="block transition-all duration-300 transform group-hover:scale-110">
+                                @endif
+                                        <div class="flex items-center justify-center h-16">
+                                            <img src="{{ $partenaire->logo_url }}" 
+                                                 alt="{{ $partenaire->nom }}" 
+                                                 title="{{ $partenaire->nom }}"
+                                                 class="max-h-12 max-w-32 object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                                                 onerror="this.parentElement.parentElement{{ $partenaire->site_web ? '.parentElement' : '' }}.style.display='none'"
+                                                 loading="lazy"/>
+                                        </div>
+                                @if($partenaire->site_web)
+                                    </a>
+                                @endif
+                            </div>
                         @endforeach
+
                         <!-- Duplication pour boucle fluide -->
                         @foreach($partenaires as $partenaire)
-                            <img src="{{ $partenaire->logo_url }}" 
-                                 alt="{{ $partenaire->nom }}" 
-                                 title="{{ $partenaire->nom }}"
-                                 class="partner-logo h-16 object-contain flex-shrink-0 transition-all duration-300"
-                                 onerror="this.style.display='none'"
-                                 onload="this.style.opacity='1'"
-                                 style="opacity: 0; filter: grayscale(30%);"/>
+                            <div class="partner-item flex-shrink-0 group">
+                                @if($partenaire->site_web)
+                                    <a href="{{ $partenaire->site_web }}" 
+                                       target="_blank" 
+                                       rel="noopener noreferrer"
+                                       class="block transition-all duration-300 transform group-hover:scale-110">
+                                @endif
+                                        <div class="flex items-center justify-center h-16">
+                                            <img src="{{ $partenaire->logo_url }}" 
+                                                 alt="{{ $partenaire->nom }}" 
+                                                 title="{{ $partenaire->nom }}"
+                                                 class="max-h-12 max-w-32 object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                                                 onerror="this.parentElement.parentElement{{ $partenaire->site_web ? '.parentElement' : '' }}.style.display='none'"
+                                                 loading="lazy"/>
+                                        </div>
+                                @if($partenaire->site_web)
+                                    </a>
+                                @endif
+                            </div>
                         @endforeach
                     </div>
                 </div>
-                
-                <!-- CSS supplémentaire pour les partenaires -->
+
+                <!-- Styles CSS simplifiés pour la section partenaires -->
                 <style>
-                    .partner-logo:hover {
-                        filter: grayscale(0%) !important;
-                        transform: scale(1.05);
+                    .animate-scroll-smooth {
+                        animation: scroll-horizontal linear infinite;
+                        animation-play-state: running;
+                    }
+
+                    .animate-scroll-smooth:hover {
+                        animation-play-state: paused;
+                    }
+
+                    @keyframes scroll-horizontal {
+                        0% {
+                            transform: translateX(0);
+                        }
+                        100% {
+                            transform: translateX(-50%);
+                        }
+                    }
+
+                    .line-clamp-2 {
+                        display: -webkit-box;
+                        -webkit-line-clamp: 2;
+                        -webkit-box-orient: vertical;
+                        overflow: hidden;
+                    }
+
+                    .partner-item {
+                        min-width: 150px;
+                    }
+
+                    /* Animation au survol pour les logos */
+                    .partner-item:hover {
+                        z-index: 10;
                     }
                 </style>
-                
+
                 <script>
-                    // JavaScript pour la gestion des partenaires
+                    // JavaScript simplifié pour la section partenaires
                     document.addEventListener('DOMContentLoaded', function() {
-                        const partnersContainer = document.querySelector('.animate-scroll-infinite');
+                        const partnersScroll = document.getElementById('partners-scroll');
                         
-                        if (partnersContainer) {
-                            const partnerLogos = partnersContainer.querySelectorAll('.partner-logo');
-                            let validLogosCount = 0;
-                            let totalLogos = partnerLogos.length;
-                            
-                            partnerLogos.forEach(function(img) {
-                                // Test de chargement d'image amélioré
-                                const testImg = new Image();
-                                testImg.onload = function() {
-                                    img.style.opacity = '1';
-                                    validLogosCount++;
-                                    
-                                    // Si tous les logos sont chargés, vérifier s'il y en a assez pour l'animation
-                                    if (validLogosCount + (totalLogos - validLogosCount) === totalLogos) {
-                                        if (validLogosCount === 0) {
-                                            // Aucun logo valide, masquer la section
-                                            partnersContainer.closest('section').style.display = 'none';
-                                        } else if (validLogosCount < 3) {
-                                            // Peu de logos, ralentir l'animation
-                                            partnersContainer.style.animationDuration = '60s';
-                                        }
-                                    }
-                                };
-                                
-                                testImg.onerror = function() {
-                                    img.style.display = 'none';
-                                    console.log('Logo invalide pour:', img.alt);
-                                };
-                                
-                                testImg.src = img.src;
-                                
-                                // Timeout de sécurité
-                                setTimeout(function() {
-                                    if (img.style.opacity === '0') {
-                                        img.style.display = 'none';
-                                    }
-                                }, 3000);
+                        if (partnersScroll) {
+                            // Pause automatique au survol uniquement
+                            partnersScroll.addEventListener('mouseenter', function() {
+                                this.style.animationPlayState = 'paused';
+                            });
+
+                            partnersScroll.addEventListener('mouseleave', function() {
+                                this.style.animationPlayState = 'running';
                             });
                         }
+
+                        console.log('✅ Section partenaires simplifiée initialisée avec succès !');
                     });
                 </script>
             @else
-                <div class="text-center text-gray-500">
-                    <div class="bg-white rounded-lg p-8 shadow-sm border border-gray-200 max-w-md mx-auto">
-                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-handshake text-gray-400 text-2xl"></i>
+                <!-- État vide amélioré -->
+                <div class="text-center">
+                    <div class="bg-white rounded-2xl p-12 shadow-lg border border-gray-100 max-w-md mx-auto">
+                        <div class="w-20 h-20 bg-gradient-to-br from-iri-primary/10 to-iri-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-handshake text-iri-primary text-3xl"></i>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-700 mb-2">Partenariats en développement</h3>
-                        <p class="text-sm">Nous travaillons activement à établir de nouveaux partenariats stratégiques.</p>
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">Partenariats en développement</h3>
+                        <p class="text-gray-600 mb-6">
+                            Nous travaillons activement à établir de nouveaux partenariats stratégiques pour renforcer notre impact.
+                        </p>
+                        <div class="bg-gradient-to-r from-iri-primary/5 to-iri-accent/5 rounded-lg p-4">
+                            <p class="text-sm text-iri-primary font-medium">
+                                <i class="fas fa-envelope mr-2"></i>
+                                Intéressé par un partenariat ? Contactez-nous !
+                            </p>
+                        </div>
                     </div>
                 </div>
             @endif
@@ -691,22 +749,42 @@
 
 <!-- JavaScript Dependencies -->
 <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<script async 
+        src="https://platform.twitter.com/widgets.js" 
+        charset="utf-8"
+        crossorigin="anonymous"></script>
+@if(isset($documentsRecents) && $documentsRecents->isNotEmpty())
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+@endif
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    new Splide('#project-carousel', {
+    const splideCarousel = new Splide('#project-carousel', {
         type: 'loop',
         perPage: 3,
         gap: '1rem',
         autoplay: true,
         interval: 3000,
         pagination: false,
+        pauseOnHover: true,
+        pauseOnFocus: true,
         breakpoints: {
             1024: { perPage: 2 },
             640 : { perPage: 1 },
         }
     }).mount();
+    
+    // Navigation clavier pour le carousel
+    document.addEventListener('keydown', function(e) {
+        if (e.target.closest('#project-carousel')) {
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                splideCarousel.go('<');
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                splideCarousel.go('>');
+            }
+        }
+    });
 
     // PDF rendering code amélioré
     if (typeof pdfjsLib !== 'undefined') {

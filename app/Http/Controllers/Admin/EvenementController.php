@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Evenement;
+use App\Events\EvenementFeaturedCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -12,7 +13,9 @@ class EvenementController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Evenement::query();
+        
+        $this->authorize('viewAny', Evenement::class);
+$query = Evenement::query();
 
         // Filtres
         if ($request->filled('etat')) {
@@ -55,12 +58,16 @@ class EvenementController extends Controller
 
     public function create()
     {
-        return view('admin.evenements.create');
+        
+        $this->authorize('create', Evenement::class);
+return view('admin.evenements.create');
     }
 
     public function store(Request $request)
     {
-        try {
+        
+        $this->authorize('create', Evenement::class);
+try {
             $validated = $request->validate([
                 'titre' => 'required|string|max:255',
                 'resume' => 'nullable|string|max:500',
@@ -72,6 +79,7 @@ class EvenementController extends Controller
                 'contact_telephone' => 'nullable|string|max:20',
                 'type' => 'required|string|in:conference,seminaire,atelier,formation,table-ronde,colloque,autre',
                 'en_vedette' => 'nullable|boolean',
+                'a_la_une' => 'nullable|boolean',
                 'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
                 'rapport_url' => 'nullable|url|max:255',
             ], [
@@ -96,8 +104,9 @@ class EvenementController extends Controller
                 'rapport_url.max' => 'L\'URL du rapport ne peut pas dépasser 255 caractères.',
             ]);
 
-            // Convertir en_vedette en boolean
+            // Convertir en_vedette et a_la_une en boolean
             $validated['en_vedette'] = $request->has('en_vedette');
+            $validated['a_la_une'] = $request->has('a_la_une');
 
             // Générer un slug unique
             $validated['slug'] = \Str::slug($validated['titre']);
@@ -135,17 +144,23 @@ class EvenementController extends Controller
 
     public function show(Evenement $evenement)
     {
-        return view('admin.evenements.show', compact('evenement'));
+        
+        $this->authorize('view', $Evenement);
+return view('admin.evenements.show', compact('evenement'));
     }
 
     public function edit(Evenement $evenement)
     {
-        return view('admin.evenements.edit', compact('evenement'));
+        
+        $this->authorize('update', $Evenement);
+return view('admin.evenements.edit', compact('evenement'));
     }
 
     public function update(Request $request, Evenement $evenement)
     {
-        try {
+        
+        $this->authorize('update', $Evenement);
+try {
             $validated = $request->validate([
                 'titre' => 'required|string|max:255',
                 'resume' => 'nullable|string|max:500',
@@ -157,6 +172,7 @@ class EvenementController extends Controller
                 'contact_telephone' => 'nullable|string|max:20',
                 'type' => 'required|string|in:conference,seminaire,atelier,formation,table-ronde,colloque,autre',
                 'en_vedette' => 'nullable|boolean',
+                'a_la_une' => 'nullable|boolean',
                 'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
                 'rapport_url' => 'nullable|url|max:255',
             ], [
@@ -180,8 +196,9 @@ class EvenementController extends Controller
                 'rapport_url.max' => 'L\'URL du rapport ne peut pas dépasser 255 caractères.',
             ]);
 
-            // Convertir en_vedette en boolean
+            // Convertir en_vedette et a_la_une en boolean
             $validated['en_vedette'] = $request->has('en_vedette');
+            $validated['a_la_une'] = $request->has('a_la_une');
 
             // Mettre à jour le slug si le titre a changé
             if ($validated['titre'] !== $evenement->titre) {
@@ -226,7 +243,9 @@ class EvenementController extends Controller
 
     public function destroy(Evenement $evenement)
     {
-        try {
+        
+        $this->authorize('delete', $Evenement);
+try {
             // Supprimer l'image associée
             if ($evenement->image && Storage::disk('public')->exists($evenement->image)) {
                 Storage::disk('public')->delete($evenement->image);
@@ -280,6 +299,23 @@ class EvenementController extends Controller
             } else {
                 $evenement->publish();
                 $message = 'Événement publié avec succès !';
+                
+                // Déclencher l'événement newsletter uniquement lors de la publication officielle
+                // si l'événement est en vedette ET à la une
+                if ($evenement->en_vedette && $evenement->a_la_une) {
+                    try {
+                        EvenementFeaturedCreated::dispatch($evenement);
+                        \Log::info('Événement EvenementFeaturedCreated déclenché lors de la publication', [
+                            'evenement_id' => $evenement->id,
+                            'titre' => $evenement->titre
+                        ]);
+                    } catch (\Exception $e) {
+                        \Log::warning('Erreur lors du déclenchement de l\'événement EvenementFeaturedCreated', [
+                            'evenement_id' => $evenement->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
             }
 
             return back()->with('alert', '<span class="text-green-600">✅ ' . $message . '</span>');

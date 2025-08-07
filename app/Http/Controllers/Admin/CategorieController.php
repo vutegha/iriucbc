@@ -11,18 +11,24 @@ class CategorieController extends Controller
 {
     public function index()
     {
-        $categories = Categorie::latest()->paginate(15);
+        
+        $this->authorize('viewAny', Categorie::class);
+$categories = Categorie::latest()->paginate(15);
         return view('admin.categorie.index', compact('categories'));
     }
 
     public function create()
     {
-        return view('admin.categorie.create');
+        
+        $this->authorize('create', Categorie::class);
+return view('admin.categorie.create');
     }
 
     public function store(Request $request)
     {
-        try {
+        
+        $this->authorize('create', Categorie::class);
+try {
             $validated = $request->validate([
                 'nom' => 'required|string|max:255|unique:categories,nom',
                 'description' => 'nullable|string|max:1000',
@@ -74,12 +80,16 @@ class CategorieController extends Controller
 
     public function edit(Categorie $categorie)
     {
-        return view('admin.categorie.edit', compact('categorie'));
+        
+        $this->authorize('update', $Categorie);
+return view('admin.categorie.edit', compact('categorie'));
     }
 
     public function update(Request $request, Categorie $categorie)
     {
-        $validated = $request->validate([
+        
+        $this->authorize('update', $Categorie);
+$validated = $request->validate([
             'nom' => ['required', 'string', 'max:255', Rule::unique('categories')->ignore($categorie->id)],
             'description' => 'nullable|string|max:1000',
         ]);
@@ -92,7 +102,9 @@ class CategorieController extends Controller
 
     public function destroy(Categorie $categorie)
     {
-        try {
+        
+        $this->authorize('delete', $Categorie);
+try {
             $categorie->delete();
 
             return redirect()->route('admin.categorie.index')

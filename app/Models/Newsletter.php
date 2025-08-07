@@ -51,6 +51,7 @@ class Newsletter extends Model
                     'actualites' => true,
                     'publications' => true,
                     'rapports' => true,
+                    'projets' => true,
                     'evenements' => true
                 ];
             }

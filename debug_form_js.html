@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Formulaire Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug { background: #f0f0f0; padding: 10px; margin: 10px 0; }
+        button { padding: 10px 20px; background: #007cba; color: white; border: none; cursor: pointer; }
+        button:hover { background: #005a87; }
+    </style>
+</head>
+<body>
+    <h1>Test Debug Bouton Enregistrer</h1>
+    
+    <div class="debug" id="debug-log">
+        <h3>Debug Log:</h3>
+        <div id="log-content"></div>
+    </div>
+    
+    <form id="testForm" action="http://127.0.0.1:8000/admin/actualite" method="POST">
+        <input type="hidden" name="_token" value="test-token">
+        
+        <div>
+            <label>Titre:</label>
+            <input type="text" name="titre" value="Test titre" required>
+        </div>
+        
+        <div>
+            <label>Contenu:</label>
+            <textarea name="texte" required>Test contenu</textarea>
+        </div>
+        
+        <button type="submit" 
+                onclick="logMessage('ONCLICK DIRECT appelé'); return testSubmit();"
+                style="pointer-events: auto !important; z-index: 999 !important;">
+            Enregistrer Test
+        </button>
+    </form>
+    
+    <script>
+        function logMessage(message) {
+            console.log(message);
+            const logContent = document.getElementById('log-content');
+            logContent.innerHTML += '<div>' + new Date().toLocaleTimeString() + ': ' + message + '</div>';
+        }
+        
+        function testSubmit() {
+            logMessage('testSubmit() fonction appelée');
+            
+            // Tester si le formulaire peut être soumis
+            const form = document.getElementById('testForm');
+            logMessage('Form action: ' + form.action);
+            logMessage('Form method: ' + form.method);
+            
+            // Pour le test, on va juste loguer sans soumettre réellement
+            logMessage('Soumission simulée - OK');
+            return false; // Empêcher la vraie soumission pour le test
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            logMessage('DOM Content Loaded');
+            
+            const form = document.getElementById('testForm');
+            const button = document.querySelector('button[type="submit"]');
+            
+            logMessage('Form trouvé: ' + (form ? 'OUI' : 'NON'));
+            logMessage('Button trouvé: ' + (button ? 'OUI' : 'NON'));
+            
+            // Test de différents handlers
+            if (button) {
+                // Handler 1: addEventListener
+                button.addEventListener('click', function(e) {
+                    logMessage('addEventListener CLICK déclenché');
+                });
+                
+                // Handler 2: onclick property (peut écraser l'attribut onclick)
+                // button.onclick = function() {
+                //     logMessage('onclick property déclenché');
+                //     return true;
+                // };
+            }
+            
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    logMessage('Form SUBMIT event déclenché');
+                    e.preventDefault(); // Empêcher la soumission pour le test
+                    logMessage('Soumission empêchée pour test');
+                });
+                
+                form.onsubmit = function() {
+                    logMessage('Form onsubmit property déclenché');
+                    return false; // Empêcher pour le test
+                };
+            }
+        });
+        
+        // Test de clic programmé
+        setTimeout(function() {
+            logMessage('Test automatique du clic dans 3 secondes...');
+        }, 1000);
+        
+        setTimeout(function() {
+            const button = document.querySelector('button[type="submit"]');
+            if (button) {
+                logMessage('Déclenchement automatique du clic...');
+                button.click();
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

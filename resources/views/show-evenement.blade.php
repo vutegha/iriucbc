@@ -1,6 +1,6 @@
 @extends('layouts.iri')
 
-@section('title', $evenement->titre . ' - IRI-UCBC')
+@section('title', $evenement->titre . ' - GRN-UCBC')
 
 @section('content')
 <div class="min-h-screen bg-gray-50 py-8">

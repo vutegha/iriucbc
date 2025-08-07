@@ -60,7 +60,7 @@
       <!-- Logo + Titre -->
       <div class="flex items-center space-x-3  lg:py-0">
         <img src="{{ asset('assets/img/logos/ucbc-2.png') }}" alt="Logo UCBC" class="h-12 w-12 object-contain rounded-full">
-        <span class="text-sm font-bold text-slate-700 whitespace-nowrap">Institut de Recherche Intégré</span>
+        <span class="text-sm font-bold text-slate-700 whitespace-nowrap">Centre de Gouvernance des Ressources Naturelles</span>
       </div>
 
       <!-- Bouton Burger (Mobile Only) -->

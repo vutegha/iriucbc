@@ -23,9 +23,11 @@ class NewsletterPreference extends Model
      * Types de préférences disponibles
      */
     const TYPES = [
-        'publications' => 'Publications',
         'actualites' => 'Actualités',
-        'projets' => 'Projets'
+        'publications' => 'Publications',
+        'rapports' => 'Rapports',
+        'projets' => 'Projets',
+        'evenements' => 'Événements'
     ];
 
     /**

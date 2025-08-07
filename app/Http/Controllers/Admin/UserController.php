@@ -21,7 +21,9 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::with('roles');
+        
+        $this->authorize('viewAny', User::class);
+$query = User::with('roles');
         
         // Filtre par recherche (nom ou email)
         if ($request->filled('search')) {
@@ -57,7 +59,9 @@ class UserController extends Controller
      */
     public function create()
     {
-        $roles = Role::all();
+        
+        $this->authorize('create', User::class);
+$roles = Role::all();
         $permissions = Permission::all();
         return view('admin.users.create', compact('roles', 'permissions'));
     }
@@ -67,7 +71,9 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        
+        $this->authorize('create', User::class);
+$validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
@@ -106,6 +112,8 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        
+        $this->authorize('view', $user);
         $user->load('roles', 'permissions');
         return view('admin.users.show', compact('user'));
     }
@@ -115,6 +123,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        
+        $this->authorize('update', $user);
         $roles = Role::all();
         $permissions = Permission::all();
         $user->load('roles', 'permissions');
@@ -127,6 +137,8 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        
+        $this->authorize('update', $user);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
@@ -168,6 +180,8 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        
+        $this->authorize('delete', $user);
         // Empêcher la suppression de son propre compte
         if ($user->id === auth()->id()) {
             return redirect()->back()

@@ -22,8 +22,8 @@
               <div class="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-gray-900"></div>
             </div>
             <div>
-              <h3 class="text-xl font-bold text-white leading-tight">Institut de Recherche</h3>
-              <p class="text-orange-400 font-semibold">Intégré - IRI</p>
+              <h3 class="text-xl font-bold text-white leading-tight">Programme Gouvernance</h3>
+              <p class="text-orange-400 font-semibold">des Ressources Naturelles</p>
             </div>
           </div>
           
@@ -169,7 +169,7 @@
             </div>
           </div>
 
-          <!-- Newsletter -->
+          <!-- Newsletter sécurisée avec protection anti-bot -->
           <div class="bg-gradient-to-r from-gray-800/60 to-gray-700/60 p-4 rounded-xl border border-gray-600/50 backdrop-blur-sm">
             <h5 class="text-white font-semibold mb-3 flex items-center">
               <i class="fas fa-newspaper mr-2 text-orange-400"></i>
@@ -183,6 +183,11 @@
               <input type="hidden" name="preferences[]" value="actualites">
               <input type="hidden" name="preferences[]" value="publications">
               
+              <!-- Champs anti-bot cachés -->
+              <input type="text" name="honeypot_field" style="display: none;" tabindex="-1" autocomplete="off">
+              <input type="text" name="website" style="display: none;" tabindex="-1" autocomplete="off">
+              <input type="hidden" name="start_time" value="{{ time() }}">
+              
               <div class="flex">
                 <input 
                   type="email" 
@@ -190,6 +195,7 @@
                   placeholder="Votre adresse email" 
                   class="flex-grow px-4 py-3 bg-gray-900/70 border border-gray-600 rounded-l-lg text-white placeholder-gray-400 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 transition-all duration-200" 
                   required
+                  maxlength="255"
                 >
                 <button 
                   type="submit" 
@@ -212,36 +218,47 @@
             <h4 class="text-white font-bold text-lg">Suivez-nous</h4>
           </div>
           
-          <!-- Réseaux sociaux -->
-          <div class="grid grid-cols-2 gap-3">
-            <a href="#" class="group flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg border border-gray-700/50 backdrop-blur-sm hover:bg-blue-600/20 hover:border-blue-500/50 transition-all duration-300">
-              <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <i class="fab fa-facebook-f text-white text-sm"></i>
-              </div>
-              <span class="text-sm text-gray-300 group-hover:text-white">Facebook</span>
+          <!-- Réseaux sociaux depuis la base de données - Icônes seules -->
+          @if(isset($socialLinks) && $socialLinks->count() > 0)
+          <div class="flex justify-center space-x-4">
+            @foreach($socialLinks as $socialLink)
+            <a href="{{ $socialLink->url }}" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               title="{{ $socialLink->name }}"
+               class="group w-10 h-10 {{ $socialLink->color }} rounded-full flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all duration-300">
+              <i class="{{ $socialLink->icon }} text-white text-lg group-hover:text-xl transition-all duration-300"></i>
+            </a>
+            @endforeach
+          </div>
+          @else
+          <!-- Liens par défaut si aucun lien social n'est configuré - Icônes seules -->
+          <div class="flex justify-center space-x-4">
+            <a href="#" 
+               title="Facebook"
+               class="group w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all duration-300">
+              <i class="fab fa-facebook-f text-white text-lg group-hover:text-xl transition-all duration-300"></i>
             </a>
             
-            <a href="#" class="group flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg border border-gray-700/50 backdrop-blur-sm hover:bg-blue-400/20 hover:border-blue-400/50 transition-all duration-300">
-              <div class="w-8 h-8 bg-blue-400 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <i class="fab fa-twitter text-white text-sm"></i>
-              </div>
-              <span class="text-sm text-gray-300 group-hover:text-white">Twitter</span>
+            <a href="#" 
+               title="Twitter"
+               class="group w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all duration-300">
+              <i class="fab fa-twitter text-white text-lg group-hover:text-xl transition-all duration-300"></i>
             </a>
             
-            <a href="#" class="group flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg border border-gray-700/50 backdrop-blur-sm hover:bg-blue-700/20 hover:border-blue-700/50 transition-all duration-300">
-              <div class="w-8 h-8 bg-blue-700 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <i class="fab fa-linkedin-in text-white text-sm"></i>
-              </div>
-              <span class="text-sm text-gray-300 group-hover:text-white">LinkedIn</span>
+            <a href="#" 
+               title="LinkedIn"
+               class="group w-10 h-10 bg-blue-700 rounded-full flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all duration-300">
+              <i class="fab fa-linkedin-in text-white text-lg group-hover:text-xl transition-all duration-300"></i>
             </a>
             
-            <a href="#" class="group flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg border border-gray-700/50 backdrop-blur-sm hover:bg-red-600/20 hover:border-red-600/50 transition-all duration-300">
-              <div class="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <i class="fab fa-youtube text-white text-sm"></i>
-              </div>
-              <span class="text-sm text-gray-300 group-hover:text-white">YouTube</span>
+            <a href="#" 
+               title="YouTube"
+               class="group w-10 h-10 bg-red-600 rounded-full flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all duration-300">
+              <i class="fab fa-youtube text-white text-lg group-hover:text-xl transition-all duration-300"></i>
             </a>
           </div>
+          @endif
           
           <!-- Informations supplémentaires -->
           
@@ -255,7 +272,7 @@
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
       <div class="flex flex-col md:flex-row justify-between items-center text-sm">
         <div class="mb-4 md:mb-0">
-          <p class="text-gray-400">© {{ date('Y') }} Institut de Recherche Intégré - IRI. Tous droits réservés.</p>
+          <p class="text-gray-400">© {{ date('Y') }} Programme Gouvernance des Ressources Naturelles - GRN. Tous droits réservés.</p>
         </div>
         <div class="flex flex-wrap gap-6 justify-center md:justify-end">
           <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200 flex items-center">

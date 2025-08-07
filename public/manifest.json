@@ -1,7 +1,7 @@
 {
-  "name": "Institut de Recherche Intégré - IRI-UCBC",
-  "short_name": "IRI-UCBC",
-  "description": "Institut de Recherche Intégré de l'Université Chrétienne Bilingue du Congo",
+  "name": "Programme Gouvernance des Ressources Naturelles - GRN-UCBC",
+  "short_name": "GRN-UCBC",
+  "description": "Programme Gouvernance des Ressources Naturelles de l'Université Chrétienne Bilingue du Congo",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1e472f",

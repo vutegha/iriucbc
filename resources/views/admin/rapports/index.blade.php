@@ -11,224 +11,403 @@
         <li aria-current="page">
             <div class="flex items-center">
                 <i class="fas fa-chevron-right mx-2 text-white/50"></i>
-                <span class="text-white">rapports</span>
+                <span class="text-white">Gestion des Rapports</span>
             </div>
         </li>
     </ol>
 </nav>
 @endsection
 
-@section('title', 'Gestion des Rapports')
-@section('subtitle', 'BibliothÃ¨que des rapports institutionnels')
-
 @section('content')
-
-<x-admin-layout 
-    title="Gestion des Rapports"
-    subtitle="BibliothÃ¨que des rapports institutionnels"
-    create-route="{{ route('admin.rapports.create') }}"
-    create-label="Nouveau Rapport"
-    :show-search="true"
-    search-placeholder="Rechercher par titre, description..."
-    :filters="[
-        [
-            'name' => 'annee',
-            'label' => 'AnnÃ©e',
-            'type' => 'select',
-            'options' => array_merge(['' => 'Toutes les annÃ©es'], array_combine($annees, $annees))
-        ],
-        [
-            'name' => 'categorie',
-            'label' => 'CatÃ©gorie',
-            'type' => 'select',
-            'options' => array_merge(['' => 'Toutes les catÃ©gories'], $categories->pluck('nom', 'id')->toArray())
-        ],
-        [
-            'name' => 'date_from',
-            'label' => 'Date dÃ©but',
-            'type' => 'date'
-        ],
-        [
-            'name' => 'date_to',
-            'label' => 'Date fin',
-            'type' => 'date'
-        ]
-    ]"
-    :stats="[
-        [
-            'label' => 'Total Rapports',
-            'value' => $rapports->total(),
-            'icon' => 'bi-file-earmark-text',
-            'bg_color' => 'bg-coral',
-            'icon_color' => 'text-coral'
-        ],
-        [
-            'label' => 'Cette AnnÃ©e',
-            'value' => $rapports->filter(function($r) { return $r->date_publication && \Carbon\Carbon::parse($r->date_publication)->year == now()->year; })->count(),
-            'icon' => 'bi-calendar-check',
-            'bg_color' => 'bg-blue-100',
-            'icon_color' => 'text-blue-600'
-        ],
-        [
-            'label' => 'CatÃ©gories',
-            'value' => $categories->count(),
-            'icon' => 'bi-tags',
-            'bg_color' => 'bg-green-100',
-            'icon_color' => 'text-green-600'
-        ],
-        [
-            'label' => 'RÃ©cents (30j)',
-            'value' => $rapports->filter(function($r) { return $r->created_at && $r->created_at >= now()->subDays(30); })->count(),
-            'icon' => 'bi-clock-history',
-            'bg_color' => 'bg-purple-100',
-            'icon_color' => 'text-purple-600'
-        ]
-    ]"
->
-
-    <!-- Table des rapports -->
-    <div class="overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rapport</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CatÃ©gorie</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fichier</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($rapports as $rapport)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-10 w-10 bg-coral bg-opacity-10 rounded-full flex items-center justify-center">
-                                        <i class="bi bi-file-earmark-text text-coral"></i>
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">{{ Str::limit($rapport->titre, 40) }}</div>
-                                        @if($rapport->description)
-                                            <div class="text-sm text-gray-500">{{ Str::limit($rapport->description, 60) }}</div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($rapport->categorie)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        <i class="bi bi-tag mr-1"></i>
-                                        {{ $rapport->categorie->nom }}
-                                    </span>
-                                @else
-                                    <span class="text-sm text-gray-400">Non catÃ©gorisÃ©</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">
-                                    @if($rapport->date_publication)
-                                        {{ \Carbon\Carbon::parse($rapport->date_publication)->format('d/m/Y') }}
-                                    @else
-                                        <span class="text-gray-400">Date non dÃ©finie</span>
-                                    @endif
-                                </div>
-                                @if($rapport->created_at)
-                                    <div class="text-xs text-gray-500">
-                                        CrÃ©Ã© le {{ $rapport->created_at->format('d/m/Y') }}
-                                    </div>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($rapport->fichier)
-                                    <div class="flex items-center">
-                                        <i class="bi bi-file-pdf text-red-500 mr-2"></i>
-                                        <div>
-                                            <div class="text-sm text-gray-900">{{ basename($rapport->fichier) }}</div>
-                                            @if(file_exists(public_path($rapport->fichier)))
-                                                @php
-                                                    $fileSize = filesize(public_path($rapport->fichier));
-                                                    $fileSizeFormatted = $fileSize > 1024 * 1024 
-                                                        ? round($fileSize / (1024 * 1024), 1) . ' MB'
-                                                        : round($fileSize / 1024, 1) . ' KB';
-                                                @endphp
-                                                <div class="text-xs text-gray-500">{{ $fileSizeFormatted }}</div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                @else
-                                    <span class="text-sm text-gray-400">Aucun fichier</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="flex items-center justify-end space-x-2">
-                                    @can('view rapports')
-                                    @if($rapport->fichier && file_exists(public_path($rapport->fichier)))
-                                        <a href="{{ asset($rapport->fichier) }}" target="_blank"
-                                           class="text-indigo-600 hover:text-indigo-800 p-1 rounded-md hover:bg-indigo-50 transition-colors duration-200"
-                                           title="TÃ©lÃ©charger">
-                                            <i class="bi bi-download"></i>
-                                        </a>
-                                    @endif
-                                    <a href="{{ route('admin.rapports.show', $rapport) }}" 
-                                       class="text-coral hover:text-coral/80 p-1 rounded-md hover:bg-coral/5 transition-colors duration-200"
-                                       title="Voir">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    @endcan
-                                    @can('update rapports')
-                                    <a href="{{ route('admin.rapports.edit', $rapport) }}" 
-                                       class="text-blue-600 hover:text-blue-800 p-1 rounded-md hover:bg-blue-50 transition-colors duration-200"
-                                       title="Modifier">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    @endcan
-                                    @can('delete rapports')
-                                    <form action="{{ route('admin.rapports.destroy', $rapport) }}" method="POST" class="inline" 
-                                          onsubmit="return confirm('ÃŠtes-vous sÃ»r de vouloir supprimer ce rapport ?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" 
-                                                class="text-red-600 hover:text-red-800 p-1 rounded-md hover:bg-red-50 transition-colors duration-200"
-                                                title="Supprimer">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                    @endcan
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-6 py-12 text-center">
-                                <div class="flex flex-col items-center">
-                                    <i class="bi bi-file-earmark-text text-gray-300 text-4xl mb-4"></i>
-                                    <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun rapport</h3>
-                                    <p class="text-gray-500">Commencez par ajouter votre premier rapport.</p>
-                                    @can('create rapports')
-                                    <a href="{{ route('admin.rapports.create') }}" 
-                                       class="mt-4 btn-primary">
-                                        <i class="bi bi-plus mr-2"></i>
-                                        CrÃ©er un rapport
-                                    </a>
-                                    @endcan
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <x-admin.alert />
+    
+    <!-- En-tête avec statistiques -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+        <div class="px-6 py-4 bg-gradient-to-r from-iri-primary to-iri-secondary">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-white">Gestion des Rapports</h1>
+                    <p class="text-white/80 mt-1">Bibliothèque institutionnelle des rapports et documents officiels</p>
+                </div>
+                @can('create_rapports')
+                <a href="{{ route('admin.rapports.create') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-white text-iri-primary rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-md hover:shadow-lg">
+                    <i class="fas fa-plus mr-2"></i>
+                    Nouveau Rapport
+                </a>
+                @endcan
+            </div>
+        </div>
+        
+        <!-- Statistiques -->
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-gradient-to-r from-iri-primary/10 to-iri-secondary/10 rounded-lg p-4 border border-iri-primary/20">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-iri-primary/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-file-alt text-iri-primary"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-iri-gray">Total Rapports</p>
+                            <p class="text-2xl font-semibold text-iri-dark">{{ $rapports->total() }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-blue-200 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-calendar-check text-blue-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-iri-gray">Cette Année</p>
+                            <p class="text-2xl font-semibold text-iri-dark">
+                                {{ $rapports->filter(function($r) { return $r->date_publication && \Carbon\Carbon::parse($r->date_publication)->year == now()->year; })->count() }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-green-200 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-tags text-green-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-iri-gray">Catégories</p>
+                            <p class="text-2xl font-semibold text-iri-dark">{{ $categories->count() }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg p-4 border border-orange-200">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-orange-200 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-clock text-orange-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-iri-gray">Récents (30j)</p>
+                            <p class="text-2xl font-semibold text-iri-dark">
+                                {{ $rapports->filter(function($r) { return $r->created_at && $r->created_at >= now()->subDays(30); })->count() }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Pagination -->
-    @if($rapports->hasPages())
-        <div class="px-6 py-4 border-t border-gray-200">
-            {{ $rapports->links() }}
+    <!-- Filtres et recherche -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+        <div class="px-6 py-4 bg-gradient-to-r from-iri-accent to-iri-gold">
+            <h2 class="text-xl font-semibold text-white flex items-center">
+                <i class="fas fa-filter mr-3"></i>
+                Filtres et recherche
+            </h2>
         </div>
-    @endif
+        <div class="p-6">
+            <form method="GET" action="{{ route('admin.rapports.index') }}" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Recherche -->
+                    <div class="lg:col-span-2">
+                        <label class="block text-sm font-medium text-iri-gray mb-2">Recherche</label>
+                        <input type="text" name="search" value="{{ request('search') }}" 
+                               placeholder="Rechercher par titre, description..." 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-iri-primary focus:border-iri-primary">
+                    </div>
+                    
+                    <!-- Année -->
+                    <div>
+                        <label class="block text-sm font-medium text-iri-gray mb-2">Année</label>
+                        <select name="annee" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-iri-primary focus:border-iri-primary">
+                            <option value="">Toutes</option>
+                            @foreach($annees as $annee)
+                                <option value="{{ $annee }}" {{ request('annee') == $annee ? 'selected' : '' }}>{{ $annee }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
+                    <!-- Catégorie -->
+                    <div>
+                        <label class="block text-sm font-medium text-iri-gray mb-2">Catégorie</label>
+                        <select name="categorie" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-iri-primary focus:border-iri-primary">
+                            <option value="">Toutes</option>
+                            @foreach($categories as $categorie)
+                                <option value="{{ $categorie->id }}" {{ request('categorie') == $categorie->id ? 'selected' : '' }}>
+                                    {{ $categorie->nom }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-iri-primary to-iri-secondary text-white rounded-lg hover:from-iri-secondary hover:to-iri-primary transition-all duration-200">
+                        <i class="fas fa-search mr-2"></i>
+                        Rechercher
+                    </button>
+                    <a href="{{ route('admin.rapports.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200">
+                        <i class="fas fa-times mr-2"></i>
+                        Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 
-</x-admin-layout>
+    <!-- Contenu principal avec design IRI moderne -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        @if($rapports->count() > 0)
+            <!-- Vue en grille avec charte IRI -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @foreach($rapports as $rapport)
+                    <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 overflow-hidden group">
+                        <!-- En-tête avec gradient IRI -->
+                        <div class="bg-gradient-to-r from-iri-primary to-iri-secondary p-6">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-file-alt text-white text-xl"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="text-lg font-bold text-white truncate font-poppins">
+                                            {{ $rapport->titre }}
+                                        </h3>
+                                        @if($rapport->categorie)
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-iri-accent text-white mt-2">
+                                                <i class="fas fa-tag mr-1"></i>
+                                                {{ $rapport->categorie->nom }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
+                        <!-- Corps de la carte -->
+                        <div class="p-6">
+                            @if($rapport->description)
+                                <p class="text-iri-gray text-sm mb-6 line-clamp-3 leading-relaxed">
+                                    {{ Str::limit($rapport->description, 120) }}
+                                </p>
+                            @endif
+
+                            <!-- Informations de publication avec icônes IRI -->
+                            <div class="space-y-3 mb-6">
+                                <div class="flex items-center text-sm text-iri-primary">
+                                    <div class="w-8 h-8 bg-iri-light rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fas fa-calendar-alt text-iri-primary"></i>
+                                    </div>
+                                    <div>
+                                        @if($rapport->date_publication)
+                                            <span class="font-medium">Publié le {{ \Carbon\Carbon::parse($rapport->date_publication)->format('d/m/Y') }}</span>
+                                        @else
+                                            <span class="text-iri-gray">Date non définie</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                @if($rapport->created_at)
+                                    <div class="flex items-center text-sm text-iri-secondary">
+                                        <div class="w-8 h-8 bg-iri-light rounded-lg flex items-center justify-center mr-3">
+                                            <i class="fas fa-plus-circle text-iri-secondary"></i>
+                                        </div>
+                                        <span>Créé le {{ $rapport->created_at->format('d/m/Y') }}</span>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <!-- Informations du fichier avec design IRI -->
+                            @if($rapport->fichier)
+                                <div class="bg-gradient-to-r from-iri-light to-white rounded-xl p-4 mb-6 border border-iri-primary/20">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-file-pdf text-white"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-semibold text-iri-primary truncate">
+                                                    {{ basename($rapport->fichier) }}
+                                                </p>
+                                                @if(file_exists(public_path($rapport->fichier)))
+                                                    @php
+                                                        $fileSize = filesize(public_path($rapport->fichier));
+                                                        $fileSizeFormatted = $fileSize > 1024 * 1024 
+                                                            ? round($fileSize / (1024 * 1024), 1) . ' MB'
+                                                            : round($fileSize / 1024, 1) . ' KB';
+                                                    @endphp
+                                                    <p class="text-xs text-iri-gray">{{ $fileSizeFormatted }}</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 mb-6">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-exclamation-triangle text-amber-500 mr-3"></i>
+                                        <p class="text-sm text-amber-700 font-medium">Aucun fichier attaché</p>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Actions avec design IRI -->
+                        <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-iri-light border-t border-gray-100">
+                            <div class="flex items-center justify-between space-x-3">
+                                <div class="flex items-center space-x-2">
+                                    @can('view_rapports')
+                                        @if($rapport->fichier && file_exists(public_path($rapport->fichier)))
+                                            <a href="{{ asset($rapport->fichier) }}" target="_blank"
+                                               class="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-iri-accent to-iri-gold rounded-lg hover:from-iri-gold hover:to-iri-accent transition-all duration-300 shadow-md hover:shadow-lg"
+                                               title="Télécharger">
+                                                <i class="fas fa-download mr-2"></i>
+                                                Télécharger
+                                            </a>
+                                        @endif
+                                        <a href="{{ route('admin.rapports.show', $rapport) }}" 
+                                           class="inline-flex items-center px-4 py-2 text-sm font-semibold text-iri-primary bg-iri-primary/10 rounded-lg hover:bg-iri-primary hover:text-white transition-all duration-300 border border-iri-primary/20"
+                                           title="Voir le détail">
+                                            <i class="fas fa-eye mr-2"></i>
+                                            Voir
+                                        </a>
+                                    @endcan
+                                </div>
+                                
+                                <div class="flex items-center space-x-1">
+                                    @can('update_rapports')
+                                        <a href="{{ route('admin.rapports.edit', $rapport) }}" 
+                                           class="inline-flex items-center p-2 text-blue-600 hover:text-white hover:bg-blue-600 rounded-lg transition-all duration-300 border border-blue-200 hover:border-blue-600"
+                                           title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    @endcan
+                                    @can('delete_rapports')
+                                        <form action="{{ route('admin.rapports.destroy', $rapport) }}" method="POST" class="inline" 
+                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce rapport ? Cette action est irréversible.')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" 
+                                                    class="inline-flex items-center p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-300 border border-red-200 hover:border-red-600"
+                                                    title="Supprimer">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    @endcan
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <!-- Pagination moderne -->
+            @if($rapports->hasPages())
+                <div class="mt-16 flex justify-center">
+                    <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+                        {{ $rapports->links() }}
+                    </div>
+                </div>
+            @endif
+        @else
+            <!-- État vide avec design IRI -->
+            <div class="text-center py-20">
+                <div class="mx-auto w-32 h-32 bg-gradient-to-br from-iri-primary to-iri-secondary rounded-full flex items-center justify-center mb-8 shadow-xl">
+                    <i class="fas fa-file-alt text-white text-5xl"></i>
+                </div>
+                <h3 class="text-3xl font-bold text-iri-primary mb-6 font-poppins">Aucun rapport trouvé</h3>
+                <p class="text-xl text-iri-gray mb-10 max-w-2xl mx-auto leading-relaxed">
+                    @if(request()->hasAny(['search', 'annee', 'categorie']))
+                        Aucun rapport ne correspond à vos critères de recherche. Essayez de modifier vos filtres ou d'élargir votre recherche.
+                    @else
+                        Commencez par ajouter votre premier rapport institutionnel pour enrichir la bibliothèque documentaire.
+                    @endif
+                </p>
+                @can('create_rapports')
+                    <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+                        <a href="{{ route('admin.rapports.create') }}" 
+                           class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-iri-primary to-iri-secondary text-white font-bold rounded-xl shadow-lg hover:from-iri-secondary hover:to-iri-primary transition-all duration-300 transform hover:scale-105">
+                            <i class="fas fa-plus-circle mr-3 text-xl"></i>
+                            <span class="text-lg">Créer un rapport</span>
+                        </a>
+                        @if(request()->hasAny(['search', 'annee', 'categorie']))
+                            <a href="{{ route('admin.rapports.index') }}" 
+                               class="inline-flex items-center px-8 py-4 bg-iri-gray text-white font-bold rounded-xl hover:bg-iri-dark transition-all duration-300 shadow-lg">
+                                <i class="fas fa-redo mr-3"></i>
+                                <span class="text-lg">Réinitialiser les filtres</span>
+                            </a>
+                        @endif
+                    </div>
+                @endcan
+            </div>
+        @endif
+    </div>
+</div>
+
+<style>
+    /* Animations personnalisées IRI */
+    .group:hover .group-hover\:animate-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    /* Effets de glassmorphism */
+    .backdrop-blur-sm {
+        backdrop-filter: blur(8px);
+    }
+    
+    /* Styles pour les sélecteurs et inputs */
+    select:focus,
+    input:focus {
+        box-shadow: 0 0 0 3px rgba(30, 71, 47, 0.1);
+    }
+    
+    /* Animation des cartes */
+    @keyframes cardHover {
+        from { transform: translateY(0) scale(1); }
+        to { transform: translateY(-8px) scale(1.02); }
+    }
+    
+    .group:hover {
+        animation: cardHover 0.3s ease-out forwards;
+    }
+</style>
+
+<script>
+    // Amélioration de l'UX avec des animations
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animation des cartes au scroll
+        const cards = document.querySelectorAll('.group');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        cards.forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
+    });
+</script>
 @endsection
 

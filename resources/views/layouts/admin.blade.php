@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Admin IRI-UCBC - @yield('title', 'Dashboard')</title>
+    <title>Admin GRN-UCBC - @yield('title', 'Dashboard')</title>
     
     <!-- Favicon -->
     @include('partials.favicon')
@@ -15,6 +15,9 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- IRI Custom Colors -->
+    <link rel="stylesheet" href="{{ asset('css/iri-colors.css') }}">
+    
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
@@ -24,7 +27,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- TailwindCSS Configuration -->
     <script>
@@ -47,7 +50,8 @@
                         'iri-dark': '#1a1a1a',
                     },
                     fontFamily: {
-                        'inter': ['Inter', 'sans-serif']
+                        'inter': ['Inter', 'sans-serif'],
+                        'poppins': ['Poppins', 'sans-serif']
                     }
                 }
             }
@@ -91,7 +95,57 @@
         .hover\:scrollbar-thumb-gray-500:hover::-webkit-scrollbar-thumb {
             background: #6b7280;
         }
+        
+        /* Styles pour les miniatures PDF haute résolution */
+        .pdf-thumbnail-container {
+            position: relative;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        
+        .pdf-thumbnail-loading {
+            opacity: 0.9;
+        }
+        
+        .pdf-thumbnail-loaded {
+            opacity: 1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .pdf-thumbnail-error {
+            opacity: 0.7;
+        }
+        
+        .pdf-thumbnail {
+            transition: transform 0.2s ease, filter 0.2s ease;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+        }
+        
+        .pdf-thumbnail-container:hover .pdf-thumbnail {
+            transform: scale(1.02);
+            filter: brightness(1.05) contrast(1.05);
+        }
+        
+        /* Optimisations pour miniatures haute résolution */
+        .pdf-thumbnail-container img {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+        }
     </style>
+    
+    <!-- PDF.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <!-- PDF Thumbnail Generator HD -->
+    <script src="{{ asset('js/pdf-thumbnail-hd.js') }}"></script>
 </head>
 <body class="bg-gray-100 font-inter">
     
@@ -108,7 +162,7 @@
                         <i class="bi bi-building text-white text-sm"></i>
                     </div>
                     <div>
-                        <h1 class="text-white font-semibold text-lg">IRI-UCBC</h1>
+                        <h1 class="text-white font-semibold text-lg">GRN-UCBC</h1>
                         <p class="text-gray-400 text-xs">Administration</p>
                     </div>
                 </div>
@@ -151,71 +205,105 @@
                         Dashboard
                     </a>
                     
+                    @can('viewAny', App\Models\Service::class)
                     <a href="{{ route('admin.service.index') }}" 
                        class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.service.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <i class="bi bi-gear mr-3 text-lg"></i>
                         Services
                     </a>
+                    @endcan
                     
+                    @can('viewAny', App\Models\Actualite::class)
                     <a href="{{ route('admin.actualite.index') }}" 
                        class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.actualite.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <i class="bi bi-newspaper mr-3 text-lg"></i>
                         Actualités
                     </a>
+                    @endcan
                     
+                    @can('viewAny', App\Models\Publication::class)
                     <a href="{{ route('admin.publication.index') }}" 
                        class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.publication.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <i class="bi bi-file-earmark-text mr-3 text-lg"></i>
                         Publications
                     </a>
+                    @endcan
                     
+                    @can('viewAny', App\Models\Projet::class)
                     <a href="{{ route('admin.projets.index') }}" 
                        class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.projets.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <i class="bi bi-diagram-3 mr-3 text-lg"></i>
                         Projets
                     </a>
+                    @endcan
                     
+                    @can('viewAny', App\Models\Evenement::class)
                     <a href="{{ route('admin.evenements.index') }}" 
                        class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.evenements.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <i class="bi bi-calendar-event mr-3 text-lg"></i>
                         Événements
                     </a>
+                    @endcan
 
                     <!-- Gestion -->
                     <div class="px-3 py-2 mt-6">
                         <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Gestion</p>
                     </div>
                     
+                    @can('viewAny', App\Models\Auteur::class)
                     <a href="{{ route('admin.auteur.index') }}" 
                        class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.auteur.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <i class="bi bi-people mr-3 text-lg"></i>
                         Auteurs
                     </a>
+                    @endcan
                     
+                    @can('viewAny', App\Models\Categorie::class)
                     <a href="{{ route('admin.categorie.index') }}" 
                        class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.categorie.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <i class="bi bi-tags mr-3 text-lg"></i>
                         Catégories
                     </a>
+                    @endcan
                     
+                    @can('viewAny', App\Models\Media::class)
                     <a href="{{ route('admin.media.index') }}" 
                        class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.media.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <i class="bi bi-images mr-3 text-lg"></i>
                         Médias
                     </a>
+                    @endcan
                     
+                    @can('viewAny', App\Models\Partenaire::class)
+                    <a href="{{ route('admin.partenaires.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.partenaires.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-handshake mr-3 text-lg"></i>
+                        Partenaires
+                    </a>
+                    @endcan
+
+                    @can('viewAny', App\Models\SocialLink::class)
+                    <a href="{{ route('admin.social-links.index') }}" 
+                       class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.social-links.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                        <i class="bi bi-share mr-3 text-lg"></i>
+                        Liens sociaux
+                    </a>
+                    @endcan
+                    
+                    @can('viewAny', App\Models\Rapport::class)
                     <a href="{{ route('admin.rapports.index') }}" 
                        class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.rapports.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <i class="bi bi-bar-chart mr-3 text-lg"></i>
                         Rapports
                     </a>
+                    @endcan
 
                     <!-- Administration -->
                     <div class="px-3 py-2 mt-6">
                         <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Administration</p>
                     </div>
                     
-                    @can('manage users')
+                    @can('manage_users')
                     <a href="{{ route('admin.users.index') }}" 
                        class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.users.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <i class="bi bi-people-fill mr-3 text-lg"></i>
@@ -228,40 +316,50 @@
                         <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Communication</p>
                     </div>
                     
+                    @can('viewAny', App\Models\Contact::class)
                     <a href="{{ route('admin.contacts.index') }}" 
                        class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.contacts.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <i class="bi bi-envelope mr-3 text-lg"></i>
                         Messages
                     </a>
+                    @endcan
                     
+                    @can('manage_newsletter')
                     <a href="{{ route('admin.newsletter.index') }}" 
                        class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.newsletter.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <i class="bi bi-mailbox mr-3 text-lg"></i>
                         Newsletter
                     </a>
+                    @endcan
                     
+                    @can('manage_email_settings')
                     <a href="{{ route('admin.email-settings.index') }}" 
                        class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.email-settings.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <i class="bi bi-gear mr-3 text-lg"></i>
                         Configuration emails
                     </a>
+                    @endcan
 
                     <!-- Ressources Humaines -->
                     <div class="px-3 py-2 mt-6">
                         <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Ressources Humaines</p>
                     </div>
                     
+                    @can('viewAny', App\Models\JobOffer::class)
                     <a href="{{ route('admin.job-offers.index') }}" 
                        class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.job-offers.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <i class="bi bi-briefcase mr-3 text-lg"></i>
                         Offres d'emploi
                     </a>
+                    @endcan
                     
+                    @can('viewAny', App\Models\JobApplication::class)
                     <a href="{{ route('admin.job-applications.index') }}" 
                        class="group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 {{ request()->routeIs('admin.job-applications.*') ? 'bg-coral text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
                         <i class="bi bi-person-check mr-3 text-lg"></i>
                         Candidatures
                     </a>
+                    @endcan
 
                     <!-- Déconnexion -->
                     <div class="px-3 py-2 mt-6">
@@ -320,7 +418,7 @@
                         </button>
                         <div>
                             <h1 class="text-2xl font-semibold text-gray-900">@yield('title', 'Dashboard')</h1>
-                            <p class="text-sm text-gray-500">@yield('subtitle', 'Panneau d\'administration IRI-UCBC')</p>
+                            <p class="text-sm text-gray-500">@yield('subtitle', 'Panneau d\'administration GRN-UCBC')</p>
                         </div>
                     </div>
 

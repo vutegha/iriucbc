@@ -87,6 +87,7 @@ class Projet extends Model
         'date_debut' => 'nullable|date',
         'date_fin' => 'nullable|date|after_or_equal:date_debut',
         'etat' => 'nullable|in:en cours,terminé,suspendu',
+        'budget' => 'nullable|numeric|min:0|max:999999999.99',
         'beneficiaires_hommes' => 'nullable|integer|min:0',
         'beneficiaires_femmes' => 'nullable|integer|min:0',
         'beneficiaires_enfants' => 'nullable|integer|min:0',

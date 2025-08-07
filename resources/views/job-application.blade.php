@@ -105,6 +105,9 @@
                   class="bg-white rounded-2xl shadow-lg border border-gray-100" x-data="applicationForm()">
                 @csrf
                 
+                <!-- Honeypot anti-spam (champ caché) -->
+                <input type="text" name="website" id="website" style="display:none !important;" tabindex="-1" autocomplete="off" />
+                
                 <!-- Personal Information -->
                 <div class="p-8 border-b border-gray-200">
                     <h3 class="text-xl font-bold text-gray-900 mb-6">
@@ -175,9 +178,9 @@
                             <select id="gender" name="gender"
                                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-iri-primary focus:border-transparent transition-colors">
                                 <option value="">Sélectionner</option>
-                                <option value="M" {{ old('gender') === 'M' ? 'selected' : '' }}>Masculin</option>
-                                <option value="F" {{ old('gender') === 'F' ? 'selected' : '' }}>Féminin</option>
-                                <option value="Autre" {{ old('gender') === 'Autre' ? 'selected' : '' }}>Autre</option>
+                                <option value="masculin" {{ old('gender') === 'masculin' ? 'selected' : '' }}>Masculin</option>
+                                <option value="feminin" {{ old('gender') === 'feminin' ? 'selected' : '' }}>Féminin</option>
+                                <option value="autre" {{ old('gender') === 'autre' ? 'selected' : '' }}>Autre</option>
                             </select>
                             @error('gender')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>

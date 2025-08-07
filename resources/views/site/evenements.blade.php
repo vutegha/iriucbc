@@ -1,6 +1,6 @@
 @extends('layouts.site')
 
-@section('title', 'Événements - IRI-UCBC')
+@section('title', 'Événements - GRN-UCBC')
 
 @section('content')
 <div class="min-h-screen bg-gray-50">
@@ -9,7 +9,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
                 <h1 class="text-4xl font-bold text-white mb-4">
-                    Événements IRI-UCBC
+                    Événements GRN-UCBC
                 </h1>
                 <p class="text-xl text-white/90 max-w-3xl mx-auto">
                     Découvrez nos prochains événements et restez informé de nos activités

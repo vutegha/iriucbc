@@ -91,4 +91,88 @@ class EmailTestController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Tester la configuration email
+     */
+    public function testConfig()
+    {
+        try {
+            $config = config('mail');
+            $errors = [];
+            
+            // Vérifications de base
+            if (empty($config['from']['address'])) {
+                $errors[] = 'MAIL_FROM_ADDRESS non configuré';
+            }
+            
+            if (empty($config['from']['name'])) {
+                $errors[] = 'MAIL_FROM_NAME non configuré';
+            }
+            
+            if (!empty($errors)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Configuration incomplète : ' . implode(', ', $errors)
+                ]);
+            }
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Configuration email valide',
+                'config' => [
+                    'from' => $config['from']['address'],
+                    'name' => $config['from']['name'],
+                    'mailer' => $config['default']
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Erreur lors du test : ' . $e->getMessage()
+            ]);
+        }
+    }
+    
+    /**
+     * Tester l'envoi d'email de réinitialisation
+     */
+    public function testPasswordReset(Request $request)
+    {
+        $email = $request->get('email', 'admin@example.com');
+        
+        try {
+            // Vérifier si un utilisateur avec cet email existe
+            $user = \App\Models\User::where('email', $email)->first();
+            
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Aucun utilisateur trouvé avec cet email',
+                    'email' => $email
+                ]);
+            }
+            
+            // Tenter d'envoyer un email de réinitialisation
+            $status = \Illuminate\Support\Facades\Password::sendResetLink(
+                ['email' => $email]
+            );
+            
+            return response()->json([
+                'status' => $status === \Illuminate\Auth\Passwords\PasswordBroker::RESET_LINK_SENT ? 'success' : 'error',
+                'message' => $status,
+                'user_found' => true,
+                'email_tested' => $email
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Erreur lors de l\'envoi',
+                'error' => $e->getMessage(),
+                'email' => $email
+            ]);
+        }
+    }
 }

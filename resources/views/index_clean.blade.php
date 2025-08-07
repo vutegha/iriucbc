@@ -120,7 +120,7 @@
                 <div class="p-6 space-y-4">
                     <h3 class="text-2xl font-bold">Notre Mission</h3>
                     <p class="text-md font-light mt-2">
-                        L'Institut de Recherche Intégré à l'Université Chrétienne Bilingue du Congo (IRI-UCBC) a pour mission de promouvoir la recherche scientifique, l'innovation et le développement durable au service de la société congolaise et africaine. À travers des projets interdisciplinaires, l'institut vise à renforcer les capacités, encourager la collaboration et produire des connaissances utiles pour répondre aux défis locaux qu sein des communautés locales en République Démocratique du Congo.
+                        Le Centre de Gouvernance des Ressources Naturelles à l'Université Chrétienne Bilingue du Congo (GRN-UCBC) a pour mission de promouvoir la recherche scientifique, l'innovation et le développement durable au service de la société congolaise et africaine. À travers des projets interdisciplinaires, le centre vise à renforcer les capacités, encourager la collaboration et produire des connaissances utiles pour répondre aux défis locaux au sein des communautés locales en République Démocratique du Congo.
                     </p>
                 </div>
                 

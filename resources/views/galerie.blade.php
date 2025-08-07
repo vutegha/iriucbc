@@ -64,12 +64,14 @@
             @if(isset($medias) && optional($medias)->count() > 0)
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     @foreach($medias as $index => $media)
-                        @php
-                            $file = $media->medias;
-                            $isVideo = Str::endsWith(strtolower($file), ['.mp4', '.webm', '.ogg', '.mov', '.m4v', '.qt']);
-                            $url = asset('storage/' . $file);
-                            $type = $isVideo ? 'Vidéo' : 'Image';
-                        @endphp
+                        {{-- Afficher seulement les médias publiés et publics --}}
+                        @if($media->status === 'published' && $media->is_public)
+                            @php
+                                $file = $media->medias;
+                                $isVideo = Str::endsWith(strtolower($file), ['.mp4', '.webm', '.ogg', '.mov', '.m4v', '.qt']);
+                                $url = asset('storage/' . $file);
+                                $type = $isVideo ? 'Vidéo' : 'Image';
+                            @endphp
                         
                         <div class="group media-item" 
                              data-type="{{ $type }}"
@@ -101,6 +103,14 @@
                                             <i class="fas fa-play mr-1"></i>
                                             Vidéo
                                         </div>
+                                        
+                                        <!-- Download Button -->
+                                        <a href="{{ route('site.media.download', $media->id) }}" 
+                                           class="absolute top-3 right-3 bg-green-500/90 hover:bg-green-600/90 text-white p-2 rounded-full transition-colors duration-200"
+                                           title="Télécharger la vidéo"
+                                           @click.stop>
+                                            <i class="fas fa-download text-xs"></i>
+                                        </a>
                                     @else
                                         <img src="{{ $url }}" 
                                              alt="{{ $media->titre ?? 'Media' }}" 
@@ -118,6 +128,14 @@
                                             <i class="fas fa-image mr-1"></i>
                                             Image
                                         </div>
+                                        
+                                        <!-- Download Button -->
+                                        <a href="{{ route('site.media.download', $media->id) }}" 
+                                           class="absolute top-3 right-3 bg-green-500/90 hover:bg-green-600/90 text-white p-2 rounded-full transition-colors duration-200"
+                                           title="Télécharger l'image"
+                                           @click.stop>
+                                            <i class="fas fa-download text-xs"></i>
+                                        </a>
                                     @endif
                                 </div>
 
@@ -139,6 +157,7 @@
                                 @endif
                             </div>
                         </div>
+                        @endif {{-- Fin de la condition pour les médias publiés et publics --}}
                     @endforeach
                 </div>
 
@@ -160,40 +179,54 @@
                                 class="absolute -top-12 right-0 text-white hover:text-gray-300 text-2xl z-10">
                             <i class="fas fa-times"></i>
                         </button>
+                        
+                        <!-- Download Button -->
+                        @foreach($medias as $index => $media)
+                            @if($media->status === 'published' && $media->is_public)
+                                <a x-show="currentMedia === {{ $index }}" 
+                                   href="{{ route('site.media.download', $media->id) }}" 
+                                   class="absolute -top-12 right-12 text-white hover:text-green-400 text-2xl z-10"
+                                   title="Télécharger ce média">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            @endif
+                        @endforeach
 
                         <!-- Media Display -->
                         @foreach($medias as $index => $media)
-                            @php
-                                $file = $media->medias;
-                                $isVideo = Str::endsWith(strtolower($file), ['.mp4', '.webm', '.ogg', '.mov', '.m4v', '.qt']);
-                                $url = asset('storage/' . $file);
-                            @endphp
-                            
-                            <div x-show="currentMedia === {{ $index }}" class="text-center">
-                                @if($isVideo)
-                                    <video class="max-w-full max-h-[80vh] mx-auto rounded-lg shadow-2xl" 
-                                           controls autoplay>
-                                        <source src="{{ $url }}" type="video/mp4">
-                                        Votre navigateur ne supporte pas la lecture de vidéos.
-                                    </video>
-                                @else
-                                    <img src="{{ $url }}" 
-                                         alt="{{ $media->titre ?? 'Media' }}" 
-                                         class="max-w-full max-h-[80vh] mx-auto rounded-lg shadow-2xl">
-                                @endif
+                            @if($media->status === 'published' && $media->is_public)
+                                @php
+                                    $file = $media->medias;
+                                    $isVideo = Str::endsWith(strtolower($file), ['.mp4', '.webm', '.ogg', '.mov', '.m4v', '.qt']);
+                                    $url = asset('storage/' . $file);
+                                @endphp
+                                
+                                <div x-show="currentMedia === {{ $index }}" class="text-center">
+                                    @if($isVideo)
+                                        <video class="max-w-full max-h-[80vh] mx-auto rounded-lg shadow-2xl" 
+                                               controls autoplay>
+                                            <source src="{{ $url }}" type="video/mp4">
+                                            Votre navigateur ne supporte pas la lecture de vidéos.
+                                        </video>
+                                    @else
+                                        <img src="{{ $url }}" 
+                                             alt="{{ $media->titre ?? 'Media' }}" 
+                                             class="max-w-full max-h-[80vh] mx-auto rounded-lg shadow-2xl">
+                                    @endif
 
-                                <!-- Media Info in Lightbox -->
-                                @if($media->titre || $media->description)
-                                    <div class="mt-6 text-white text-center">
-                                        @if($media->titre)
-                                            <h3 class="text-2xl font-bold mb-2">{{ $media->titre }}</h3>
-                                        @endif
-                                        @if($media->description)
-                                            <p class="text-gray-300">{{ $media->description }}</p>
-                                        @endif
-                                    </div>
-                                @endif
-                            </div>
+                                    <!-- Media Info in Lightbox -->
+                                    @if($media->titre || $media->description)
+                                        <div class="mt-6 text-white text-center">
+                                            @if($media->titre)
+                                                <h3 class="text-2xl font-bold mb-2">{{ $media->titre }}</h3>
+                                            @endif
+                                            @if($media->description)
+                                                <p class="text-gray-300">{{ $media->description }}</p>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
                         @endforeach
 
                         <!-- Navigation Arrows -->

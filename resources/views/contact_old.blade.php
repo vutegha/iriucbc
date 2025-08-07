@@ -56,7 +56,7 @@
                             </div>
                             <div>
                                 <p class="font-medium text-gray-900">Adresse</p>
-                                <p class="text-gray-600">IRI-UCBC, Beni, République Démocratique du Congo</p>
+                                <p class="text-gray-600">GRN-UCBC, Beni, République Démocratique du Congo</p>
                             </div>
                         </div>
 
@@ -68,7 +68,7 @@
                             </div>
                             <div>
                                 <p class="font-medium text-gray-900">Email</p>
-                                <p class="text-gray-600">contact@iri-ucbc.org</p>
+                                <p class="text-gray-600">contact@grn-ucbc.org</p>
                             </div>
                         </div>
 

@@ -74,11 +74,11 @@
                     <article class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
                         <!-- Article Header -->
                         <div class="bg-gradient-to-r from-gray-50 to-white p-8 border-b border-gray-200">
-                            <div class="flex items-center justify-center mb-6">
+                            <!-- <div class="flex items-center justify-center mb-6">
                                 <div class="bg-gradient-to-r from-iri-primary to-iri-secondary p-3 rounded-full">
                                     <i class="fas fa-newspaper text-white text-lg"></i>
                                 </div>
-                            </div>
+                            </div> -->
 
                             @if($actualite->resume)
                                 <blockquote class="border-l-4 border-iri-primary bg-iri-primary/5 p-6 rounded-lg mb-6">
@@ -168,7 +168,7 @@
                         <div class="bg-gradient-to-br from-iri-primary to-iri-secondary rounded-2xl p-6 text-white">
                             <h3 class="text-lg font-bold mb-4">Restez informé</h3>
                             <p class="text-white/90 text-sm mb-4">
-                                Recevez les dernières actualités de l'IRI-UCBC directement dans votre boîte mail.
+                                Recevez les dernières actualités du GRN-UCBC directement dans votre boîte mail.
                             </p>
                             <button class="bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold py-2 px-4 rounded-lg hover:bg-white/30 transition-all duration-200 w-full">
                                 <i class="fas fa-envelope mr-2"></i>

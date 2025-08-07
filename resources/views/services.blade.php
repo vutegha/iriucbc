@@ -19,7 +19,7 @@
                 Domaines d'intervention
             </h1>
             <p class="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed drop-shadow-lg">
-                Découvrez l'ensemble de nos domaines d'intérêt et d'expertise de l'IRI-UCBC
+                Découvrez l'ensemble de nos domaines d'intervention et d'expertise du programme GRN-UCBC
             </p>
         </div>
     </section>

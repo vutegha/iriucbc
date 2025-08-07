@@ -67,7 +67,7 @@
 <body>
     <div class="header">
         <h1>🔔 Nouveau Message de Contact</h1>
-        <p>Site Web IRI-UCBC</p>
+        <p>Site Web GRN-UCBC</p>
     </div>
 
     <div class="content">
@@ -110,9 +110,9 @@
     </div>
 
     <div class="footer">
-        <p><strong>Institut de Recherche Intégré à l'Université Chrétienne Bilingue du Congo</strong></p>
-        <p>Congo Initiative-Université Chrétienne Bilingue du Congo (IRI-UCBC)</p>
-        <p>📧 iri@ucbc.org | 🌐 www.iri-ucbc.org</p>
+        <p><strong>Centre de Gouvernance des Ressources Naturelles à l'Université Chrétienne Bilingue du Congo</strong></p>
+        <p>Congo Initiative-Université Chrétienne Bilingue du Congo (GRN-UCBC)</p>
+        <p>📧 grn@ucbc.org | 🌐 www.grn-ucbc.org</p>
     </div>
 </body>
 </html>

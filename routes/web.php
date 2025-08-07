@@ -18,6 +18,8 @@ use App\Http\Controllers\Admin\JobApplicationController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\PartenaireController;
+use App\Http\Controllers\Admin\SocialLinkController;
 
 // ====================================================================
 // ROUTES D'AUTHENTIFICATION (STANDARDS LARAVEL)
@@ -52,6 +54,7 @@ Route::middleware(['auth'])->group(function () {
 // Routes principales du site public
 Route::get('/', [SiteController::class, 'index'])->name('site.home');
 Route::get('/galerie', [SiteController::class, 'galerie'])->name('site.galerie');
+Route::get('/media/download/{id}', [SiteController::class, 'downloadMedia'])->name('site.media.download');
 
 // Services
 Route::get('/service', [SiteController::class, 'services'])->name('site.services');
@@ -76,6 +79,10 @@ Route::get('/actualite-id/{id}', [SiteController::class, 'actualiteShowById'])->
 // Événements
 Route::get('/evenements', [SiteController::class, 'evenements'])->name('site.evenements');
 Route::get('/evenement/{slug}', [SiteController::class, 'evenementShow'])->name('site.evenement.show');
+
+// À propos
+Route::get('/about', [SiteController::class, 'about'])->name('site.about');
+Route::get('/a-propos', fn() => redirect()->route('site.about'));
 
 // Contact
 Route::get('/contact', [SiteController::class, 'contact'])->name('site.contact');
@@ -128,11 +135,13 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::middleware(['can:viewAny,App\Models\User'])->prefix('email-test')->name('email-test.')->group(function () {
         Route::get('/', [EmailTestController::class, 'index'])->name('index');
         Route::post('/send', [EmailTestController::class, 'send'])->name('send');
+        Route::get('/config', [EmailTestController::class, 'testConfig'])->name('config');
         Route::post('/connection', [EmailTestController::class, 'testConnection'])->name('connection');
+        Route::get('/password-reset', [EmailTestController::class, 'testPasswordReset'])->name('password-reset');
     });
     
     // Gestion des utilisateurs (admin seulement)
-    Route::middleware(['can:manage users'])->prefix('users')->name('users.')->group(function () {
+    Route::middleware(['can:manage_users'])->prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
         Route::get('/create', [UserController::class, 'create'])->name('create');
         Route::post('/', [UserController::class, 'store'])->name('store');
@@ -226,6 +235,34 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     });
 
     // ================================
+    // GESTION DES PARTENAIRES
+    // ================================
+    Route::prefix('partenaires')->name('partenaires.')->group(function () {
+        Route::get('/', [PartenaireController::class, 'index'])->name('index');
+        Route::get('/create', [PartenaireController::class, 'create'])->name('create');
+        Route::post('/', [PartenaireController::class, 'store'])->name('store');
+        Route::get('/{partenaire}', [PartenaireController::class, 'show'])->name('show');
+        Route::get('/{partenaire}/edit', [PartenaireController::class, 'edit'])->name('edit');
+        Route::put('/{partenaire}', [PartenaireController::class, 'update'])->name('update');
+        Route::delete('/{partenaire}', [PartenaireController::class, 'destroy'])->name('destroy');
+        Route::patch('/{partenaire}/toggle-publication', [PartenaireController::class, 'togglePublication'])->name('toggle-publication');
+    });
+
+    // ================================
+    // GESTION DES LIENS SOCIAUX
+    // ================================
+    Route::prefix('social-links')->name('social-links.')->group(function () {
+        Route::get('/', [SocialLinkController::class, 'index'])->name('index');
+        Route::get('/create', [SocialLinkController::class, 'create'])->name('create');
+        Route::post('/', [SocialLinkController::class, 'store'])->name('store');
+        Route::get('/{socialLink}', [SocialLinkController::class, 'show'])->name('show');
+        Route::get('/{socialLink}/edit', [SocialLinkController::class, 'edit'])->name('edit');
+        Route::put('/{socialLink}', [SocialLinkController::class, 'update'])->name('update');
+        Route::delete('/{socialLink}', [SocialLinkController::class, 'destroy'])->name('destroy');
+        Route::patch('/{socialLink}/toggle-active', [SocialLinkController::class, 'toggleActive'])->name('toggle-active');
+    });
+
+    // ================================
     // GESTION DES NEWSLETTERS
     // ================================
     Route::prefix('newsletter')->name('newsletter.')->group(function () {
@@ -264,32 +301,29 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // ================================
     Route::prefix('rapports')->name('rapports.')->group(function () {
         Route::get('/', [RapportController::class, 'index'])->name('index');
+        Route::get('/search', [RapportController::class, 'search'])->name('search');
+        Route::get('/category/{categorieId?}', [RapportController::class, 'byCategory'])->name('category');
         Route::get('/create', [RapportController::class, 'create'])->name('create');
         Route::post('/', [RapportController::class, 'store'])->name('store');
-        Route::get('/{rapport}', [RapportController::class, 'show'])->name('show');
+        // Rediriger vers publication.show pour l'affichage des rapports
+        Route::get('/{rapport}', function($rapport) {
+            return redirect()->route('publication.show', ['slug' => $rapport]);
+        })->name('show');
+        Route::get('/{rapport}/download', [RapportController::class, 'download'])->name('download');
+        Route::get('/{rapport}/preview', [RapportController::class, 'preview'])->name('preview');
         Route::get('/{rapport}/edit', [RapportController::class, 'edit'])->name('edit');
         Route::put('/{rapport}', [RapportController::class, 'update'])->name('update');
         Route::delete('/{rapport}', [RapportController::class, 'destroy'])->name('destroy');
         
-        // Routes de modération
+        // Routes pour les actions rapides
+        Route::post('/delete-multiple', [RapportController::class, 'deleteMultiple'])->name('delete-multiple');
+        Route::get('/export', [RapportController::class, 'export'])->name('export');
+        Route::get('/download-zip', [RapportController::class, 'downloadZip'])->name('download-zip');
+        
+        // Routes de modération (conservées pour compatibilité)
         Route::post('/{rapport}/publish', [RapportController::class, 'publish'])->name('publish');
         Route::post('/{rapport}/unpublish', [RapportController::class, 'unpublish'])->name('unpublish');
         Route::get('/pending-moderation', [RapportController::class, 'pendingModeration'])->name('pending');
-    });
-
-    // ================================
-    // GESTION DES MÉDIAS
-    // ================================
-    Route::prefix('media')->name('media.')->group(function () {
-        Route::get('/', [MediaController::class, 'index'])->name('index');
-        Route::get('/create', [MediaController::class, 'create'])->name('create');
-        Route::post('/', [MediaController::class, 'store'])->name('store');
-        Route::get('/{media}/edit', [MediaController::class, 'edit'])->name('edit');
-        Route::put('/{media}', [MediaController::class, 'update'])->name('update');
-        Route::delete('/{media}', [MediaController::class, 'destroy'])->name('destroy');
-        // For CKEditor media integration
-        Route::get('/list', [MediaController::class, 'list'])->name('list');
-        Route::post('/upload', [MediaController::class, 'upload'])->name('upload');
     });
 
     // ================================
@@ -297,6 +331,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // ================================
     Route::prefix('projets')->name('projets.')->group(function () {
         Route::get('/', [ProjetController::class, 'index'])->name('index');
+        Route::post('/search', [ProjetController::class, 'search'])->name('search');
         Route::get('/create', [ProjetController::class, 'create'])->name('create');
         Route::post('/', [ProjetController::class, 'store'])->name('store');
         Route::get('/{projet}', [ProjetController::class, 'show'])->name('show');
@@ -360,5 +395,34 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/export', [JobApplicationController::class, 'export'])->name('export');
         Route::post('/bulk-review', [JobApplicationController::class, 'bulkReview'])->name('bulk-review');
         Route::get('/statistics', [JobApplicationController::class, 'statistics'])->name('statistics');
+    });
+
+    // ================================
+    // GESTION DES MÉDIAS (dans le groupe admin)
+    // ================================
+    Route::prefix('media')->name('media.')->group(function () {
+        Route::get('/', [MediaController::class, 'index'])->name('index');
+        Route::get('/create', [MediaController::class, 'create'])->name('create');
+        Route::post('/', [MediaController::class, 'store'])->name('store');
+        
+        // For CKEditor media integration - DOIT ÊTRE AVANT LES ROUTES AVEC PARAMÈTRES
+        Route::get('/list', [MediaController::class, 'list'])->name('list');
+        Route::post('/upload', [MediaController::class, 'upload'])->name('upload');
+        
+        Route::get('/{media}', [MediaController::class, 'show'])->name('show');
+        Route::get('/{media}/edit', [MediaController::class, 'edit'])->name('edit');
+        Route::put('/{media}', [MediaController::class, 'update'])->name('update');
+        Route::delete('/{media}', [MediaController::class, 'destroy'])->name('destroy');
+        
+        // Actions de modération
+        Route::post('/{media}/approve', [MediaController::class, 'approve'])->name('approve');
+        Route::post('/{media}/reject', [MediaController::class, 'reject'])->name('reject');
+        Route::post('/{media}/publish', [MediaController::class, 'publish'])->name('publish');
+        Route::post('/{media}/unpublish', [MediaController::class, 'unpublish'])->name('unpublish');
+        
+        // Actions utilitaires
+        Route::get('/{media}/download', [MediaController::class, 'download'])->name('download');
+        Route::get('/{media}/copy-link', [MediaController::class, 'copyLink'])->name('copyLink');
+
     });
 });

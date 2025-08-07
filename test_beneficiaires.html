@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Calcul Bénéficiaires</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .field { margin: 10px 0; }
+        input { padding: 5px; margin: 5px; width: 100px; }
+        .total { background: #f0f0f0; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>Test du Calcul des Bénéficiaires</h2>
+    
+    <div class="field">
+        <label>Hommes:</label>
+        <input type="number" id="beneficiaires_hommes" name="beneficiaires_hommes" value="0">
+    </div>
+    
+    <div class="field">
+        <label>Femmes:</label>
+        <input type="number" id="beneficiaires_femmes" name="beneficiaires_femmes" value="0">
+    </div>
+    
+    <div class="field">
+        <label>Enfants:</label>
+        <input type="number" id="beneficiaires_enfants" name="beneficiaires_enfants" value="0">
+    </div>
+    
+    <div class="field total">
+        <label>Total:</label>
+        <input type="number" id="beneficiaires_total" name="beneficiaires_total" readonly>
+    </div>
+
+    <script>
+        // Fonction de calcul (même logique que dans le projet)
+        function calculateBeneficiariesTotal() {
+            const hommes = parseInt(document.getElementById('beneficiaires_hommes')?.value || 0);
+            const femmes = parseInt(document.getElementById('beneficiaires_femmes')?.value || 0);
+            const enfants = parseInt(document.getElementById('beneficiaires_enfants')?.value || 0);
+            
+            const total = hommes + femmes + enfants;
+            
+            const totalField = document.getElementById('beneficiaires_total');
+            if (totalField) {
+                totalField.value = total;
+            }
+            
+            // Log pour debug
+            console.log('Calcul: Hommes=' + hommes + ', Femmes=' + femmes + ', Enfants=' + enfants + ', Total=' + total);
+        }
+        
+        // Ajouter les écouteurs d'événements
+        const beneficiaryFields = ['beneficiaires_hommes', 'beneficiaires_femmes', 'beneficiaires_enfants'];
+        beneficiaryFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.addEventListener('input', calculateBeneficiariesTotal);
+                field.addEventListener('change', calculateBeneficiariesTotal);
+            }
+        });
+        
+        // Calcul initial
+        calculateBeneficiariesTotal();
+    </script>
+</body>
+</html>

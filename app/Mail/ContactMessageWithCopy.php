@@ -83,52 +83,20 @@ class ContactMessageWithCopy extends Mailable
                 throw new \Exception('Aucune configuration email active trouvée');
             }
 
-            // 2. Préparer le message pour les administrateurs
-            $adminMessage = "NOUVEAU MESSAGE DE CONTACT\n\n" .
-                          "De: {$contact->nom} <{$contact->email}>\n" .
-                          "Sujet: {$contact->sujet}\n" .
-                          "Date: " . now()->format('d/m/Y à H:i:s') . "\n\n" .
-                          "MESSAGE:\n" . str_repeat('-', 50) . "\n" .
-                          $contact->message . "\n" .
-                          str_repeat('-', 50) . "\n\n" .
-                          "Vous pouvez répondre directement à cet email.\n\n" .
-                          "-- \nSystème IRI-UCBC";
-
-            // 3. Préparer le message d'accusé de réception
-            $ackMessage = "ACCUSÉ DE RÉCEPTION\n\n" .
-                         "Bonjour {$contact->nom},\n\n" .
-                         "Nous avons bien reçu votre message intitulé \"{$contact->sujet}\".\n\n" .
-                         "Votre message:\n" . str_repeat('-', 30) . "\n" .
-                         $contact->message . "\n" .
-                         str_repeat('-', 30) . "\n\n" .
-                         "Nous vous répondrons dans les plus brefs délais.\n\n" .
-                         "Cordialement,\nL'équipe IRI-UCBC";
-
-            // 4. Envoyer aux adresses configurées
+            // 4. Envoyer aux adresses configurées (pour admins)
             $targetEmails = $emailSetting->emails;
             
             foreach ($targetEmails as $email) {
-                \Mail::raw(
-                    $adminMessage,
-                    function ($message) use ($email, $contact) {
-                        $message->to($email)
-                               ->subject("Nouveau contact: {$contact->sujet}")
-                               ->replyTo($contact->email, $contact->nom);
-                    }
-                );
+                $adminMail = new ContactMessageWithCopy($contact, true);
+                \Mail::to($email)->send($adminMail);
                 
                 $copyRecipients[] = $email;
                 $totalSent++;
             }
 
-            // 5. Envoyer accusé de réception à l'expéditeur
-            \Mail::raw(
-                $ackMessage,
-                function ($message) use ($contact) {
-                    $message->to($contact->email, $contact->nom)
-                           ->subject("Confirmation de réception: {$contact->sujet}");
-                }
-            );
+            // 5. Envoyer accusé de réception formaté à l'expéditeur
+            $confirmationMail = new ContactMessageWithCopy($contact, false);
+            \Mail::to($contact->email, $contact->nom)->send($confirmationMail);
             
             $acknowledgmentRecipients[] = $contact->email;
             $totalSent++;

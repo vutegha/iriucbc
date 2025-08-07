@@ -17,7 +17,9 @@ class ServiceController extends Controller
     }
     public function index()
     {
-        // $this->authorize('viewAny', Service::class);
+        
+        $this->authorize('viewAny', Service::class);
+$this->authorize('viewAny', Service::class);
         
         $services = Service::latest()->get();
         return view('admin.service.index', compact('services'));
@@ -25,14 +27,18 @@ class ServiceController extends Controller
 
     public function create()
     {
-        // $this->authorize('create', Service::class);
+        
+        $this->authorize('create', Service::class);
+$this->authorize('create', Service::class);
         
         return view('admin.service.create');
     }
 
     public function store(Request $request)
     {
-        // $this->authorize('create', Service::class);
+        
+        $this->authorize('create', Service::class);
+$this->authorize('create', Service::class);
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
             'nom_menu' => 'nullable|string|max:255',
@@ -55,21 +61,27 @@ class ServiceController extends Controller
 
     public function edit(Service $service)
     {
-        // $this->authorize('update', $service);
+        
+        $this->authorize('update', $Service);
+$this->authorize('update', $service);
         
         return view('admin.service.edit', compact('service'));
     }
 
     public function show(Service $service)
     {
-        // $this->authorize('view', $service);
+        
+        $this->authorize('view', $Service);
+$this->authorize('view', $service);
         
         return view('admin.service.show', compact('service'));
     }
 
     public function update(Request $request, Service $service)
     {
-        // $this->authorize('update', $service);
+        
+        $this->authorize('update', $Service);
+$this->authorize('update', $service);
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
             'nom_menu' => 'nullable|string|max:255',
@@ -96,7 +108,9 @@ class ServiceController extends Controller
 
     public function destroy(Service $service)
     {
-        // $this->authorize('delete', $service);
+        
+        $this->authorize('delete', $Service);
+$this->authorize('delete', $service);
         
         if ($service->image) {
             Storage::disk('public')->delete($service->image);

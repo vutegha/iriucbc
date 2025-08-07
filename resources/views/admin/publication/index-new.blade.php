@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('title', 'Publications')
-@section('subtitle', 'Gestion des publications IRI-UCBC')
+@section('subtitle', 'Gestion des publications GRN-UCBC')
 
 @section('content')
 
@@ -73,7 +73,7 @@
 <!-- Composant Table Admin -->
 <x-admin-table 
     :title="'Publications'"
-    :subtitle="'Gestion des publications IRI-UCBC'"
+    :subtitle="'Gestion des publications GRN-UCBC'"
     :items="$publications"
     :create-route="route('admin.publication.create')"
     :create-label="'Nouvelle Publication'"
@@ -112,14 +112,14 @@
                 </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-                @if($publication->auteur)
+                @if($publication->auteurs && $publication->auteurs->count() > 0)
                     <div class="flex items-center">
                         <div class="flex-shrink-0 h-8 w-8 bg-olive bg-opacity-10 rounded-full flex items-center justify-center">
                             <i class="bi bi-person text-olive text-sm"></i>
                         </div>
                         <div class="ml-2">
-                            <div class="text-sm font-medium text-gray-900">{{ $publication->auteur->nom }}</div>
-                            <div class="text-xs text-gray-500">{{ $publication->auteur->institution }}</div>
+                            <div class="text-sm font-medium text-gray-900">{{ $publication->auteurs->first()->nom }}</div>
+                            <div class="text-xs text-gray-500">{{ $publication->auteurs->first()->institution ?? 'Institution non renseignée' }}</div>
                         </div>
                     </div>
                 @else

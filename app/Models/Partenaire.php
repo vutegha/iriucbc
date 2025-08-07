@@ -11,16 +11,11 @@ class Partenaire extends Model
 
     protected $fillable = [
         'nom', 'type', 'description', 'logo', 'site_web', 'email_contact',
-        'telephone', 'adresse', 'pays', 'statut', 'date_debut_partenariat',
-        'date_fin_partenariat', 'message_specifique', 'domaines_collaboration',
-        'ordre_affichage', 'afficher_publiquement'
+        'telephone', 'adresse', 'pays', 'statut'
     ];
 
     protected $casts = [
-        'domaines_collaboration' => 'array',
-        'date_debut_partenariat' => 'date',
-        'date_fin_partenariat' => 'date',
-        'afficher_publiquement' => 'boolean',
+        'statut' => 'string',
     ];
 
     // Scopes
@@ -31,7 +26,7 @@ class Partenaire extends Model
 
     public function scopePublics($query)
     {
-        return $query->where('afficher_publiquement', true);
+        return $query->where('statut', 'actif');
     }
 
     public function scopeParType($query, $type)
@@ -41,7 +36,7 @@ class Partenaire extends Model
 
     public function scopeOrdonnes($query)
     {
-        return $query->orderBy('ordre_affichage')->orderBy('nom');
+        return $query->orderBy('nom');
     }
 
     // Accessors

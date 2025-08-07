@@ -25,6 +25,7 @@ class Evenement extends Model
         'rapport_url',
         'type',
         'en_vedette',
+        'a_la_une',
         'meta_data',
         'is_published',
         'published_at',
@@ -34,6 +35,7 @@ class Evenement extends Model
     protected $casts = [
         'date_evenement' => 'datetime',
         'en_vedette' => 'boolean',
+        'a_la_une' => 'boolean',
         'meta_data' => 'array',
         'is_published' => 'boolean',
         'published_at' => 'datetime'
@@ -58,6 +60,11 @@ class Evenement extends Model
     public function scopeEnVedette($query)
     {
         return $query->where('en_vedette', true);
+    }
+
+    public function scopeALaUne($query)
+    {
+        return $query->where('a_la_une', true);
     }
 
     // Accesseurs

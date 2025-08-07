@@ -13,7 +13,9 @@ class ContactController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Contact::query();
+        
+        $this->authorize('viewAny', Contact::class);
+$query = Contact::query();
 
         // Filtrer par statut si spécifié
         if ($request->filled('statut')) {
@@ -40,6 +42,9 @@ class ContactController extends Controller
      */
     public function show(Contact $contact)
     {
+        
+        $this->authorize('view', $contact);
+        
         // Marquer comme lu si c'est nouveau
         if ($contact->statut === 'nouveau') {
             $contact->marquerCommeLu();
@@ -53,6 +58,9 @@ class ContactController extends Controller
      */
     public function update(Request $request, Contact $contact)
     {
+        
+        $this->authorize('update', $contact);
+        
         $request->validate([
             'statut' => 'required|in:nouveau,lu,traite,ferme',
             'reponse' => 'nullable|string|max:2000'
@@ -73,6 +81,9 @@ class ContactController extends Controller
      */
     public function destroy(Contact $contact)
     {
+        
+        $this->authorize('delete', $contact);
+        
         $contact->delete();
 
         return redirect()->route('admin.contacts.index')

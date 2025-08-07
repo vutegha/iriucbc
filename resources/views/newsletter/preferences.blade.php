@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des préférences - Newsletter IRI-UCBC</title>
+    <title>Gestion des préférences - Newsletter GRN-UCBC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -30,7 +30,7 @@
                 </svg>
             </div>
             <h1 class="text-2xl font-bold text-gray-800 mb-2">Préférences Newsletter</h1>
-            <p class="text-gray-600">IRI-UCBC - Congo Initiative-Université Chrétienne Bilingue du Congo</p>
+            <p class="text-gray-600">GRN-UCBC - Centre de Gouvernance des Ressources Naturelles - Université Chrétienne Bilingue du Congo</p>
         </div>
 
         <!-- Messages de feedback -->
@@ -164,6 +164,22 @@
                         </div>
                         <div class="text-2xl">🎓</div>
                     </label>
+
+                    <!-- Projets -->
+                    <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" 
+                               name="preferences[projets]" 
+                               value="1"
+                               {{ $newsletter->hasPreference('projets') ? 'checked' : '' }}
+                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                        <div class="ml-3 flex-1">
+                            <div class="font-medium text-gray-800">Projets</div>
+                            <div class="text-sm text-gray-500">
+                                Recevez les notifications pour nos nouveaux projets et leurs avancements
+                            </div>
+                        </div>
+                        <div class="text-2xl">🚀</div>
+                    </label>
                 </div>
 
                 <div class="mt-6 space-y-3">
@@ -196,8 +212,8 @@
 
         <!-- Footer -->
         <div class="text-center text-gray-500 text-sm mt-8">
-            <p>© {{ date('Y') }} Institut de Recherche Intégré à l'Université Chrétienne Bilingue du Congo</p>
-            <p>IRI-UCBC</p>
+            <p>© {{ date('Y') }} Centre de Gouvernance des Ressources Naturelles - Université Chrétienne Bilingue du Congo</p>
+            <p>GRN-UCBC</p>
         </div>
     </div>
 </body>

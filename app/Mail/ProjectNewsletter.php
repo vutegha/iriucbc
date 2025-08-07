@@ -47,7 +47,8 @@ class ProjectNewsletter extends Mailable implements ShouldQueue
             with: [
                 'projet' => $this->projet,
                 'subscriber' => $this->subscriber,
-                'preferencesUrl' => route('newsletter.preferences', $this->subscriber->token)
+                'preferencesUrl' => route('newsletter.preferences', $this->subscriber->token),
+                'unsubscribeUrl' => route('newsletter.unsubscribe', $this->subscriber->token)
             ]
         );
     }

@@ -75,7 +75,7 @@
                                 <div>
                                     <h3 class="font-bold text-gray-900 mb-1">Adresse</h3>
                                     <p class="text-gray-600 leading-relaxed">
-                                        IRI-UCBC<br>
+                                        GRN-UCBC<br>
                                         Beni, Nord-Kivu<br>
                                         République Démocratique du Congo
                                     </p>
@@ -90,7 +90,7 @@
                                 <div>
                                     <h3 class="font-bold text-gray-900 mb-1">Email</h3>
                                     <a href="mailto:iri@ucbc.org" class="text-iri-primary hover:text-iri-secondary transition-colors duration-200">
-                                        contact@iri-ucbc.org
+                                        contact@grn-ucbc.org
                                     </a>
                                 </div>
                             </div>

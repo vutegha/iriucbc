@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Désabonnement - Newsletter IRI-UCBC</title>
+    <title>Désabonnement - Newsletter GRN-UCBC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -22,7 +22,7 @@
                 </svg>
             </div>
             <h1 class="text-2xl font-bold text-gray-800 mb-2">Désabonnement</h1>
-            <p class="text-gray-600">IRI-UCBC </br> Congo Initiative-Université Chrétienne Bilingue du Congo</p>
+            <p class="text-gray-600">GRN-UCBC </br> Centre de Gouvernance des Ressources Naturelles - Université Chrétienne Bilingue du Congo</p>
         </div>
 
         @if(session('success'))
@@ -242,7 +242,7 @@
 
         <!-- Footer -->
         <div class="text-center text-gray-500 text-sm">
-            <p>© {{ date('Y') }} Institut de Recherche Intégré à l'Université Chrétienne Bilingue du Congo</p>
+            <p>© {{ date('Y') }} Centre de Gouvernance des Ressources Naturelles - Université Chrétienne Bilingue du Congo</p>
             <p>Congo Initiative-Université Chrétienne Bilingue du Congo</p>
             <p class="mt-2">
                 <a href="mailto:iri@ucbc.org" class="text-blue-500 hover:text-blue-600">iri@ucbc.org</a>

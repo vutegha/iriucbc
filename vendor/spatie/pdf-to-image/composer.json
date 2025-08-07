@@ -19,11 +19,11 @@
         }
     ],
     "require": {
-        "php" : "^7.2|^8.0",
-        "ext-imagick" : "*"
+        "php" : ">=5.5.0"
     },
     "require-dev": {
-        "pestphp/pest": "^1.21"
+        "phpunit/phpunit" : "4.*",
+        "scrutinizer/ocular": "~1.1"
     },
     "autoload": {
         "psr-4": {
@@ -36,12 +36,6 @@
         }
     },
     "scripts": {
-        "test": "vendor/bin/pest"
-    },
-    "config": {
-        "sort-packages": true,
-        "allow-plugins": {
-            "pestphp/pest-plugin": true
-        }
+        "test": "phpunit"
     }
 }

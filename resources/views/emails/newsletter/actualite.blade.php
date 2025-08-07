@@ -1,71 +1,68 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nouvelle Actualité - IRI-UCBC</title>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f4f4f4; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, #ee6751, #505c10); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; margin: -20px -20px 20px -20px; }
-        .content { padding: 20px 0; }
-        .button { display: inline-block; background: #ee6751; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; margin: 10px 0; }
-        .footer { background: #f8f9fa; padding: 15px; margin: 20px -20px -20px -20px; border-radius: 0 0 10px 10px; font-size: 12px; color: #666; }
-        .unsubscribe { font-size: 11px; color: #999; margin-top: 10px; }
-        .image { max-width: 100%; height: auto; border-radius: 8px; margin: 15px 0; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>📰 Nouvelle Actualité</h1>
-            <p>Institut de Recherche Intégré à l'Université Chrétienne Bilingue du Congo</p>
+@extends('emails.newsletter.layout')
+
+@section('title', 'Nouvelle actualité - ' . $actualite->titre)
+
+@section('content')
+    <div class="greeting">
+        Bonjour {{ $newsletter->nom ?? 'Cher(e) abonné(e)' }},
+    </div>
+    
+    <div class="content-text">
+        <strong>Une nouvelle actualité est disponible sur GRN-UCBC !</strong>
+    </div>
+    
+    <div class="publication-card">
+        <div class="publication-title">
+            {{ $actualite->titre }}
         </div>
-
-        <div class="content">
-            <p>Bonjour {{ $subscriber->nom ?? 'Cher abonné' }},</p>
-            
-            <p>Nous souhaitons vous informer de cette actualité importante :</p>
-            
-            <h2 style="color: #ee6751;">{{ $actualite->titre }}</h2>
-            
-            @if($actualite->image)
-                <img src="{{ asset('storage/' . $actualite->image) }}" alt="{{ $actualite->titre }}" class="image">
+        
+        <div class="publication-meta">
+            📰 Actualité • Publié le {{ $actualite->created_at->format('d/m/Y') }}
+            @if($actualite->service)
+                • Service: {{ $actualite->service->nom }}
             @endif
-
-            @if($actualite->resume)
-                <p><strong>Résumé :</strong></p>
-                <p style="background: #f8f9fa; padding: 15px; border-left: 4px solid #ee6751; margin: 15px 0;">
-                    {{ $actualite->resume }}
-                </p>
-            @endif
-
-            @if($actualite->texte)
-                <div style="margin: 20px 0;">
-                    {!! Str::limit($actualite->texte, 300) !!}
-                    @if(strlen($actualite->texte) > 300)
-                        <p><em>... <a href="{{ route('site.home') }}">Lire la suite sur notre site</a></em></p>
-                    @endif
-                </div>
-            @endif
-
-            <p style="text-align: center; margin: 30px 0;">
-                <a href="{{ route('site.home') }}" class="button">Consulter sur notre site</a>
-            </p>
         </div>
-
-        <div class="footer">
-            <p><strong>Institut de Recherche Intégré à l'Université Chrétienne Bilingue du Congo</strong></p>
-            <p>Congo Initiative-Université Chrétienne Bilingue du Congo</p>
-            
-            <div class="unsubscribe">
-                <p>
-                    <a href="{{ $preferencesUrl }}">Gérer mes préférences</a> | 
-                    <a href="{{ route('newsletter.unsubscribe', $subscriber->token) }}">Se désabonner</a>
-                </p>
-                <p>Vous recevez cet email car vous êtes abonné à nos notifications d'actualités.</p>
+        
+        @if($actualite->image)
+            <div style="text-align: center; margin: 20px 0;">
+                <img src="{{ asset('storage/' . $actualite->image) }}" alt="{{ $actualite->titre }}" 
+                     style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
             </div>
+        @endif
+        
+        @if($actualite->resume)
+            <div class="publication-excerpt">
+                {{ $actualite->resume }}
+            </div>
+        @elseif($actualite->texte)
+            <div class="publication-excerpt">
+                {!! Str::limit(strip_tags($actualite->texte), 300) !!}
+            </div>
+        @endif
+        
+        <div style="text-align: center; margin-top: 25px;">
+            <a href="{{ route('site.actualite.show', $actualite->slug ?? $actualite->id) }}" class="btn">
+                📖 Lire l'actualité
+            </a>
         </div>
     </div>
-</body>
-</html>
+    
+    <div class="content-text">
+        Restez informé(e) de toutes nos activités et suivez l'actualité de la gouvernance des ressources naturelles.
+    </div>
+    
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="{{ route('site.actualites') }}" class="btn btn-secondary">
+            Voir toutes nos actualités
+        </a>
+    </div>
+    
+    <div class="content-text">
+        Merci de votre fidélité !
+    </div>
+    
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-style: italic; color: #6b7280;">
+        L'équipe de communication GRN-UCBC<br>
+        Centre de Gouvernance des Ressources Naturelles
+    </div>
+@endsection

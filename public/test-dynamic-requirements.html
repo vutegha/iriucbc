@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Composant Dynamic Requirements</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'iri-primary': '#1B4B36',
+                        'iri-secondary': '#2D5A47',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Test du Composant Dynamic Requirements</h1>
+        
+        <form class="bg-white rounded-lg shadow-lg p-6">
+            <div class="mb-6">
+                <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+                    Titre du poste
+                </label>
+                <input type="text" id="title" name="title" 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-iri-primary focus:border-iri-primary"
+                       placeholder="Ex: Développeur Full Stack">
+            </div>
+            
+            <div class="mb-6">
+                <label for="requirements-container" class="block text-sm font-medium text-gray-700 mb-2">
+                    Exigences et qualifications <span class="text-red-500">*</span>
+                </label>
+                <div id="requirements-container"></div>
+                <p class="mt-1 text-sm text-gray-500">
+                    <i class="fas fa-lightbulb mr-1"></i>
+                    Ajoutez chaque exigence une par une. Exemple : "Minimum 3 ans d'expérience", "Maîtrise de Laravel", etc.
+                </p>
+            </div>
+            
+            <div class="flex gap-4">
+                <button type="submit" class="bg-iri-primary hover:bg-iri-secondary text-white font-medium py-2 px-6 rounded-lg transition-colors">
+                    <i class="fas fa-save mr-2"></i>
+                    Sauvegarder
+                </button>
+                <button type="button" onclick="testPreload()" class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+                    <i class="fas fa-upload mr-2"></i>
+                    Charger des données test
+                </button>
+                <button type="button" onclick="showJSON()" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+                    <i class="fas fa-code mr-2"></i>
+                    Voir JSON
+                </button>
+            </div>
+        </form>
+        
+        <div id="json-output" class="mt-6 hidden">
+            <h3 class="text-lg font-semibold mb-2">JSON généré :</h3>
+            <pre class="bg-gray-800 text-green-400 p-4 rounded-lg overflow-x-auto"></pre>
+        </div>
+    </div>
+
+    <script src="assets/js/dynamic-requirements.js"></script>
+    <script>
+        let dynamicRequirements;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialiser le composant
+            dynamicRequirements = new DynamicRequirements('requirements-container', {
+                inputPlaceholder: 'Saisissez une exigence (ex: Minimum 3 ans d\'expérience)',
+                addButtonText: 'Ajouter',
+                hiddenInputName: 'requirements',
+                maxItems: 15
+            });
+            
+            // Gérer la soumission du formulaire
+            document.querySelector('form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (dynamicRequirements.requirements.length === 0) {
+                    alert('Veuillez ajouter au moins une exigence.');
+                    return;
+                }
+                
+                const formData = new FormData(this);
+                console.log('Données du formulaire:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(key + ':', value);
+                }
+                
+                dynamicRequirements.showMessage('Formulaire soumis avec succès! Consultez la console pour voir les données.', 'success');
+            });
+        });
+        
+        function testPreload() {
+            const testData = [
+                "Minimum 3 ans d'expérience en développement web",
+                "Maîtrise de PHP et Laravel",
+                "Connaissance des bases de données MySQL",
+                "Expérience avec Git et les méthodologies Agile",
+                "Bonnes compétences en communication"
+            ];
+            
+            dynamicRequirements.setRequirements(testData);
+            dynamicRequirements.showMessage('Données de test chargées!', 'success');
+        }
+        
+        function showJSON() {
+            const output = document.getElementById('json-output');
+            const pre = output.querySelector('pre');
+            
+            pre.textContent = JSON.stringify(dynamicRequirements.requirements, null, 2);
+            output.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

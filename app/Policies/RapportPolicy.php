@@ -15,7 +15,7 @@ class RapportPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->hasPermissionTo('view rapports') || 
+        return $user->hasPermissionTo('view_rapports') || 
                $user->hasAnyRole(['admin', 'super-admin', 'moderateur']);
     }
 
@@ -24,7 +24,7 @@ class RapportPolicy
      */
     public function view(User $user, Rapport $rapport)
     {
-        return $user->hasPermissionTo('view rapports') || 
+        return $user->hasPermissionTo('view_rapports') || 
                $user->hasAnyRole(['admin', 'super-admin', 'moderateur']);
     }
 
@@ -33,7 +33,7 @@ class RapportPolicy
      */
     public function create(User $user)
     {
-        return $user->hasPermissionTo('create rapports') || 
+        return $user->hasPermissionTo('create_rapports') || 
                $user->hasAnyRole(['admin', 'super-admin']);
     }
 
@@ -42,7 +42,7 @@ class RapportPolicy
      */
     public function update(User $user, Rapport $rapport)
     {
-        return $user->hasPermissionTo('update rapports') || 
+        return $user->hasPermissionTo('update_rapports') || 
                $user->hasAnyRole(['admin', 'super-admin']);
     }
 
@@ -51,7 +51,7 @@ class RapportPolicy
      */
     public function delete(User $user, Rapport $rapport)
     {
-        return $user->hasPermissionTo('delete rapports') || 
+        return $user->hasPermissionTo('delete_rapports') || 
                $user->hasAnyRole(['admin', 'super-admin']);
     }
 
@@ -60,7 +60,7 @@ class RapportPolicy
      */
     public function publish(User $user, Rapport $rapport)
     {
-        return $user->hasPermissionTo('publish rapports') || 
+        return $user->hasPermissionTo('publish_rapports') || 
                $user->hasAnyRole(['admin', 'super-admin', 'moderateur']);
     }
 
@@ -69,7 +69,7 @@ class RapportPolicy
      */
     public function unpublish(User $user, Rapport $rapport)
     {
-        return $user->hasPermissionTo('unpublish rapports') || 
+        return $user->hasPermissionTo('unpublish_rapports') || 
                $user->hasAnyRole(['admin', 'super-admin', 'moderateur']);
     }
 
@@ -78,7 +78,7 @@ class RapportPolicy
      */
     public function moderate(User $user, Rapport $rapport)
     {
-        return $user->hasPermissionTo('moderate rapports') || 
+        return $user->hasPermissionTo('moderate_rapports') || 
                $user->hasAnyRole(['admin', 'super-admin', 'moderateur']);
     }
 }

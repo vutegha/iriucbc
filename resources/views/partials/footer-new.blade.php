@@ -22,8 +22,8 @@
               <div class="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-gray-900"></div>
             </div>
             <div>
-              <h3 class="text-xl font-bold text-white leading-tight">Institut de Recherche</h3>
-              <p class="text-orange-400 font-semibold">Intégré - UCBC</p>
+              <h3 class="text-xl font-bold text-white leading-tight">Programme Gouvernance</h3>
+              <p class="text-orange-400 font-semibold">des Ressources Naturelles</p>
             </div>
           </div>
           
@@ -238,7 +238,7 @@
     <div class="max-w-7xl mx-auto px-6 lg:px-8">
       <div class="flex flex-col md:flex-row justify-between items-center text-sm">
         <div class="mb-4 md:mb-0">
-          <p class="text-gray-400">© {{ date('Y') }} Institut de Recherche Intégré - UCBC. Tous droits réservés.</p>
+          <p class="text-gray-400">© {{ date('Y') }} Centre de Gouvernance des Ressources Naturelles - UCBC. Tous droits réservés.</p>
         </div>
         <div class="flex flex-wrap gap-6 justify-center md:justify-end">
           <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200 flex items-center">

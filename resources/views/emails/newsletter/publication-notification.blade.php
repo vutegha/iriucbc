@@ -1,6 +1,6 @@
 @extends('emails.newsletter.layout')
 
-@section('title', 'Nouvelle publication IRI-UCBC')
+@section('title', 'Nouvelle publication - Centre de Gouvernance des Ressources Naturelles')
 
 @section('content')
     <div class="greeting">
@@ -38,8 +38,8 @@
                 • Publié le {{ $publication->created_at->format('d/m/Y') }}
             @endif
             
-            @if(isset($publication->auteur))
-                • Par {{ $publication->auteur }}
+            @if($publication->auteurs && $publication->auteurs->count() > 0)
+                • Par {{ $publication->auteurs->pluck('nom')->join(', ') }}
             @endif
         </div>
         
@@ -69,7 +69,7 @@
                     $readUrl = route('publication.show', $publication->slug ?? $publication->id);
                     break;
                 case 'rapports':
-                    $readUrl = route('rapport.show', $publication->slug ?? $publication->id);
+                    $readUrl = route('publication.show', $publication->slug ?? $publication->id);
                     break;
                 case 'evenements':
                     $readUrl = route('evenement.show', $publication->slug ?? $publication->id);
@@ -96,7 +96,7 @@
     
     <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-style: italic; color: #6b7280;">
         Cordialement,<br>
-        L'équipe IRI-UCBC
+        L'équipe du Centre de Gouvernance des Ressources Naturelles - Université Chrétienne Bilingue du Congo 
     </div>
     
     <div style="margin-top: 20px; padding: 15px; background-color: #f0f9ff; border-left: 4px solid #3b82f6; font-size: 14px; color: #1e40af;">

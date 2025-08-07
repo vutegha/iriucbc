@@ -15,10 +15,10 @@
         
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 drop-shadow-2xl">
-                Nos Publications
+                Publications & Rapports
             </h1>
             <p class="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed drop-shadow-lg">
-                Découvrez nos publications : articles, rapports et autres documents issus de nos travaux de recherche et d'intervention
+                Découvrez nos publications scientifiques et nos rapports de recherche : articles, études et documents issus de nos travaux de recherche et d'intervention
             </p>
         </div>
     </section>
@@ -70,6 +70,13 @@
             @if(optional($publications)->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                     @foreach($publications as $item)
+                        @php
+                            // Déterminer le type d'élément (Publication ou Rapport)
+                            $isRapport = $item instanceof \App\Models\Rapport;
+                            $fileField = $isRapport ? $item->fichier : $item->fichier_pdf;
+                            $itemType = $isRapport ? 'Rapport' : 'Publication';
+                            $description = $isRapport ? $item->description : $item->resume;
+                        @endphp
                         <div class="group">
                             <div class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden border border-gray-100">
                                 <!-- PDF Preview -->
@@ -87,14 +94,26 @@
                                         };
                                     @endphp
 
+                                    <!-- Type Badge (Rapport/Publication) -->
+                                    <div class="absolute top-3 right-3 z-20 bg-white/90 text-gray-700 text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+                                        {{ $itemType }}
+                                    </div>
+
+                                    <!-- Category Badge -->
                                     <div class="absolute top-3 left-3 z-20 {{ $badgeClass }} text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
                                         {{ $categoryName }}
                                     </div>
 
-                                    <canvas id="pdf-canvas-{{$item->id}}" 
-                                            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
-                                            data-pdf-url="{{ asset('storage/'.$item->fichier_pdf) }}">
-                                    </canvas>
+                                    @if($fileField)
+                                        <canvas id="pdf-canvas-{{$item->id}}-{{ $isRapport ? 'rapport' : 'publication' }}" 
+                                                class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
+                                                data-pdf-url="{{ asset('storage/'.$fileField) }}">
+                                        </canvas>
+                                    @else
+                                        <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                            <i class="fas fa-file-alt text-gray-400 text-4xl"></i>
+                                        </div>
+                                    @endif
 
                                     <!-- Overlay -->
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -102,7 +121,7 @@
                                             <a href="{{ route('publication.show', ['slug' => $item->slug]) }}" 
                                                class="inline-flex items-center justify-center w-full bg-white/20 backdrop-blur-sm text-white font-medium py-2 px-4 rounded-lg border border-white/30 hover:bg-white/30 transition-all duration-200">
                                                 <i class="fas fa-eye mr-2"></i>
-                                                Voir la publication
+                                                {{ $isRapport ? 'Voir le rapport' : 'Voir la publication' }}
                                             </a>
                                         </div>
                                     </div>
@@ -123,9 +142,9 @@
                                         </a>
                                     </h3>
 
-                                    @if($item->description)
+                                    @if($description)
                                         <p class="text-gray-600 text-sm line-clamp-3 mb-4">
-                                            {{ Str::limit(strip_tags($item->description), 120) }}
+                                            {{ Str::limit(strip_tags($description), 120) }}
                                         </p>
                                     @endif
 
@@ -136,12 +155,12 @@
                                             <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform duration-200"></i>
                                         </a>
                                         
-                                        @if($item->fichier_pdf)
-                                            <a href="{{ asset('storage/'.$item->fichier_pdf) }}" 
+                                        @if($fileField)
+                                            <a href="{{ asset('storage/'.$fileField) }}" 
                                                target="_blank"
                                                class="inline-flex items-center text-gray-500 hover:text-iri-accent text-sm transition-colors duration-200">
                                                 <i class="fas fa-download mr-1"></i>
-                                                PDF
+                                                {{ $isRapport ? $item->getFileType() : 'PDF' }}
                                             </a>
                                         @endif
                                     </div>
@@ -157,14 +176,14 @@
                         <div class="bg-gradient-to-br from-iri-primary to-iri-secondary w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
                             <i class="fas fa-file-alt text-white text-3xl"></i>
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Aucune publication trouvée</h3>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Aucun document trouvé</h3>
                         <p class="text-gray-600 mb-6">
-                            Aucune publication ne correspond à vos critères de recherche.
+                            Aucune publication ou rapport ne correspond à vos critères de recherche.
                         </p>
                         <a href="{{ route('site.publications') }}" 
                            class="inline-flex items-center bg-gradient-to-r from-iri-primary to-iri-secondary text-white font-semibold py-3 px-6 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-200">
                             <i class="fas fa-refresh mr-2"></i>
-                            Voir toutes les publications
+                            Voir tous les documents
                         </a>
                     </div>
                 </div>

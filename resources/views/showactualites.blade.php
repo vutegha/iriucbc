@@ -6,7 +6,7 @@
     <div class="max-w-6xl mx-auto px-4 py-12">
         <h1 class="text-4xl md:text-5xl font-bold mb-4">Actualités</h1>
         <p class="text-blue-100 text-lg md:text-xl max-w-3xl">
-            Découvrez les dernières nouvelles et événements de l'IRI-UCBC
+            Découvrez les dernières nouvelles et événements du GRN-UCBC
         </p>
     </div>
 </div>

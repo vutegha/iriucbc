@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="Web site created using Laravel" />
 
-    <title>@yield('title', 'IRI - Institut de Recherche Intégré')</title>
+    <title>@yield('title', 'GRN - Centre de Gouvernance des Ressources Naturelles')</title>
 
     <!-- Favicon and Manifest -->
     <link rel="shortcut icon" href="{{ asset('assets/img/favicon.ico') }}" />
@@ -40,13 +40,15 @@
          @yield('content')
     </div>
     <!-- </div> -->
-</body>
-@yield('scripts')
-<!-- plugin for scrollbar  -->
-  <script src="{{ asset('assets/js/plugins/perfect-scrollbar.min.js') }}" async></script>
-  <!-- main script file  -->
-     <script async defer src="https://buttons.github.io/buttons.js"></script>
-  <script src="{{ asset('assets/js/argon-dashboard-tailwind.js?v=1.0.1') }}" async></script>
-  <script src="../assets/js/soft-ui-dashboard-tailwind.js?v=1.0.5" async></script>
+
+    <!-- plugin for scrollbar  -->
+    <script src="{{ asset('assets/js/plugins/perfect-scrollbar.min.js') }}" async></script>
+    <!-- main script file  -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <script src="{{ asset('assets/js/argon-dashboard-tailwind.js?v=1.0.1') }}" async></script>
+    <script src="../assets/js/soft-ui-dashboard-tailwind.js?v=1.0.5" async></script>
     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    
+    @yield('scripts')
+</body>
 </html>

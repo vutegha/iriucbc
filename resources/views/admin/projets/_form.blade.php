@@ -48,18 +48,47 @@
                             </div>
                         </div>
                         <div class="ml-4 flex-1">
-                            <h3 class="text-red-800 font-semibold text-lg">Erreurs détectées</h3>
-                            <p class="text-red-700 text-sm mt-1 mb-3">Veuillez corriger les erreurs suivantes :</p>
-                            <ul class="space-y-1 bg-white/60 rounded-lg p-3">
-                                @foreach ($errors->all() as $error)
-                                    <li class="flex items-start text-sm text-red-700">
-                                        <svg class="h-3 w-3 text-red-500 mt-1 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 8 8">
-                                            <circle cx="4" cy="4" r="3"/>
-                                        </svg>
-                                        {{ $error }}
-                                    </li>
+                            <h3 class="text-red-800 font-semibold text-lg">{{ $errors->count() }} erreur(s) détectée(s)</h3>
+                            <p class="text-red-700 text-sm mt-1 mb-3">Veuillez corriger les champs suivants :</p>
+                            <div class="space-y-2 bg-white/60 rounded-lg p-3">
+                                @php
+                                    $fieldLabels = [
+                                        'nom' => 'Nom du projet',
+                                        'description' => 'Description',
+                                        'resume' => 'Résumé',
+                                        'date_debut' => 'Date de début',
+                                        'date_fin' => 'Date de fin',
+                                        'service_id' => 'Service responsable',
+                                        'etat' => 'État du projet',
+                                        'budget' => 'Budget',
+                                        'image' => 'Image',
+                                        'beneficiaires_hommes' => 'Bénéficiaires hommes',
+                                        'beneficiaires_femmes' => 'Bénéficiaires femmes',
+                                        'beneficiaires_enfants' => 'Bénéficiaires enfants',
+                                        'beneficiaires_total' => 'Total bénéficiaires'
+                                    ];
+                                @endphp
+                                @foreach ($errors->keys() as $field)
+                                    @if(isset($fieldLabels[$field]))
+                                        <div class="flex items-start p-2 bg-white/80 rounded-md border-l-4 border-red-400">
+                                            <svg class="h-4 w-4 text-red-500 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 8 8">
+                                                <circle cx="4" cy="4" r="3"/>
+                                            </svg>
+                                            <div>
+                                                <span class="font-medium text-red-800">{{ $fieldLabels[$field] }} :</span>
+                                                <span class="text-red-700 text-sm">{{ $errors->first($field) }}</span>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="flex items-start p-2 bg-white/80 rounded-md border-l-4 border-red-400">
+                                            <svg class="h-4 w-4 text-red-500 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 8 8">
+                                                <circle cx="4" cy="4" r="3"/>
+                                            </svg>
+                                            <span class="text-red-700 text-sm">{{ $errors->first($field) }}</span>
+                                        </div>
+                                    @endif
                                 @endforeach
-                            </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -85,16 +114,153 @@
             </div>
         @endif
 
+        @if(session('error'))
+            <div class="mb-6">
+                @php
+                    $errorMessage = session('error');
+                    $errorType = 'system'; // Par défaut
+                    $errorTitle = 'Erreur système';
+                    $iconColor = 'text-orange-600';
+                    $bgColor = 'bg-orange-100';
+                    
+                    // Analyser le type d'erreur selon le contenu du message
+                    if (Str::contains($errorMessage, ['validation', 'champ', 'saisie', 'obligatoire', 'format'])) {
+                        $errorType = 'validation';
+                        $errorTitle = 'Erreur de saisie';
+                        $iconColor = 'text-red-600';
+                        $bgColor = 'bg-red-100';
+                    } elseif (Str::contains($errorMessage, ['permission', 'accès', 'autorisé', 'unauthorized'])) {
+                        $errorType = 'permission';
+                        $errorTitle = 'Accès refusé';
+                        $iconColor = 'text-yellow-600';
+                        $bgColor = 'bg-yellow-100';
+                    } elseif (Str::contains($errorMessage, ['stockage', 'espace', 'disk', 'storage', 'fichier'])) {
+                        $errorType = 'storage';
+                        $errorTitle = 'Problème de stockage';
+                        $iconColor = 'text-purple-600';
+                        $bgColor = 'bg-purple-100';
+                    } elseif (Str::contains($errorMessage, ['serveur', 'timeout', 'memory', 'server', 'difficultés'])) {
+                        $errorType = 'server';
+                        $errorTitle = 'Erreur serveur';
+                        $iconColor = 'text-red-600';
+                        $bgColor = 'bg-red-100';
+                    } elseif (Str::contains($errorMessage, ['connexion', 'réseau', 'network', 'connection'])) {
+                        $errorType = 'network';
+                        $errorTitle = 'Problème de connexion';
+                        $iconColor = 'text-blue-600';
+                        $bgColor = 'bg-blue-100';
+                    } elseif (Str::contains($errorMessage, ['session', 'token', 'csrf', 'expiré'])) {
+                        $errorType = 'session';
+                        $errorTitle = 'Session expirée';
+                        $iconColor = 'text-indigo-600';
+                        $bgColor = 'bg-indigo-100';
+                    } elseif (Str::contains($errorMessage, ['base de données', 'database', 'db', 'sql'])) {
+                        $errorType = 'database';
+                        $errorTitle = 'Erreur de base de données';
+                        $iconColor = 'text-red-600';
+                        $bgColor = 'bg-red-100';
+                    }
+                @endphp
+                
+                <div class="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-2xl p-6 shadow-lg">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-10 h-10 {{ $bgColor }} rounded-xl flex items-center justify-center">
+                                @if($errorType === 'validation')
+                                    <!-- Icône pour erreur de validation -->
+                                    <svg class="h-5 w-5 {{ $iconColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                @elseif($errorType === 'permission')
+                                    <!-- Icône pour erreur de permission -->
+                                    <svg class="h-5 w-5 {{ $iconColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                    </svg>
+                                @elseif($errorType === 'storage')
+                                    <!-- Icône pour erreur de stockage -->
+                                    <svg class="h-5 w-5 {{ $iconColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+                                    </svg>
+                                @elseif($errorType === 'server')
+                                    <!-- Icône pour erreur serveur -->
+                                    <svg class="h-5 w-5 {{ $iconColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path>
+                                    </svg>
+                                @elseif($errorType === 'network')
+                                    <!-- Icône pour erreur réseau -->
+                                    <svg class="h-5 w-5 {{ $iconColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path>
+                                    </svg>
+                                @elseif($errorType === 'session')
+                                    <!-- Icône pour session expirée -->
+                                    <svg class="h-5 w-5 {{ $iconColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                @elseif($errorType === 'database')
+                                    <!-- Icône pour erreur de base de données -->
+                                    <svg class="h-5 w-5 {{ $iconColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+                                    </svg>
+                                @else
+                                    <!-- Icône par défaut pour erreur système -->
+                                    <svg class="h-5 w-5 {{ $iconColor }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-orange-800 font-semibold">{{ $errorTitle }}</h3>
+                            <p class="text-orange-700 text-sm mt-1">{{ $errorMessage }}</p>
+                            
+                            @if($errorType === 'session')
+                                <p class="text-orange-600 text-xs mt-2">
+                                    💡 <strong>Conseil :</strong> Rechargez la page et réessayez.
+                                </p>
+                            @elseif($errorType === 'validation')
+                                <p class="text-red-600 text-xs mt-2">
+                                    💡 <strong>Conseil :</strong> Vérifiez les champs marqués en rouge ci-dessous.
+                                </p>
+                            @elseif($errorType === 'server')
+                                <p class="text-red-600 text-xs mt-2">
+                                    💡 <strong>Conseil :</strong> Attendez quelques minutes et réessayez.
+                                </p>
+                            @elseif($errorType === 'storage')
+                                <p class="text-purple-600 text-xs mt-2">
+                                    💡 <strong>Conseil :</strong> Contactez l'administrateur système.
+                                </p>
+                            @elseif($errorType === 'permission')
+                                <p class="text-yellow-600 text-xs mt-2">
+                                    💡 <strong>Conseil :</strong> Contactez un administrateur pour obtenir les permissions.
+                                </p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Contenu principal -->
         <div class="w-full">
             
             <!-- Formulaire principal -->
             <div class="w-full">
-                <form id="projet-form" action="{{ $formAction }}" method="POST" enctype="multipart/form-data" class="space-y-8">
+                <form id="projet-form" action="{{ $formAction }}" method="POST" enctype="multipart/form-data" class="space-y-8" data-form="project">
                     @csrf
                     @if(isset($projet))
                         @method('PUT')
                     @endif
+
+                    <!-- Honeypot pour détecter les bots (invisible et avec attributs renforcés) -->
+                    <input type="text" 
+                           name="website" 
+                           style="display:none !important; position:absolute !important; left:-9999px !important; visibility:hidden !important;" 
+                           autocomplete="off" 
+                           tabindex="-1" 
+                           readonly
+                           aria-hidden="true"
+                           data-lpignore="true"
+                           data-form-type="other">
 
                     <!-- Section 1: Informations générales -->
                     <div class="bg-white rounded-2xl shadow-xl border border-white/20 overflow-hidden">
@@ -150,12 +316,16 @@
                                 </label>
                                 <textarea name="resume" 
                                           id="resume"
-                                          rows="3"
+                                          rows="4"
                                           value="{{ old('resume', $projet->resume ?? '') }}"
                                           class="w-full px-4 py-3 text-base border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-iri-primary/20 focus:border-iri-primary transition-all duration-300 bg-white placeholder-gray-400 @error('resume') border-red-500 bg-red-50 @enderror"
-                                          placeholder="Résumé court du projet (1-2 phrases maximum)"
-                                          maxlength="255">{{ old('resume', $projet->resume ?? '') }}</textarea>
-                                <p class="text-xs text-gray-500 mt-1">Maximum 255 caractères</p>
+                                          placeholder="Résumé du projet - Décrivez en quelques phrases les objectifs principaux et l'impact attendu de votre projet...">{{ old('resume', $projet->resume ?? '') }}</textarea>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <svg class="w-3 h-3 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Ce résumé sera affiché dans les listes de projets et les aperçus. Pas de limite de caractères.
+                                </p>
                                 @error('resume')
                                     <div class="mt-2 flex items-center text-sm text-red-600">
                                         <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -291,14 +461,17 @@
                                         </svg>
                                         Budget (USD)
                                     </label>
-                                    <input type="number" 
-                                           name="budget" 
-                                           id="budget"
-                                           value="{{ old('budget', $projet->budget ?? '') }}"
-                                           class="w-full px-4 py-3 text-base border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-iri-primary/20 focus:border-iri-primary transition-all duration-300 bg-white @error('budget') border-red-500 bg-red-50 @enderror"
-                                           placeholder="0"
-                                           min="0"
-                                           step="1000">
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 sm:text-sm font-medium">$</span>
+                                        </div>
+                                        <input type="number" 
+                                               name="budget" 
+                                               id="budget"
+                                               value="{{ old('budget', $projet->budget ?? '') }}"
+                                               class="w-full pl-8 pr-4 py-3 text-base border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-iri-primary/20 focus:border-iri-primary transition-all duration-300 bg-white @error('budget') border-red-500 bg-red-50 @enderror"
+                                               placeholder="0">
+                                    </div>
                                     @error('budget')
                                         <div class="mt-2 flex items-center text-sm text-red-600">
                                             <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -417,16 +590,51 @@
                                 
                                 <textarea name="description" 
                                           id="description" 
-                                          class="wysiwyg w-full px-4 py-4 text-base border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-iri-primary/20 focus:border-iri-primary transition-all duration-300 bg-white placeholder-gray-400 @error('description') border-red-500 bg-red-50 @enderror"
-                                          rows="12"
-                                          placeholder="Décrivez en détail votre projet :
-• Les objectifs principaux et secondaires
-• La méthodologie et les activités prévues  
-• Le public cible et les bénéficiaires
-• Les résultats attendus et indicateurs de succès
-• Le contexte et la justification du projet
-• Les partenariats et collaborations..."
+                                          class="wysiwyg w-full px-4 py-4 text-base border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-iri-primary/20 focus:border-iri-primary transition-all duration-300 bg-white placeholder-gray-400 min-h-[400px] @error('description') border-red-500 bg-red-50 @enderror"
+                                          style="min-height: 400px;"
+                                          rows="16"
                                           required>{{ old('description', $projet->description ?? '') }}</textarea>
+                                
+                                <!-- Texte d'orientation formaté -->
+                                <div class="mt-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl guide-redaction">
+                                    <div class="flex items-start space-x-3">
+                                        <div class="flex-shrink-0 mt-1">
+                                            <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h4 class="text-sm font-semibold text-blue-800 mb-2">💡 Guide de rédaction de la description</h4>
+                                            <div class="text-sm text-blue-700 space-y-2">
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                    <div>
+                                                        <div class="font-medium mb-1">📋 Structure recommandée :</div>
+                                                        <ul class="text-xs space-y-1 ml-2">
+                                                            <li>• <strong>Contexte</strong> et justification</li>
+                                                            <li>• <strong>Objectifs</strong> principaux et secondaires</li>
+                                                            <li>• <strong>Public cible</strong> et bénéficiaires</li>
+                                                            <li>• <strong>Méthodologie</strong> et activités</li>
+                                                        </ul>
+                                                    </div>
+                                                    <div>
+                                                        <div class="font-medium mb-1">🎯 Éléments clés :</div>
+                                                        <ul class="text-xs space-y-1 ml-2">
+                                                            <li>• <strong>Résultats attendus</strong> et indicateurs</li>
+                                                            <li>• <strong>Partenariats</strong> et collaborations</li>
+                                                            <li>• <strong>Calendrier</strong> et étapes</li>
+                                                            <li>• <strong>Impact</strong> et durabilité</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-3 p-2 bg-white/60 rounded-lg">
+                                                    <div class="text-xs text-blue-600">
+                                                        <strong>✨ Conseils :</strong> Utilisez des <em>listes à puces</em>, des <strong>mots clés en gras</strong>, et structurez avec des <u>sous-titres</u> pour une lecture optimale.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 
                                 @error('description')
                                     <div class="flex items-center text-sm text-red-600 bg-red-50 p-3 rounded-lg mt-2">
@@ -451,26 +659,60 @@
                                             <input type="file" 
                                                    id="image"
                                                    name="image" 
-                                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive focus:border-transparent transition-all duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-olive/10 file:text-olive hover:file:bg-olive/20"
-                                                   accept="image/*"
-                                                   onchange="previewImageProjet(this)">
+                                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-iri-primary/20 focus:border-iri-primary transition-all duration-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-iri-primary/10 file:text-iri-primary hover:file:bg-iri-primary/20 @error('image') border-red-500 bg-red-50 @enderror"
+                                                   accept=".jpg,.jpeg,.png,.gif,.webp,.svg"
+                                                   onchange="previewImageProjet(this)"
+                                                   data-max-size="10485760">
+                                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                </svg>
+                                            </div>
                                         </div>
-                                        <p class="mt-2 text-xs text-gray-500">
-                                            Formats acceptés: JPG, PNG, GIF (max 5MB)
-                                        </p>
+                                        <div class="mt-2 space-y-1">
+                                            <p class="text-xs text-gray-500">
+                                                <strong>Formats acceptés :</strong> JPEG, JPG, PNG, GIF, WebP, SVG
+                                            </p>
+                                            <p class="text-xs text-gray-500">
+                                                <strong>Taille maximale :</strong> 10 MB
+                                            </p>
+                                            <p class="text-xs text-gray-500">
+                                                <strong>Recommandations :</strong> Images haute résolution (min. 800x600px) pour une meilleure qualité d'affichage
+                                            </p>
+                                        </div>
+                                        <div id="file-error-message" class="hidden mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                            <div class="flex items-center text-sm text-red-700">
+                                                <svg class="h-4 w-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                                </svg>
+                                                <span id="file-error-text">Erreur de fichier</span>
+                                            </div>
+                                        </div>
                                     </div>
                                     
                                     <!-- Aperçu de l'image -->
                                     <div class="flex-shrink-0">
                                         @if(isset($projet) && $projet->image && Storage::disk('public')->exists($projet->image))
-                                            <div class="relative group">
-                                                <img id="image-preview-projet" 
-                                                     src="{{ asset('storage/' . $projet->image) }}" 
-                                                     class="w-24 h-24 object-cover rounded-lg border-2 border-gray-200 shadow-sm" 
-                                                     alt="Aperçu"
-                                                     loading="lazy">
-                                                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
-                                                    <i class="fas fa-eye text-white text-lg"></i>
+                                            <div class="space-y-2">
+                                                <div class="relative group">
+                                                    <img id="image-preview-projet" 
+                                                         src="{{ asset('storage/' . $projet->image) }}" 
+                                                         class="w-24 h-24 object-cover rounded-lg border-2 border-gray-200 shadow-sm" 
+                                                         alt="Aperçu"
+                                                         loading="lazy">
+                                                    <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
+                                                        <i class="fas fa-eye text-white text-lg"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center">
+                                                    <input type="checkbox" 
+                                                           id="remove_image" 
+                                                           name="remove_image" 
+                                                           value="1"
+                                                           class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                                                    <label for="remove_image" class="ml-2 text-xs text-red-600 font-medium">
+                                                        Supprimer l'image
+                                                    </label>
                                                 </div>
                                             </div>
                                         @else
@@ -563,6 +805,57 @@ body.modal-open {
     width: 100% !important;
 }
 
+/* Styles pour CKEditor - Hauteur minimale 400px */
+.ck-editor {
+    min-height: 450px !important; /* 400px pour le contenu + 50px pour la toolbar */
+}
+
+.ck-editor__editable {
+    min-height: 400px !important;
+    max-height: none !important;
+    height: auto !important;
+}
+
+.ck.ck-editor__main > .ck-editor__editable {
+    min-height: 400px !important;
+    padding: 1rem !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+}
+
+/* Style pour le contenu d'aide dans CKEditor */
+.ck-content h3 {
+    color: #1e40af;
+    border-bottom: 2px solid #3b82f6;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.ck-content h4 {
+    color: #1f2937;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.ck-content em {
+    color: #6b7280;
+    font-style: italic;
+}
+
+.ck-content blockquote {
+    background: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 0.5rem;
+}
+
+.ck-content blockquote p {
+    margin: 0;
+    color: #1e40af;
+}
+
 /* Styles pour les boutons personnalisés CKEditor */
 .ck-dropdown__panel {
     position: absolute;
@@ -612,6 +905,22 @@ body.modal-open {
     padding: 2px 4px;
     border-radius: 2px;
 }
+
+/* Animation pour le guide de rédaction */
+.guide-redaction {
+    animation: slideInFromBottom 0.5s ease-out;
+}
+
+@keyframes slideInFromBottom {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 </style>
 
 <!-- Modale Médiathèque -->
@@ -628,10 +937,15 @@ body.modal-open {
         </div>
         <div class="p-6">
             <!-- Upload d'image -->
-            <form id="mediaUploadForm" action="{{ route('admin.media.upload') }}" method="POST" enctype="multipart/form-data" class="mb-6 flex items-center space-x-4">
+            <form id="mediaUploadForm" action="{{ route('admin.media.upload') }}" method="POST" enctype="multipart/form-data" class="mb-6">
                 @csrf
-                <input type="file" name="image" id="mediaUploadInput" accept="image/*" class="border rounded p-2">
-                <button type="submit" class="px-4 py-2 bg-iri-primary text-white rounded hover:bg-iri-secondary transition">Uploader</button>
+                <div class="flex items-center space-x-4">
+                    <input type="file" name="image" id="mediaUploadInput" accept="image/*" class="border rounded p-2 flex-1">
+                    <button type="submit" class="px-4 py-2 bg-iri-primary text-white rounded hover:bg-iri-secondary transition">Uploader</button>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">
+                    <span class="text-green-600">✓ Compression automatique</span> - Les images sont optimisées automatiquement
+                </p>
             </form>
             <!-- Liste des images existantes -->
             <div id="mediaList" class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -647,6 +961,9 @@ body.modal-open {
 <!-- CKEditor 5 avec build étendu -->
 <script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
 <script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/translations/fr.js"></script>
+
+<!-- Script de compression d'images -->
+<script src="{{ asset('assets/js/image-compressor.js') }}"></script>
 
 <script>
 let editorInstance = null;
@@ -675,10 +992,32 @@ function initializeCKEditor() {
             },
             table: {
                 contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+            },
+            // Configuration de la hauteur de l'éditeur
+            ui: {
+                height: 400
             }
         })
         .then(editor => {
             editorInstance = editor;
+            // Rendre l'éditeur accessible globalement pour la validation
+            window.descriptionEditor = editor;
+            
+            // Forcer la hauteur minimale de l'éditeur
+            const editorElement = editor.ui.view.editable.element;
+            if (editorElement) {
+                editorElement.style.minHeight = '400px';
+                editorElement.style.height = 'auto';
+            }
+            
+            // Style CSS pour l'éditeur
+            const editorContainer = editor.ui.view.element;
+            if (editorContainer) {
+                editorContainer.style.minHeight = '450px'; // 400px + toolbar
+            }
+            
+            // Ajouter du contenu d'aide si l'éditeur est vide - DÉSACTIVÉ
+            // Le contenu par défaut a été supprimé selon la demande utilisateur
             
             // Ajouter des boutons personnalisés à la toolbar
             addCustomToolbarButtons(editor);
@@ -689,13 +1028,18 @@ function initializeCKEditor() {
             // Synchronisation avec le textarea
             editor.model.document.on('change:data', () => {
                 textElement.value = editor.getData();
+                // Déclencher un événement pour notifier les validateurs
+                textElement.dispatchEvent(new Event('input', { bubbles: true }));
             });
 
             // Charger le contenu existant en mode édition
             const existingContent = textElement.value;
-            if (existingContent) {
+            if (existingContent && existingContent.trim() !== '') {
                 editor.setData(existingContent);
             }
+            
+            // Debug : Confirmer l'initialisation
+            console.log('[DEBUG] CKEditor initialisé et accessible via window.descriptionEditor');
         })
         .catch(error => {
             console.error('Erreur CKEditor:', error);
@@ -849,6 +1193,10 @@ function addMediaLibraryButton(editor) {
 // Ouvre la modale médiathèque
 function openMediaModal(callback) {
     console.log('=== DÉBUT openMediaModal ===');
+    
+    // Sauvegarder le callback globalement pour l'upload
+    window.currentMediaCallback = callback;
+    
     const modal = document.getElementById('mediaModal');
     if (!modal) {
         console.error('Modal mediaModal non trouvé !');
@@ -878,7 +1226,6 @@ function openMediaModal(callback) {
     document.body.style.top = `-${scrollY}px`;
     
     modal.classList.remove('hidden');
-    window._mediaInsertCallback = callback;
     
     // Empêcher la fermeture automatique du modal
     if (window.event) {
@@ -887,7 +1234,7 @@ function openMediaModal(callback) {
     }
     
     console.log('Chargement de la liste des médias...');
-    loadMediaList();
+    loadMediaList(callback);
     console.log('=== FIN openMediaModal ===');
 }
 
@@ -912,13 +1259,11 @@ function closeMediaModal() {
         if (scrollY) {
             window.scrollTo(0, parseInt(scrollY || '0') * -1);
         }
-        
-        window._mediaInsertCallback = null;
     }
 }
 
 // Charger la liste des images depuis le backend
-function loadMediaList() {
+function loadMediaList(callback) {
     console.log('Chargement de la liste des médias...');
     fetch("{{ route('admin.media.list') }}")
         .then(res => {
@@ -954,8 +1299,8 @@ function loadMediaList() {
                 div.onclick = function(e) {
                     e.stopPropagation();
                     console.log('Image sélectionnée:', media.url);
-                    if(window._mediaInsertCallback) {
-                        window._mediaInsertCallback(media.url);
+                    if(callback) {
+                        callback(media.url);
                     }
                     closeMediaModal();
                 };
@@ -966,6 +1311,13 @@ function loadMediaList() {
             console.error('Erreur lors du chargement des médias:', error);
             const mediaList = document.getElementById('mediaList');
             mediaList.innerHTML = '<p class="text-red-500 text-center col-span-full">Erreur lors du chargement</p>';
+            
+            // Bouton pour réessayer avec le callback
+            const retryBtn = document.createElement('button');
+            retryBtn.textContent = 'Réessayer';
+            retryBtn.className = 'mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600';
+            retryBtn.onclick = () => loadMediaList(callback);
+            mediaList.appendChild(retryBtn);
         });
 }
 
@@ -973,44 +1325,87 @@ function loadMediaList() {
 document.addEventListener('DOMContentLoaded', function() {
     const uploadForm = document.getElementById('mediaUploadForm');
     if(uploadForm) {
-        uploadForm.addEventListener('submit', function(e) {
+        uploadForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             e.stopPropagation();
             
             console.log('Upload en cours...');
-            const formData = new FormData(uploadForm);
+            const fileInput = uploadForm.querySelector('input[name="image"]');
+            const originalFile = fileInput.files[0];
+            
+            if (!originalFile) {
+                alert('Veuillez sélectionner un fichier');
+                return;
+            }
+            
             const submitButton = uploadForm.querySelector('button[type="submit"]');
             const originalText = submitButton.textContent;
             
             // Désactiver le bouton pendant l'upload
             submitButton.disabled = true;
-            submitButton.textContent = 'Upload...';
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Compression...';
             
-            fetch(uploadForm.action, {
-                method: 'POST',
-                headers: { 
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            })
-            .then(res => {
-                console.log('Réponse upload:', res.status);
-                if (!res.ok) {
-                    throw new Error('Erreur upload: ' + res.status);
+            try {
+                // Compresser l'image si c'est une image
+                let fileToUpload = originalFile;
+                if (originalFile.type.startsWith('image/')) {
+                    console.log('Compression de l\'image en cours...');
+                    fileToUpload = await defaultCompressor.compressImage(originalFile);
+                    
+                    // Afficher les informations de compression
+                    const info = defaultCompressor.getCompressionInfo(originalFile, fileToUpload);
+                    console.log('Compression terminée:', {
+                        originalSize: formatFileSize(originalFile.size),
+                        compressedSize: formatFileSize(fileToUpload.size),
+                        compressionRatio: info.compressionRatio.toFixed(1) + '%'
+                    });
                 }
-                return res.json();
-            })
-            .then(data => {
+                
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Upload...';
+                
+                const formData = new FormData();
+                formData.append('image', fileToUpload);
+                formData.append('_token', '{{ csrf_token() }}');
+                
+                const response = await fetch(uploadForm.action, {
+                    method: 'POST',
+                    headers: { 
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+                
+                console.log('Réponse upload:', response.status);
+                if (!response.ok) {
+                    throw new Error('Erreur upload: ' + response.status);
+                }
+                
+                const data = await response.json();
                 console.log('Upload réussi:', data);
+                
                 if(data.success) {
-                    loadMediaList(); // Recharger la liste
+                    loadMediaList(window.currentMediaCallback); // Recharger la liste
                     uploadForm.reset(); // Vider le formulaire
                     
-                    // Afficher un message de succès
+                    // Afficher un message de succès avec informations de compression
                     const successMsg = document.createElement('div');
                     successMsg.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4';
-                    successMsg.textContent = data.message || 'Image uploadée avec succès';
+                    
+                    let message = data.message || 'Image uploadée avec succès';
+                    if (originalFile.type.startsWith('image/') && fileToUpload !== originalFile) {
+                        const info = defaultCompressor.getCompressionInfo(originalFile, fileToUpload);
+                        message += ` (Compressée: ${info.compressionRatio.toFixed(1)}% d'économie)`;
+                    }
+                    
+                    successMsg.innerHTML = `
+                        <div class="flex items-center">
+                            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            ${message}
+                        </div>
+                    `;
+                    
                     uploadForm.parentNode.insertBefore(successMsg, uploadForm);
                     
                     // Supprimer le message après 3 secondes
@@ -1018,23 +1413,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     throw new Error(data.message || 'Erreur lors de l\'upload');
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Erreur lors de l\'upload:', error);
                 // Afficher un message d'erreur
                 const errorMsg = document.createElement('div');
                 errorMsg.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
-                errorMsg.textContent = 'Erreur: ' + error.message;
+                errorMsg.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                        Erreur: ${error.message}
+                    </div>
+                `;
                 uploadForm.parentNode.insertBefore(errorMsg, uploadForm);
                 
                 // Supprimer le message après 5 secondes
                 setTimeout(() => errorMsg.remove(), 5000);
-            })
-            .finally(() => {
+            } finally {
                 // Réactiver le bouton
                 submitButton.disabled = false;
                 submitButton.textContent = originalText;
-            });
+            }
         });
     }
 
@@ -1068,22 +1468,281 @@ document.addEventListener('DOMContentLoaded', function() {
     // Calculer le total initial si les champs ont des valeurs
     calculateBeneficiariesTotal();
     
-    // Fonction d'aperçu d'image pour le projet
+    // Fonction d'aperçu d'image pour le projet avec validation
     window.previewImageProjet = function(input) {
         const preview = document.getElementById('image-preview-projet');
         const placeholder = document.getElementById('image-placeholder-projet');
+        const errorDiv = document.getElementById('file-error-message');
+        const errorText = document.getElementById('file-error-text');
+        
+        // Réinitialiser les erreurs
+        errorDiv.classList.add('hidden');
         
         if (input.files && input.files[0]) {
-            const reader = new FileReader();
+            const file = input.files[0];
             
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.classList.remove('hidden');
-                if (placeholder) placeholder.classList.add('hidden');
+            // Validation du type de fichier
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+            if (!allowedTypes.includes(file.type)) {
+                showFileError('Type de fichier non autorisé. Utilisez : JPEG, JPG, PNG, GIF, WebP ou SVG.');
+                input.value = '';
+                return;
             }
             
-            reader.readAsDataURL(input.files[0]);
+            // Validation de la taille (10MB = 10485760 bytes)
+            const maxSize = 10485760;
+            if (file.size > maxSize) {
+                showFileError(`Fichier trop volumineux (${(file.size / 1024 / 1024).toFixed(2)} MB). Taille maximale : 10 MB.`);
+                input.value = '';
+                return;
+            }
+            
+            // Validation des dimensions pour les images
+            const img = new Image();
+            img.onload = function() {
+                if (this.width < 400 || this.height < 300) {
+                    showFileError(`Image trop petite (${this.width}x${this.height}). Dimensions minimales : 400x300 pixels.`);
+                    input.value = '';
+                    return;
+                }
+                
+                // Si tout est OK, afficher l'aperçu
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    if (placeholder) placeholder.classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            };
+            
+            img.onerror = function() {
+                showFileError('Impossible de lire ce fichier image. Veuillez choisir un autre fichier.');
+                input.value = '';
+            };
+            
+            // Créer une URL temporaire pour vérifier les dimensions
+            img.src = URL.createObjectURL(file);
         }
+        
+        function showFileError(message) {
+            errorText.textContent = message;
+            errorDiv.classList.remove('hidden');
+            
+            // Supprimer le message d'erreur après 8 secondes
+            setTimeout(() => {
+                errorDiv.classList.add('hidden');
+            }, 8000);
+        }
+    }
+    
+    // Validation légère pour un champ spécifique (sans afficher les erreurs)
+    function validateFieldSilently(field) {
+        if (!field) return true;
+        
+        const fieldId = field.id;
+        const value = field.value.trim();
+        
+        switch(fieldId) {
+            case 'nom':
+                return value.length >= 3;
+            case 'description':
+                return value.length >= 50;
+            case 'service_id':
+                return value !== '';
+            case 'date_debut':
+                return value !== '';
+            default:
+                return true;
+        }
+    }
+    
+    // Validation complète du formulaire (avec affichage des erreurs)
+    function validateForm(showErrors = false) {
+        let isValid = true;
+        const errors = [];
+        
+        // Validation du nom du projet
+        const nom = document.getElementById('nom');
+        if (!nom || nom.value.trim().length < 3) {
+            errors.push('Le nom du projet doit contenir au moins 3 caractères.');
+            if (showErrors) markFieldAsError(nom);
+            isValid = false;
+        } else {
+            if (showErrors) clearFieldError(nom);
+        }
+        
+        // Validation de la description
+        const description = document.getElementById('description');
+        if (!description || description.value.trim().length < 50) {
+            errors.push('La description doit contenir au moins 50 caractères.');
+            if (showErrors) markFieldAsError(description);
+            isValid = false;
+        } else {
+            if (showErrors) clearFieldError(description);
+        }
+        
+        // Validation du service
+        const service = document.getElementById('service_id');
+        if (!service || !service.value) {
+            errors.push('Veuillez sélectionner un service responsable.');
+            if (showErrors) markFieldAsError(service);
+            isValid = false;
+        } else {
+            if (showErrors) clearFieldError(service);
+        }
+        
+        // Validation de la date de début
+        const dateDebut = document.getElementById('date_debut');
+        if (!dateDebut || !dateDebut.value) {
+            errors.push('La date de début est obligatoire.');
+            if (showErrors) markFieldAsError(dateDebut);
+            isValid = false;
+        } else {
+            if (showErrors) clearFieldError(dateDebut);
+        }
+        
+        // Validation de la cohérence des dates
+        const dateFin = document.getElementById('date_fin');
+        if (dateDebut && dateFin && dateDebut.value && dateFin.value) {
+            if (new Date(dateFin.value) < new Date(dateDebut.value)) {
+                errors.push('La date de fin ne peut pas être antérieure à la date de début.');
+                if (showErrors) markFieldAsError(dateFin);
+                isValid = false;
+            } else {
+                if (showErrors) clearFieldError(dateFin);
+            }
+        }
+        
+        // Validation du budget
+        const budget = document.getElementById('budget');
+        if (budget && budget.value && parseFloat(budget.value) < 0) {
+            errors.push('Le budget ne peut pas être négatif.');
+            markFieldAsError(budget);
+            isValid = false;
+        } else if (budget) {
+            clearFieldError(budget);
+        }
+        
+        // Validation des bénéficiaires
+        const benefFields = ['beneficiaires_hommes', 'beneficiaires_femmes', 'beneficiaires_enfants'];
+        benefFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field && field.value && parseInt(field.value) < 0) {
+                errors.push('Le nombre de bénéficiaires ne peut pas être négatif.');
+                markFieldAsError(field);
+                isValid = false;
+            } else if (field) {
+                clearFieldError(field);
+            }
+        });
+        
+        // Afficher les erreurs si il y en a
+        if (!isValid) {
+            showValidationErrors(errors);
+        } else {
+            hideValidationErrors();
+        }
+        
+        return isValid;
+    }
+    
+    function markFieldAsError(field) {
+        if (field) {
+            field.classList.add('border-red-500', 'bg-red-50');
+            field.classList.remove('border-gray-200', 'border-iri-primary');
+        }
+    }
+    
+    function clearFieldError(field) {
+        if (field) {
+            field.classList.remove('border-red-500', 'bg-red-50');
+            field.classList.add('border-gray-200');
+        }
+    }
+    
+    function showValidationErrors(errors) {
+        // Créer ou mettre à jour la div d'erreurs
+        let errorDiv = document.getElementById('validation-errors');
+        if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.id = 'validation-errors';
+            errorDiv.className = 'mb-6 bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 rounded-2xl p-6 shadow-lg';
+            
+            const form = document.getElementById('projet-form');
+            form.parentNode.insertBefore(errorDiv, form);
+        }
+        
+        errorDiv.innerHTML = `
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
+                        <svg class="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="ml-4 flex-1">
+                    <h3 class="text-red-800 font-semibold text-lg">Erreurs de validation</h3>
+                    <p class="text-red-700 text-sm mt-1 mb-3">Veuillez corriger les erreurs suivantes :</p>
+                    <ul class="space-y-1 bg-white/60 rounded-lg p-3">
+                        ${errors.map(error => `
+                            <li class="flex items-start text-sm text-red-700">
+                                <svg class="h-3 w-3 text-red-500 mt-1 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 8 8">
+                                    <circle cx="4" cy="4" r="3"/>
+                                </svg>
+                                ${error}
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            </div>
+        `;
+        
+        // Scroll vers les erreurs
+        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    function hideValidationErrors() {
+        const errorDiv = document.getElementById('validation-errors');
+        if (errorDiv) {
+            errorDiv.remove();
+        }
+    }
+    
+    // Attacher la validation au formulaire
+    const form = document.getElementById('projet-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!validateForm(true)) { // Afficher les erreurs lors de la soumission
+                e.preventDefault();
+                return false;
+            }
+        });
+        
+        // Validation en temps réel pour certains champs (seulement après interaction)
+        ['nom', 'description', 'service_id', 'date_debut'].forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                let hasUserInteracted = false;
+                
+                // Marquer l'interaction utilisateur
+                field.addEventListener('input', function() {
+                    hasUserInteracted = true;
+                });
+                
+                field.addEventListener('change', function() {
+                    hasUserInteracted = true;
+                });
+                
+                // Validation seulement après interaction (sans afficher les erreurs)
+                field.addEventListener('blur', function() {
+                    if (hasUserInteracted && field.value.trim() !== '') {
+                        validateFieldSilently(field);
+                    }
+                });
+            }
+        });
     };
     
     // Gestionnaire pour empêcher la fermeture du modal par clic extérieur
@@ -1104,6 +1763,80 @@ document.addEventListener('DOMContentLoaded', function() {
             modalContent.addEventListener('click', function(e) {
                 console.log('Clic à l\'intérieur du modal - propagation stoppée');
                 e.stopPropagation();
+            });
+        }
+    }
+});
+</script>
+
+<!-- Script de validation avancée -->
+<script src="{{ asset('assets/js/project-form-validator.js') }}"></script>
+
+<script>
+// Configuration spécifique pour ce formulaire
+document.addEventListener('DOMContentLoaded', function() {
+    // Marquer le formulaire pour la validation
+    const form = document.querySelector('form[method="POST"]');
+    if (form) {
+        form.setAttribute('data-form', 'project');
+        
+        console.log('✅ Formulaire de projet configuré pour validation avancée');
+        
+        // Ajouter un indicateur de progression
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) {
+            const originalText = submitButton.innerHTML;
+            
+            form.addEventListener('submit', function() {
+                if (!form.querySelector('.border-red-500')) {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enregistrement en cours...';
+                    
+                    // Réactiver le bouton après 10 secondes en cas de problème
+                    setTimeout(() => {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = originalText;
+                    }, 10000);
+                }
+            });
+        }
+        
+        // Améliorations pour la gestion des erreurs
+        const errorSections = document.querySelectorAll('.border-red-500');
+        if (errorSections.length > 0) {
+            // Scroll vers la première erreur
+            errorSections[0].scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+            
+            // Ajouter des effets visuels aux champs en erreur
+            errorSections.forEach(field => {
+                field.style.animation = 'shake 0.5s ease-in-out';
+                
+                // Retirer l'animation après
+                setTimeout(() => {
+                    field.style.animation = '';
+                }, 500);
+            });
+        }
+        
+        // Style pour l'animation shake
+        if (!document.querySelector('#shake-style')) {
+            const shakeStyle = document.createElement('style');
+            shakeStyle.id = 'shake-style';
+            shakeStyle.textContent = `
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+                    20%, 40%, 60%, 80% { transform: translateX(2px); }
+                }
+            `;
+            document.head.appendChild(shakeStyle);
+        }
+                        submitButton.innerHTML = originalText;
+                    }, 10000);
+                }
             });
         }
     }
