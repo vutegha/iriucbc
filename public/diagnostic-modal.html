@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Publication Modal</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test-section { border: 1px solid #ddd; margin: 20px 0; padding: 15px; border-radius: 8px; }
+        .success { background-color: #e8f5e8; border-color: #4caf50; }
+        .error { background-color: #ffebee; border-color: #f44336; }
+        .warning { background-color: #fff3e0; border-color: #ff9800; }
+        .btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background-color: #2196f3; color: white; }
+        .btn-secondary { background-color: #757575; color: white; }
+        #output { background: #f5f5f5; padding: 10px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+        
+        /* Toast minimal pour test */
+        #resumeToast {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: white;
+            border: 2px solid #2196f3;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 300px;
+            z-index: 1000;
+            display: none;
+        }
+        
+        #resumeToast.hidden { display: none !important; }
+        
+        .toast-header { margin-bottom: 10px; font-weight: bold; }
+        .close-btn { float: right; cursor: pointer; background: #f44336; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Diagnostic Publication Modal</h1>
+    
+    <div class="test-section">
+        <h3>1. Tests de Base</h3>
+        <button class="btn btn-primary" onclick="testScriptLoaded()">Vérifier Script Chargé</button>
+        <button class="btn btn-primary" onclick="testDOMElements()">Vérifier Éléments DOM</button>
+        <button class="btn btn-primary" onclick="testEventListeners()">Tester Event Listeners</button>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Tests Fonctionnels</h3>
+        <button class="btn btn-primary" data-show-toast>🧪 Test Data-Show-Toast</button>
+        <button class="btn btn-secondary" onclick="testDirectFunction()">🔧 Test Direct Function</button>
+        <button class="btn btn-secondary" onclick="toggleToastManual()">⚙️ Toggle Manuel</button>
+        <button class="btn btn-secondary" onclick="testAutoShow()">⏰ Test Auto-Show</button>
+        <button class="btn btn-secondary" onclick="resetViewed()">🔄 Reset Statut Vu</button>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Sortie de Diagnostic</h3>
+        <div id="output"></div>
+        <button class="btn btn-secondary" onclick="clearOutput()">Effacer</button>
+    </div>
+
+    <!-- Toast de test -->
+    <div id="resumeToast" class="hidden">
+        <div class="toast-header">
+            📄 Résumé de Test
+            <button class="close-btn" data-close-toast onclick="closeToast()">&times;</button>
+        </div>
+        <div class="toast-content">
+            Ceci est un test du modal de résumé. Si vous voyez ce message, le modal fonctionne ! 🎉
+        </div>
+    </div>
+
+    <!-- Script principal -->
+    <script src="js/publication-modal.js"></script>
+
+    <script>
+        let output = document.getElementById('output');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            output.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+            console.log(`${prefix} ${message}`);
+        }
+
+        function clearOutput() {
+            output.textContent = '';
+        }
+
+        function testScriptLoaded() {
+            log('--- Test de chargement du script ---');
+            log(`window.PublicationModal: ${typeof window.PublicationModal}`);
+            log(`window.showToastAgain: ${typeof window.showToastAgain}`);
+            log(`window.closeToast: ${typeof window.closeToast}`);
+            
+            if (window.PublicationModal) {
+                log(`PublicationModal._initialized: ${window.PublicationModal._initialized}`, 'info');
+                log('Fonctions disponibles: ' + Object.keys(window.PublicationModal).join(', '));
+            }
+        }
+
+        function testDOMElements() {
+            log('--- Test des éléments DOM ---');
+            
+            const toast = document.getElementById('resumeToast');
+            log(`Toast element: ${toast ? '✓ trouvé' : '✗ manquant'}`, toast ? 'success' : 'error');
+            
+            const showButtons = document.querySelectorAll('[data-show-toast]');
+            log(`Boutons show: ${showButtons.length} trouvé(s)`, showButtons.length > 0 ? 'success' : 'warning');
+            
+            const closeButtons = document.querySelectorAll('[data-close-toast]');
+            log(`Boutons close: ${closeButtons.length} trouvé(s)`, closeButtons.length > 0 ? 'success' : 'warning');
+        }
+
+        function testEventListeners() {
+            log('--- Test des event listeners ---');
+            
+            // Simuler un clic sur data-show-toast
+            const showBtn = document.querySelector('[data-show-toast]');
+            if (showBtn) {
+                log('Simulation clic sur data-show-toast...');
+                showBtn.click();
+            } else {
+                log('Aucun bouton data-show-toast trouvé', 'error');
+            }
+        }
+
+        function testDirectFunction() {
+            log('--- Test fonction directe ---');
+            
+            try {
+                if (window.showToastAgain) {
+                    log('Appel de window.showToastAgain()...');
+                    window.showToastAgain();
+                    log('Fonction appelée avec succès', 'success');
+                } else if (window.PublicationModal && window.PublicationModal.showResumeToast) {
+                    log('Appel de PublicationModal.showResumeToast()...');
+                    window.PublicationModal.showResumeToast();
+                    log('Fonction appelée avec succès', 'success');
+                } else {
+                    log('Aucune fonction de modal disponible', 'error');
+                }
+            } catch (e) {
+                log(`Erreur: ${e.message}`, 'error');
+            }
+        }
+
+        function toggleToastManual() {
+            log('--- Toggle manuel du toast ---');
+            const toast = document.getElementById('resumeToast');
+            if (toast) {
+                const isHidden = toast.style.display === 'none' || toast.classList.contains('hidden');
+                if (isHidden) {
+                    toast.style.display = 'block';
+                    toast.classList.remove('hidden');
+                    log('Toast affiché manuellement', 'success');
+                } else {
+                    toast.style.display = 'none';
+                    toast.classList.add('hidden');
+                    log('Toast masqué manuellement', 'success');
+                }
+            } else {
+                log('Toast non trouvé', 'error');
+            }
+        }
+
+        function closeToast() {
+            log('Fermeture du toast via bouton...');
+            const toast = document.getElementById('resumeToast');
+            if (toast) {
+                toast.style.display = 'none';
+                toast.classList.add('hidden');
+            }
+        }
+
+        function testAutoShow() {
+            log('--- Test de l\'affichage automatique ---');
+            
+            if (window.PublicationModal && window.PublicationModal.scheduleAutoShow) {
+                log('Programmation d\'un nouvel affichage automatique...');
+                window.PublicationModal.scheduleAutoShow();
+                log('Affichage automatique programmé (3 secondes)', 'success');
+            } else {
+                log('Fonction scheduleAutoShow non disponible', 'error');
+            }
+        }
+
+        function resetViewed() {
+            log('--- Réinitialisation du statut "vu" ---');
+            
+            if (window.resetResumeViewed) {
+                window.resetResumeViewed();
+                log('Statut réinitialisé avec succès', 'success');
+                log('Rechargez la page pour tester l\'affichage automatique', 'info');
+            } else if (window.PublicationModal && window.PublicationModal.resetViewedStatus) {
+                window.PublicationModal.resetViewedStatus();
+                log('Statut réinitialisé avec succès', 'success');
+                log('Rechargez la page pour tester l\'affichage automatique', 'info');
+            } else {
+                log('Fonction de réinitialisation non disponible', 'error');
+            }
+        }
+
+        // Event listener pour traquer tous les clics
+        document.addEventListener('click', function(event) {
+            if (event.target.hasAttribute('data-show-toast') || event.target.closest('[data-show-toast]')) {
+                log('🔍 Clic détecté sur [data-show-toast]');
+            }
+            if (event.target.hasAttribute('data-close-toast') || event.target.closest('[data-close-toast]')) {
+                log('🔍 Clic détecté sur [data-close-toast]');
+            }
+        });
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            log('=== Page de diagnostic chargée ===', 'success');
+            testScriptLoaded();
+            testDOMElements();
+        });
+    </script>
+</body>
+</html>

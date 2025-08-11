@@ -1,6 +1,10 @@
 @extends('layouts.iri')
 
-@section('title', 'Publication - ' . $publication->titre)
+@section('title', 'Publication - ' . e($publication->titre))
+
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/publication-show.css') }}">
+@endpush
 
 @section('content')
 <!-- Main Content -->
@@ -57,32 +61,34 @@
                     @endphp
                     
                     <div class="inline-flex items-center {{ $badgeClass }} border backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium mb-6">
-                        <i class="fas fa-tag mr-2"></i>
-                        {{ $categoryName }}
+                        <i class="fas fa-tag mr-2" aria-hidden="true"></i>
+                        {{ e($categoryName) }}
                     </div>
 
                     <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 drop-shadow-2xl">
-                        {{ $publication->titre }}
+                        {{ e($publication->titre) }}
                     </h1>
                     
                     <div class="flex flex-wrap items-center gap-6 text-white/90 mb-8">
                         <div class="flex items-center">
-                            <i class="fas fa-calendar-alt mr-2"></i>
-                            <span>{{ $publication->created_at->format('d M Y') }}</span>
+                            <i class="fas fa-calendar-alt mr-2" aria-hidden="true"></i>
+                            <time datetime="{{ $publication->created_at->format('Y-m-d') }}">
+                                {{ $publication->created_at->format('d M Y') }}
+                            </time>
                         </div>
                         @if($publication->auteur)
                             <div class="flex items-center">
-                                <i class="fas fa-user mr-2"></i>
-                                <span>{{ $publication->auteur->nom }}</span>
+                                <i class="fas fa-user mr-2" aria-hidden="true"></i>
+                                <span>{{ e($publication->auteur->nom) }}</span>
                             </div>
                         @endif
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="flex flex-wrap gap-4">
-                        <button onclick="showToastAgain()"
+                        <button type="button" data-show-toast
                                 class="bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold py-3 px-6 rounded-lg hover:bg-white/30 transition-all duration-200 transform hover:scale-105">
-                            <i class="fas fa-book-open mr-2"></i>
+                            <i class="fas fa-book-open mr-2" aria-hidden="true"></i>
                             Lire le résumé
                         </button>
                         
@@ -90,7 +96,7 @@
                             <a href="{{ asset('storage/'.$publication->fichier_pdf) }}" 
                                target="_blank"
                                class="bg-iri-gold/80 backdrop-blur-sm border border-iri-gold/50 text-white font-semibold py-3 px-6 rounded-lg hover:bg-iri-gold transition-all duration-200 transform hover:scale-105">
-                                <i class="fas fa-download mr-2"></i>
+                                <i class="fas fa-download mr-2" aria-hidden="true"></i>
                                 Télécharger PDF
                             </a>
                         @endif
@@ -100,14 +106,16 @@
                 <!-- Publication Preview -->
                 <div class="lg:col-span-1">
                     <div class="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6 shadow-2xl">
-                        @if($publication->fichier_pdf)
+                        @if($publication->fichier_pdf && Storage::disk('public')->exists($publication->fichier_pdf))
                             <canvas id="pdf-preview" 
                                     class="w-full rounded-lg shadow-lg" 
-                                    data-pdf-url="{{ asset('storage/'.$publication->fichier_pdf) }}">
+                                    data-pdf-url="{{ asset('storage/' . $publication->fichier_pdf) }}"
+                                    data-pdf-name="{{ e($publication->titre) }}">
                             </canvas>
                         @else
                             <div class="aspect-[3/4] bg-white/20 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-file-alt text-white/50 text-6xl"></i>
+                                <i class="fas fa-file-alt text-white/50 text-6xl" aria-hidden="true"></i>
+                                <span class="sr-only">Aperçu non disponible</span>
                             </div>
                         @endif
                     </div>
@@ -119,31 +127,32 @@
     <!-- Resume Toast/Modal -->
     <div id="resumeToast"
          class="fixed left-6 top-[20vh] bg-white rounded-2xl shadow-2xl border border-gray-200 max-w-md w-full overflow-hidden z-50 hidden"
-         style="max-height: 70vh;">
+         style="max-height: 70vh; display: none;">
         
         <!-- Header -->
         <div class="bg-gradient-to-r from-iri-primary to-iri-secondary text-white p-4 flex justify-between items-center">
             <h4 class="text-lg font-bold flex items-center">
-                <i class="fas fa-book-open mr-2"></i>
+                <i class="fas fa-book-open mr-2" aria-hidden="true"></i>
                 Résumé de la publication
             </h4>
-            <button onclick="closeToast()" class="text-white/80 hover:text-white text-xl">
-                <i class="fas fa-times"></i>
+            <button type="button" data-close-toast class="text-white/80 hover:text-white text-xl" aria-label="Fermer le résumé">
+                <i class="fas fa-times" aria-hidden="true"></i>
             </button>
         </div>
 
         <!-- Content -->
         <div class="p-6 overflow-y-auto" style="max-height: calc(70vh - 80px);">
             <p class="text-gray-700 leading-relaxed">
-                {{ $publication->resume ?? 'Aucun résumé disponible pour cette publication.' }}
+                {{ e($publication->resume ?? 'Aucun résumé disponible pour cette publication.') }}
             </p>
         </div>
     </div>
 
     <!-- Floating Action Button -->
-    <button onclick="showToastAgain()"
-            class="fixed bottom-6 left-6 bg-gradient-to-r from-iri-primary to-iri-secondary text-white rounded-full shadow-lg w-14 h-14 flex items-center justify-center hover:shadow-xl transform hover:scale-110 transition-all duration-200 z-[60]">
-        <i class="fas fa-book-open text-lg"></i>
+    <button type="button" data-show-toast
+            class="fixed bottom-6 left-6 bg-gradient-to-r from-iri-primary to-iri-secondary text-white rounded-full shadow-lg w-14 h-14 flex items-center justify-center hover:shadow-xl transform hover:scale-110 transition-all duration-200 z-[60]"
+            aria-label="Afficher le résumé">
+        <i class="fas fa-book-open text-lg" aria-hidden="true"></i>
     </button>
 
     <!-- Main Content Section -->
@@ -167,18 +176,20 @@
                             <h3 class="text-lg font-bold text-gray-900 mb-4">Informations</h3>
                             <div class="space-y-3 text-sm">
                                 <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-calendar-alt mr-3 text-iri-primary w-4"></i>
-                                    <span>{{ $publication->created_at->format('d M Y') }}</span>
+                                    <i class="fas fa-calendar-alt mr-3 text-iri-primary w-4" aria-hidden="true"></i>
+                                    <time datetime="{{ $publication->created_at->format('Y-m-d') }}">
+                                        {{ $publication->created_at->format('d M Y') }}
+                                    </time>
                                 </div>
                                 @if($publication->auteur)
                                     <div class="flex items-center text-gray-600">
-                                        <i class="fas fa-user mr-3 text-iri-primary w-4"></i>
-                                        <span>{{ $publication->auteur->nom }}</span>
+                                        <i class="fas fa-user mr-3 text-iri-primary w-4" aria-hidden="true"></i>
+                                        <span>{{ e($publication->auteur->nom) }}</span>
                                     </div>
                                 @endif
                                 <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-tag mr-3 text-iri-primary w-4"></i>
-                                    <span>{{ $publication->categorie->nom ?? 'Non catégorisé' }}</span>
+                                    <i class="fas fa-tag mr-3 text-iri-primary w-4" aria-hidden="true"></i>
+                                    <span>{{ e($publication->categorie->nom ?? 'Non catégorisé') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -187,7 +198,7 @@
                         @if($publication->citation)
                             <div class="mb-6 p-4 bg-gray-50 rounded-lg border-l-4 border-iri-primary">
                                 <h4 class="font-semibold text-gray-900 mb-2">Comment citer :</h4>
-                                <p class="text-sm text-gray-700 italic">{{ $publication->citation }}</p>
+                                <p class="text-sm text-gray-700 italic">{{ e($publication->citation) }}</p>
                             </div>
                         @endif
 
@@ -218,13 +229,9 @@
                     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
                         <!-- Header -->
                         <div class="bg-gradient-to-r from-gray-50 to-white p-6 border-b border-gray-200">
-                            <h2 class="text-3xl font-bold text-gray-900 mb-4">{{ $publication->titre }}</h2>
+                            <h2 class="text-3xl font-bold text-gray-900 mb-4">{{ e($publication->titre) }}</h2>
                             
-                            @if($publication->description)
-                                <div class="prose prose-gray max-w-none">
-                                    {!! $publication->description !!}
-                                </div>
-                            @endif
+                           
                         </div>
 
                         <!-- PDF Viewer Optimized -->
@@ -400,970 +407,63 @@
     </section>
 </div>
 
-<!-- Scripts -->
-<script>
-    function closeToast() {
-        const toast = document.getElementById('resumeToast');
-        toast.classList.add('hidden');
-    }
-
-    function showToastAgain() {
-        const toast = document.getElementById('resumeToast');
-        toast.classList.remove('hidden');
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        // Auto-show resume toast after 3 seconds
-        setTimeout(function () {
-            showToastAgain();
-        }, 3000);
-    });
+@push('scripts')
+<!-- PDF.js avec SRI pour la sécurité -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" 
+        integrity="sha512-VQwZO3pi/YUa/+LlOfkf9jKLUhWZBw0QVQKyrRm3d6HXmlfXy/1F8N+dPQ/qX7T8xHPZrmZN6J/C7VZZi8F/Zw==" 
+        crossorigin="anonymous" 
+        referrerpolicy="no-referrer">
 </script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="{{ asset('js/publication-modal.js') }}" defer></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // PDF.js Worker configuration
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-        // Render PDF preview in hero section (optimized - just first page)
-        const previewCanvas = document.getElementById('pdf-preview');
-        if (previewCanvas) {
-            const url = previewCanvas.getAttribute('data-pdf-url');
-            renderPdfPreview(url, previewCanvas);
-        }
-
-        // Auto-load main PDF viewer
-        const pdfContainer = document.getElementById('pdfContainer');
-        if (pdfContainer) {
-            const pdfUrl = pdfContainer.getAttribute('data-pdf-url');
-            if (pdfUrl) {
-                autoLoadPdfViewer(pdfUrl);
-            }
-        }
-    });
-
-    function renderPdfPreview(url, canvas) {
-        const ctx = canvas.getContext('2d');
-        const containerWidth = canvas.parentElement.offsetWidth;
-
-        // Only load first page for preview
-        pdfjsLib.getDocument({
-            url: url,
-            disableWorker: false,
-            cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
-            cMapPacked: true
-        }).promise.then(pdf => {
-            return pdf.getPage(1);
-        }).then(page => {
-            const viewport = page.getViewport({ scale: 1 });
-            const scale = Math.min(containerWidth / viewport.width, 0.8);
-            const scaledViewport = page.getViewport({ scale });
-
-            canvas.width = scaledViewport.width;
-            canvas.height = scaledViewport.height;
-
-            return page.render({ 
-                canvasContext: ctx, 
-                viewport: scaledViewport,
-                intent: 'display'
-            }).promise;
-        }).catch(err => {
-            console.error("Erreur lors du rendu du PDF preview :", err);
-            canvas.style.display = 'none';
-        });
+// Script de débogage pour le modal
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔍 Page chargée, vérification du modal...');
+    
+    // Vérifier que les éléments existent
+    const resumeToast = document.getElementById('resumeToast');
+    const showButtons = document.querySelectorAll('[data-show-toast]');
+    const closeButtons = document.querySelectorAll('[data-close-toast]');
+    
+    console.log('📝 Toast element:', resumeToast);
+    console.log('📝 Show buttons:', showButtons.length);
+    console.log('📝 Close buttons:', closeButtons.length);
+    
+    // Vérifier le script
+    console.log('📝 PublicationModal:', typeof window.PublicationModal);
+    console.log('📝 showToastAgain:', typeof window.showToastAgain);
+    
+    // Vérifier le statut localStorage
+    const hasViewed = localStorage.getItem('publication-resume-viewed');
+    console.log('📝 Statut "vu":', hasViewed);
+    if (hasViewed === 'true') {
+        console.log('ℹ️ Le modal ne s\'affichera pas automatiquement car déjà vu');
+        console.log('ℹ️ Utilisez resetResumeViewed() pour réinitialiser');
+    } else {
+        console.log('⏰ Le modal s\'affichera automatiquement dans 3 secondes');
     }
-
-    function autoLoadPdfViewer(url) {
-        const loaderDiv = document.getElementById('pdfLoader');
-        const viewerDiv = document.getElementById('pdfViewer');
-        
-        let pdfDocument = null;
-        let currentPage = 1;
-        let scale = 1.0;
-        let searchMatches = [];
-        let currentMatch = 0;
-
-        // Show loader initially
-        showLoader();
-        updateProgress(0, 'Initialisation...');
-
-        // Load PDF document
-        const loadingOptions = {
-            url: url,
-            disableWorker: false,
-            cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
-            cMapPacked: true,
-            disableAutoFetch: false,
-            disableStream: false
-        };
-
-        const loadingTask = pdfjsLib.getDocument(loadingOptions);
-        
-        // Progress tracking
-        loadingTask.onProgress = function(progress) {
-            if (progress.loaded && progress.total) {
-                const percent = Math.round((progress.loaded / progress.total) * 100);
-                updateProgress(percent, `Chargement... ${formatBytes(progress.loaded)} / ${formatBytes(progress.total)}`);
-            }
-        };
-
-        loadingTask.promise.then(function(pdf) {
-            pdfDocument = pdf;
-            updateProgress(100, 'Rendu en cours...');
-            
-            setTimeout(() => {
-                setupPdfViewer(pdf);
-                showViewer();
-            }, 500);
-        }).catch(function(error) {
-            console.error('Erreur lors du chargement du PDF:', error);
-            loaderDiv.innerHTML = `
-                <div class="text-center">
-                    <div class="bg-red-100 text-red-800 p-6 rounded-lg">
-                        <i class="fas fa-exclamation-triangle text-3xl mb-4"></i>
-                        <p class="text-lg mb-4">Erreur lors du chargement du PDF</p>
-                        <a href="${url}" target="_blank" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
-                            Ouvrir dans un nouvel onglet
-                        </a>
-                    </div>
-                </div>
-            `;
-        });
-
-        function setupPdfViewer(pdf) {
-            document.getElementById('totalPages').textContent = pdf.numPages;
-            document.getElementById('floatingTotalPages').textContent = pdf.numPages;
-            document.getElementById('pageInput').value = currentPage;
-            document.getElementById('floatingPageInput').value = currentPage;
-            document.getElementById('pageInput').max = pdf.numPages;
-            document.getElementById('floatingPageInput').max = pdf.numPages;
-            document.getElementById('pageCount').textContent = `${pdf.numPages} pages`;
-            
-            // Setup controls
-            setupPdfControls(pdf);
-            setupSearchControls(pdf);
-            setupFloatingNavigation(pdf);
-            
-            // Render all pages
-            renderAllPages(pdf);
+    
+    // Test manuel du modal
+    window.testModal = function() {
+        console.log('🧪 Test manuel du modal');
+        if (window.showToastAgain) {
+            window.showToastAgain();
+        } else if (window.PublicationModal && window.PublicationModal.showResumeToast) {
+            window.PublicationModal.showResumeToast();
+        } else {
+            console.error('❌ Aucune fonction de modal disponible');
         }
-
-        function setupPdfControls(pdf) {
-            const prevBtn = document.getElementById('prevPage');
-            const nextBtn = document.getElementById('nextPage');
-            const pageInput = document.getElementById('pageInput');
-            const fullscreenBtn = document.getElementById('fullscreenBtn');
-
-            prevBtn.onclick = () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    scrollToPage(currentPage);
-                    updatePageInfo();
-                }
-            };
-
-            nextBtn.onclick = () => {
-                if (currentPage < pdf.numPages) {
-                    currentPage++;
-                    scrollToPage(currentPage);
-                    updatePageInfo();
-                }
-            };
-
-            // Handle direct page input
-            pageInput.addEventListener('change', () => {
-                const pageNum = parseInt(pageInput.value);
-                if (pageNum >= 1 && pageNum <= pdf.numPages) {
-                    currentPage = pageNum;
-                    scrollToPage(currentPage);
-                    updatePageInfo();
-                } else {
-                    pageInput.value = currentPage; // Reset to current page if invalid
-                }
-            });
-
-            pageInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    const pageNum = parseInt(pageInput.value);
-                    if (pageNum >= 1 && pageNum <= pdf.numPages) {
-                        currentPage = pageNum;
-                        scrollToPage(currentPage);
-                        updatePageInfo();
-                    } else {
-                        pageInput.value = currentPage; // Reset to current page if invalid
-                    }
-                }
-            });
-
-            fullscreenBtn.onclick = () => {
-                const container = document.getElementById('pdfContainer');
-                if (container.requestFullscreen) {
-                    container.requestFullscreen();
-                } else if (container.webkitRequestFullscreen) {
-                    container.webkitRequestFullscreen();
-                } else if (container.msRequestFullscreen) {
-                    container.msRequestFullscreen();
-                }
-            };
-        }
-
-        function scrollToPage(pageNumber) {
-            const pageElement = document.getElementById(`page-${pageNumber}`);
-            if (pageElement) {
-                console.log(`Défilement vers la page ${pageNumber}`);
-                
-                // For page 1, scroll to the very top
-                if (pageNumber === 1) {
-                    viewerDiv.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
-                    // Also use window scroll as fallback
-                    window.scrollTo({
-                        top: viewerDiv.offsetTop,
-                        behavior: 'smooth'
-                    });
-                } else {
-                    // For other pages, scroll into view
-                    pageElement.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'start',
-                        inline: 'nearest'
-                    });
-                }
-            } else {
-                console.warn(`Élément page-${pageNumber} introuvable`);
-            }
-        }
-
-        function setupSearchControls(pdf) {
-            const searchText = document.getElementById('searchText');
-            const searchBtn = document.getElementById('searchBtn');
-            const resetBtn = document.getElementById('resetBtn');
-            const prevMatch = document.getElementById('prevMatch');
-            const nextMatch = document.getElementById('nextMatch');
-            const matchCount = document.getElementById('matchCount');
-
-            console.log('Initialisation des contrôles de recherche');
-
-            // Vérifier que tous les éléments existent
-            if (!searchText || !searchBtn) {
-                console.error('Éléments de recherche introuvables');
-                return;
-            }
-
-            searchBtn.onclick = () => {
-                console.log('Bouton de recherche cliqué');
-                performSearch(pdf);
-            };
-            
-            resetBtn.onclick = () => {
-                console.log('Reset de recherche');
-                resetSearch();
-            };
-            
-            searchText.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    console.log('Recherche par Enter');
-                    performSearch(pdf);
-                }
-            });
-
-            prevMatch.onclick = () => {
-                console.log('Résultat précédent');
-                if (currentMatch > 0) {
-                    currentMatch--;
-                    goToMatch(pdf);
-                }
-            };
-
-            nextMatch.onclick = () => {
-                console.log('Résultat suivant');
-                if (currentMatch < searchMatches.length - 1) {
-                    currentMatch++;
-                    goToMatch(pdf);
-                }
-            };
-
-            async function performSearch(pdf) {
-                const query = searchText.value.trim();
-                if (!query) {
-                    alert('Veuillez saisir un terme à rechercher');
-                    return;
-                }
-
-                // Show loading indicator
-                searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                searchBtn.disabled = true;
-
-                // Clear previous highlights
-                clearHighlights();
-
-                searchMatches = [];
-                currentMatch = 0;
-
-                try {
-                    console.log(`Début de la recherche pour "${query}"`);
-                    
-                    // Search all pages with optimized processing
-                    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                        const page = await pdf.getPage(pageNum);
-                        const textContent = await page.getTextContent();
-                        
-                        // Quick text extraction without storing positions initially
-                        let pageText = '';
-                        textContent.items.forEach(item => {
-                            if (item.str && item.str.trim()) {
-                                pageText += item.str + ' ';
-                            }
-                        });
-
-                        // Search with case-insensitive regex
-                        const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-                        let match;
-                        
-                        // Only process positions for pages that have matches
-                        const pageMatches = [];
-                        while ((match = regex.exec(pageText)) !== null) {
-                            pageMatches.push({
-                                index: match.index,
-                                text: match[0],
-                                context: pageText.substring(Math.max(0, match.index - 50), match.index + match[0].length + 50)
-                            });
-                        }
-                        
-                        // Only extract detailed positioning if there are matches on this page
-                        if (pageMatches.length > 0) {
-                            const textItems = textContent.items.filter(item => item.str && item.str.trim());
-                            let textMap = [];
-                            let currentIndex = 0;
-                            
-                            textItems.forEach((item, itemIndex) => {
-                                const text = item.str;
-                                textMap.push({
-                                    itemIndex: itemIndex,
-                                    startIndex: currentIndex,
-                                    endIndex: currentIndex + text.length,
-                                    text: text,
-                                    transform: item.transform,
-                                    bbox: {
-                                        x: item.transform[4],
-                                        y: item.transform[5],
-                                        width: item.width,
-                                        height: item.height
-                                    }
-                                });
-                                pageText += text + ' ';
-                                currentIndex += text.length + 1;
-                            });
-                            
-                            // Now map matches to text items
-                            pageMatches.forEach(pageMatch => {
-                                const matchingItems = textMap.filter(item => 
-                                    pageMatch.index < item.endIndex && (pageMatch.index + pageMatch.text.length) > item.startIndex
-                                );
-
-                                searchMatches.push({
-                                    page: pageNum,
-                                    text: pageMatch.text,
-                                    index: pageMatch.index,
-                                    context: pageMatch.context,
-                                    textItems: matchingItems,
-                                    matchStart: pageMatch.index,
-                                    matchEnd: pageMatch.index + pageMatch.text.length
-                                });
-                            });
-                        }
-                    }
-
-                    console.log(`Recherche "${query}" terminée - ${searchMatches.length} résultats trouvés`);
-
-                    if (searchMatches.length > 0) {
-                        // Highlight all matches
-                        await highlightAllMatches(pdf);
-                        showSearchResults();
-                        goToMatch(pdf);
-                    } else {
-                        alert(`Aucun résultat trouvé pour "${query}"`);
-                    }
-                } catch (error) {
-                    console.error('Erreur lors de la recherche:', error);
-                    alert('Erreur lors de la recherche. Veuillez réessayer.');
-                } finally {
-                    // Restore search button
-                    searchBtn.innerHTML = '<i class="fas fa-search"></i>';
-                    searchBtn.disabled = false;
-                }
-            }
-
-            function goToMatch(pdf) {
-                if (searchMatches.length === 0) return;
-                
-                const match = searchMatches[currentMatch];
-                currentPage = match.page;
-                
-                console.log(`Navigation vers le résultat ${currentMatch + 1}/${searchMatches.length} sur la page ${match.page}`);
-                
-                // Scroll to the page
-                scrollToPage(currentPage);
-                
-                // Update UI
-                updatePageInfo();
-                updateMatchInfo();
-                
-                // Highlight current match with special styling
-                highlightCurrentMatch(match);
-            }
-
-            async function highlightAllMatches(pdf) {
-                console.log('Début du surlignage de tous les résultats');
-                
-                // Group matches by page for efficiency
-                const matchesByPage = {};
-                searchMatches.forEach(match => {
-                    if (!matchesByPage[match.page]) {
-                        matchesByPage[match.page] = [];
-                    }
-                    matchesByPage[match.page].push(match);
-                });
-                
-                // Process pages with matches only
-                for (const pageNum of Object.keys(matchesByPage)) {
-                    const pageMatches = matchesByPage[pageNum];
-                    const pageContainer = document.getElementById(`page-${pageNum}`);
-                    if (!pageContainer) continue;
-
-                    // Remove existing highlight overlay for this page
-                    const existingOverlay = pageContainer.querySelector('.search-highlight-overlay');
-                    if (existingOverlay) {
-                        existingOverlay.remove();
-                    }
-
-                    try {
-                        const page = await pdf.getPage(parseInt(pageNum));
-                        const viewport = page.getViewport({ scale: scale });
-                        const canvas = pageContainer.querySelector('canvas');
-                        
-                        if (!canvas) continue;
-
-                        // Create highlight overlay
-                        const highlightOverlay = document.createElement('div');
-                        highlightOverlay.className = 'search-highlight-overlay';
-                        highlightOverlay.style.cssText = `
-                            position: absolute;
-                            top: ${canvas.offsetTop}px;
-                            left: ${canvas.offsetLeft}px;
-                            width: ${canvas.offsetWidth}px;
-                            height: ${canvas.offsetHeight}px;
-                            pointer-events: none;
-                            z-index: 10;
-                        `;
-
-                        // Create highlights for all matches on this page
-                        pageMatches.forEach((match, matchIndex) => {
-                            if (match.textItems && match.textItems.length > 0) {
-                                match.textItems.forEach((textItem, index) => {
-                                    const highlightRect = document.createElement('div');
-                                    highlightRect.className = 'search-highlight-rect';
-                                    highlightRect.dataset.matchIndex = matchIndex;
-                                    
-                                    // Calculate position relative to canvas
-                                    const x = textItem.bbox.x * scale;
-                                    const y = viewport.height - (textItem.bbox.y * scale) - (textItem.bbox.height * scale);
-                                    const width = textItem.bbox.width * scale;
-                                    const height = textItem.bbox.height * scale;
-
-                                    highlightRect.style.cssText = `
-                                        position: absolute;
-                                        left: ${x}px;
-                                        top: ${y}px;
-                                        width: ${width}px;
-                                        height: ${height}px;
-                                        background-color: rgba(255, 255, 0, 0.3);
-                                        border: 1px solid rgba(255, 193, 7, 0.8);
-                                        border-radius: 2px;
-                                        transition: all 0.3s ease;
-                                    `;
-
-                                    highlightOverlay.appendChild(highlightRect);
-                                });
-                            }
-                        });
-
-                        // Make container relative for proper overlay positioning
-                        pageContainer.style.position = 'relative';
-                        pageContainer.appendChild(highlightOverlay);
-
-                    } catch (error) {
-                        console.error(`Erreur lors du surlignage de la page ${pageNum}:`, error);
-                    }
-                }
-                
-                console.log('Surlignage de tous les résultats terminé');
-            }
-
-            function highlightCurrentMatch(match) {
-                // Remove previous current match highlighting
-                document.querySelectorAll('.current-match-highlight').forEach(el => el.remove());
-                
-                const pageContainer = document.getElementById(`page-${match.page}`);
-                if (!pageContainer) return;
-
-                // Add special highlighting for current match
-                const currentHighlights = pageContainer.querySelectorAll('.search-highlight-rect');
-                if (currentHighlights.length > 0) {
-                    // Find the highlight that corresponds to current match
-                    // For simplicity, highlight the first one with a different color
-                    const currentRect = currentHighlights[0];
-                    if (currentRect) {
-                        const currentMarker = currentRect.cloneNode(true);
-                        currentMarker.className = 'current-match-highlight';
-                        currentMarker.style.cssText += `
-                            background-color: rgba(255, 0, 0, 0.4) !important;
-                            border: 2px solid rgba(220, 38, 127, 0.9) !important;
-                            box-shadow: 0 0 10px rgba(220, 38, 127, 0.5);
-                            z-index: 15;
-                        `;
-                        
-                        const overlay = pageContainer.querySelector('.search-highlight-overlay');
-                        if (overlay) {
-                            overlay.appendChild(currentMarker);
-                        }
-                    }
-                }
-
-                // Add page border highlight for current match
-                pageContainer.style.border = '3px solid #dc2626';
-                pageContainer.style.borderRadius = '8px';
-                pageContainer.style.transition = 'all 0.3s ease';
-                
-                // Remove page highlight after navigation
-                setTimeout(() => {
-                    pageContainer.style.border = '';
-                    pageContainer.style.borderRadius = '';
-                }, 3000);
-            }
-
-            function clearHighlights() {
-                console.log('Suppression de tous les surlignages');
-                
-                // Remove all search highlight overlays efficiently
-                const overlays = document.querySelectorAll('.search-highlight-overlay');
-                overlays.forEach(overlay => overlay.remove());
-                
-                // Remove current match highlights
-                const currentHighlights = document.querySelectorAll('.current-match-highlight');
-                currentHighlights.forEach(highlight => highlight.remove());
-                
-                // Remove page border highlights
-                const pages = document.querySelectorAll('.pdf-page-container');
-                pages.forEach(page => {
-                    page.style.border = '';
-                    page.style.borderRadius = '';
-                });
-            }
-
-            function highlightSearchTerm(searchTerm) {
-                // This function is now replaced by the more advanced highlighting system
-                const pageElement = document.getElementById(`page-${currentPage}`);
-                if (pageElement) {
-                    pageElement.style.border = '3px solid #f59e0b';
-                    pageElement.style.borderRadius = '8px';
-                    
-                    // Remove highlight after 2 seconds
-                    setTimeout(() => {
-                        pageElement.style.border = '';
-                        pageElement.style.borderRadius = '';
-                    }, 2000);
-                }
-            }
-
-            function showSearchResults() {
-                resetBtn.classList.remove('hidden');
-                prevMatch.classList.remove('hidden');
-                nextMatch.classList.remove('hidden');
-                matchCount.classList.remove('hidden');
-                updateMatchInfo();
-                
-                // Update floating navigation search info
-                if (window.updateFloatingSearchInfo) {
-                    window.updateFloatingSearchInfo();
-                }
-            }
-
-            function resetSearch() {
-                console.log('Reset de la recherche');
-                
-                // Clear all highlights first
-                clearHighlights();
-                
-                searchMatches = [];
-                currentMatch = 0;
-                searchText.value = '';
-                resetBtn.classList.add('hidden');
-                prevMatch.classList.add('hidden');
-                nextMatch.classList.add('hidden');
-                matchCount.classList.add('hidden');
-                
-                // Update floating navigation search info
-                if (window.updateFloatingSearchInfo) {
-                    window.updateFloatingSearchInfo();
-                }
-            }
-
-            function updateMatchInfo() {
-                if (searchMatches.length > 0) {
-                    const matchText = `${currentMatch + 1} / ${searchMatches.length}`;
-                    matchCount.textContent = matchText;
-                    console.log(`Affichage du résultat: ${matchText}`);
-                    
-                    // Update floating navigation search info
-                    if (window.updateFloatingSearchInfo) {
-                        window.updateFloatingSearchInfo();
-                    }
-                }
-            }
-        }
-
-        function renderPage(pdf, pageNumber) {
-            // Cette fonction n'est plus utilisée car nous rendons toutes les pages
-            renderAllPages(pdf);
-        }
-
-        function renderAllPages(pdf) {
-            // Clear any existing highlights only if they exist
-            if (searchMatches.length > 0) {
-                clearHighlights();
-            }
-            
-            viewerDiv.innerHTML = '';
-            
-            console.log(`Rendu de ${pdf.numPages} pages en ordre séquentiel`);
-            
-            // Reset scroll position to top
-            viewerDiv.scrollTop = 0;
-            
-            // Créer tous les conteneurs de pages d'abord pour maintenir l'ordre
-            const pageContainers = [];
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                const pageContainer = document.createElement('div');
-                pageContainer.className = 'pdf-page-container mb-4';
-                pageContainer.id = `page-${pageNum}`;
-                
-                // Add page number indicator
-                const pageLabel = document.createElement('div');
-                pageLabel.className = 'text-center text-gray-500 text-sm mb-2';
-                pageLabel.textContent = `Page ${pageNum}`;
-                pageContainer.appendChild(pageLabel);
-                
-                // Add loading placeholder
-                const loadingDiv = document.createElement('div');
-                loadingDiv.className = 'bg-gray-100 p-8 rounded-lg text-center';
-                loadingDiv.innerHTML = `
-                    <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-2"></i>
-                    <p class="text-gray-500">Chargement de la page ${pageNum}...</p>
-                `;
-                pageContainer.appendChild(loadingDiv);
-                
-                pageContainers.push(pageContainer);
-                viewerDiv.appendChild(pageContainer);
-            }
-            
-            // Maintenant rendre chaque page dans son conteneur
-            renderPagesSequentially(pdf, pageContainers, 1);
-        }
-
-        async function renderPagesSequentially(pdf, pageContainers, pageNum) {
-            if (pageNum > pdf.numPages) {
-                console.log('Rendu de toutes les pages terminé');
-                // Scroll to the first page when all pages are rendered
-                setTimeout(() => {
-                    scrollToPage(1);
-                    currentPage = 1;
-                    updatePageInfo();
-                }, 500);
-                return;
-            }
-            
-            const pageContainer = pageContainers[pageNum - 1];
-            const loadingDiv = pageContainer.querySelector('.bg-gray-100');
-            
-            try {
-                const page = await pdf.getPage(pageNum);
-                const viewport = page.getViewport({ scale: scale });
-                
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-                
-                const renderContext = {
-                    canvasContext: ctx,
-                    viewport: viewport,
-                    intent: 'display'
-                };
-                
-                await page.render(renderContext).promise;
-                
-                // Remplacer le placeholder par le canvas
-                if (loadingDiv) {
-                    pageContainer.removeChild(loadingDiv);
-                }
-                pageContainer.appendChild(canvas);
-                
-                console.log(`Page ${pageNum} rendue avec succès`);
-                
-            // Rendre la page suivante
-            renderPagesSequentially(pdf, pageContainers, pageNum + 1);
-            
-        } catch (error) {
-            console.error(`Erreur lors du rendu de la page ${pageNum}:`, error);
-            
-            // Remplacer le placeholder par un message d'erreur
-            if (loadingDiv) {
-                loadingDiv.className = 'bg-red-100 text-red-800 p-4 rounded-lg text-center';
-                loadingDiv.innerHTML = `
-                    <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
-                    <p>Erreur lors du chargement de la page ${pageNum}</p>
-                `;
-            }
-            
-            // Continuer avec la page suivante même en cas d'erreur
-            renderPagesSequentially(pdf, pageContainers, pageNum + 1);
-        }
-    }
-
-        function updatePageInfo() {
-            document.getElementById('pageInput').value = currentPage;
-            document.getElementById('floatingPageInput').value = currentPage;
-        }
-
-        function setupFloatingNavigation(pdf) {
-            const floatingNav = document.getElementById('floatingNav');
-            const pdfContainer = document.getElementById('pdfContainer');
-            const pdfHeader = pdfContainer.previousElementSibling;
-            
-            // Floating navigation controls
-            const floatingPrevPage = document.getElementById('floatingPrevPage');
-            const floatingNextPage = document.getElementById('floatingNextPage');
-            const floatingPageInput = document.getElementById('floatingPageInput');
-            const floatingFullscreen = document.getElementById('floatingFullscreen');
-            const floatingPrevMatch = document.getElementById('floatingPrevMatch');
-            const floatingNextMatch = document.getElementById('floatingNextMatch');
-            
-            // Sync floating controls with main controls
-            floatingPrevPage.onclick = () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    scrollToPage(currentPage);
-                    updatePageInfo();
-                }
-            };
-
-            floatingNextPage.onclick = () => {
-                if (currentPage < pdf.numPages) {
-                    currentPage++;
-                    scrollToPage(currentPage);
-                    updatePageInfo();
-                }
-            };
-
-            floatingPageInput.addEventListener('change', () => {
-                const pageNum = parseInt(floatingPageInput.value);
-                if (pageNum >= 1 && pageNum <= pdf.numPages) {
-                    currentPage = pageNum;
-                    scrollToPage(currentPage);
-                    updatePageInfo();
-                } else {
-                    floatingPageInput.value = currentPage;
-                }
-            });
-
-            floatingPageInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    const pageNum = parseInt(floatingPageInput.value);
-                    if (pageNum >= 1 && pageNum <= pdf.numPages) {
-                        currentPage = pageNum;
-                        scrollToPage(currentPage);
-                        updatePageInfo();
-                    } else {
-                        floatingPageInput.value = currentPage;
-                    }
-                }
-            });
-
-            floatingFullscreen.onclick = () => {
-                const container = document.getElementById('pdfContainer');
-                if (container.requestFullscreen) {
-                    container.requestFullscreen();
-                } else if (container.webkitRequestFullscreen) {
-                    container.webkitRequestFullscreen();
-                } else if (container.msRequestFullscreen) {
-                    container.msRequestFullscreen();
-                }
-            };
-
-            // Search navigation in floating bar
-            floatingPrevMatch.onclick = () => {
-                if (currentMatch > 0) {
-                    currentMatch--;
-                    goToMatch(pdf);
-                }
-            };
-
-            floatingNextMatch.onclick = () => {
-                if (currentMatch < searchMatches.length - 1) {
-                    currentMatch++;
-                    goToMatch(pdf);
-                }
-            };
-
-            // Scroll detection for showing/hiding floating nav
-            let lastScrollY = 0;
-            let ticking = false;
-            let isFloatingVisible = false;
-            let scrollTimeout = null;
-            let userIsScrolling = false;
-            let scrollStopTimeout = null;
-            
-            function updateFloatingNav() {
-                const scrollY = window.pageYOffset;
-                const headerRect = pdfHeader.getBoundingClientRect();
-                const isHeaderVisible = headerRect.bottom > 80; // Add buffer zone
-                const scrollDirection = scrollY > lastScrollY ? 'down' : 'up';
-                const scrollDelta = Math.abs(scrollY - lastScrollY);
-                
-                // Mark that user is scrolling
-                userIsScrolling = true;
-                
-                // Clear any existing timeouts
-                if (scrollTimeout) {
-                    clearTimeout(scrollTimeout);
-                }
-                if (scrollStopTimeout) {
-                    clearTimeout(scrollStopTimeout);
-                }
-                
-                // Set timeout to detect when scrolling stops
-                scrollStopTimeout = setTimeout(() => {
-                    userIsScrolling = false;
-                }, 150);
-                
-                // Only show floating nav if:
-                // 1. Header is completely out of view (with buffer)
-                // 2. User has scrolled down significantly (at least 100px past header)
-                // 3. We're in the PDF viewer area
-                // 4. Scroll delta is significant (avoid micro-scrolls)
-                const pdfContainerRect = pdfContainer.getBoundingClientRect();
-                const isInPdfArea = pdfContainerRect.top < window.innerHeight && pdfContainerRect.bottom > 0;
-                
-                if (!isHeaderVisible && scrollY > 100 && isInPdfArea && scrollDirection === 'down' && scrollDelta > 5) {
-                    // Show floating nav with a delay to avoid flickering
-                    if (!isFloatingVisible) {
-                        scrollTimeout = setTimeout(() => {
-                            if (!userIsScrolling || scrollDirection === 'down') {
-                                showFloatingNav();
-                                isFloatingVisible = true;
-                            }
-                        }, 200);
-                    }
-                } else if (isHeaderVisible || (scrollDirection === 'up' && scrollDelta > 10) || !isInPdfArea) {
-                    // Hide floating nav when:
-                    // - Header becomes visible
-                    // - Scrolling up with significant movement
-                    // - Outside PDF area
-                    if (isFloatingVisible) {
-                        hideFloatingNav();
-                        isFloatingVisible = false;
-                    }
-                }
-                
-                lastScrollY = scrollY;
-                ticking = false;
-            }
-            
-            function requestTick() {
-                if (!ticking) {
-                    requestAnimationFrame(updateFloatingNav);
-                    ticking = true;
-                }
-            }
-            
-            // Use throttled scroll event for better performance
-            let scrollTimer = null;
-            window.addEventListener('scroll', function() {
-                if (scrollTimer) {
-                    clearTimeout(scrollTimer);
-                }
-                scrollTimer = setTimeout(requestTick, 16); // ~60fps
-            }, { passive: true });
-            
-            function showFloatingNav() {
-                if (!isFloatingVisible) {
-                    floatingNav.classList.remove('hidden');
-                    floatingNav.classList.add('show');
-                    floatingNav.classList.remove('hide');
-                    document.body.classList.add('floating-nav-visible');
-                    console.log('Floating nav shown');
-                }
-            }
-            
-            function hideFloatingNav() {
-                if (isFloatingVisible) {
-                    floatingNav.classList.add('hide');
-                    floatingNav.classList.remove('show');
-                    document.body.classList.remove('floating-nav-visible');
-                    console.log('Floating nav hidden');
-                    
-                    setTimeout(() => {
-                        if (floatingNav.classList.contains('hide')) {
-                            floatingNav.classList.add('hidden');
-                        }
-                    }, 400); // Match CSS transition duration
-                }
-            }
-            
-            // Update floating search info when search state changes
-            window.updateFloatingSearchInfo = function() {
-                const floatingSearchInfo = document.getElementById('floatingSearchInfo');
-                const floatingMatchCount = document.getElementById('floatingMatchCount');
-                
-                if (searchMatches.length > 0) {
-                    floatingSearchInfo.classList.remove('hidden');
-                    floatingMatchCount.textContent = `${currentMatch + 1} / ${searchMatches.length}`;
-                } else {
-                    floatingSearchInfo.classList.add('hidden');
-                }
-            };
-        }
-
-        function updateProgress(percent, message) {
-            const progressBar = document.getElementById('pdfProgressBar');
-            const progressText = document.getElementById('pdfProgressText');
-            
-            if (progressBar) progressBar.style.width = percent + '%';
-            if (progressText) progressText.textContent = message;
-        }
-
-        function showLoader() {
-            loaderDiv.classList.remove('hidden');
-            loaderDiv.classList.add('flex');
-            viewerDiv.classList.add('hidden');
-        }
-
-        function showViewer() {
-            loaderDiv.classList.add('hidden');
-            viewerDiv.classList.remove('hidden');
-        }
-
-        function formatBytes(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-    }
+    };
+    
+    // Fonction pour réinitialiser le statut
+    window.resetResumeViewed = function() {
+        localStorage.removeItem('publication-resume-viewed');
+        console.log('✅ Statut réinitialisé. Rechargez la page pour voir l\'affichage automatique.');
+    };
+    
+    console.log('✅ Fonctions disponibles: testModal(), resetResumeViewed()');
+});
 </script>
+<script src="{{ asset('js/publication-pdf-viewer.js') }}" defer></script>
+@endpush
 @endsection

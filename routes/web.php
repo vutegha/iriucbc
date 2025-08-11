@@ -114,7 +114,7 @@ Route::post('/newsletter-subscribe', [SiteController::class, 'subscribeNewslette
 
 // Routes Newsletter publiques détaillées
 Route::prefix('newsletter')->name('newsletter.')->group(function () {
-    Route::get('/subscribe', fn() => view('newsletter.subscribe'))->name('subscribe');
+    Route::get('/subscribe', [PublicNewsletterController::class, 'showSubscribeForm'])->name('subscribe');
     Route::post('/subscribe', [PublicNewsletterController::class, 'subscribe'])->name('subscribe.post');
     Route::get('/preferences/{token}', [PublicNewsletterController::class, 'preferences'])->name('preferences');
     Route::put('/preferences/{token}', [PublicNewsletterController::class, 'updatePreferences'])->name('preferences.update');
