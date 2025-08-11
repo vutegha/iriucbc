@@ -494,6 +494,8 @@
             const pageContainer = document.createElement('div');
             pageContainer.className = 'pdf-page-container mb-4';
             pageContainer.id = `page-${pageNum}`;
+            pageContainer.style.width = '100%'; // Assurer la largeur complète
+            pageContainer.style.textAlign = 'center'; // Centrer le contenu
             
             const pageLabel = document.createElement('div');
             pageLabel.className = 'text-center text-gray-500 text-sm mb-2';
@@ -533,12 +535,23 @@
         
         try {
             const page = await pdf.getPage(pageNum);
-            const viewport = page.getViewport({ scale: scale });
+            
+            // Calcul dynamique de l'échelle pour utiliser toute la largeur disponible
+            const containerWidth = elements.pdfViewer.offsetWidth - 48; // Soustraction du padding (6*2 = 48px)
+            const baseViewport = page.getViewport({ scale: 1 });
+            const dynamicScale = Math.min(containerWidth / baseViewport.width, 2.0); // Limite max à 2.0 pour éviter les images trop pixelisées
+            const viewport = page.getViewport({ scale: dynamicScale });
             
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             canvas.height = viewport.height;
             canvas.width = viewport.width;
+            
+            // Ajout de styles pour centrer le canvas et le faire occuper toute la largeur
+            canvas.style.maxWidth = '100%';
+            canvas.style.height = 'auto';
+            canvas.style.display = 'block';
+            canvas.style.margin = '0 auto';
             
             const renderContext = {
                 canvasContext: ctx,

@@ -33,12 +33,7 @@ class Categorie extends Model
         });
     }
 
-    public function actualites()
-    {
-        return $this->hasMany(Actualite::class);
-    }
-    
-    public function publication()
+    public function publications()
     {
         return $this->hasMany(Publication::class);
     }

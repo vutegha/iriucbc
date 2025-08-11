@@ -326,11 +326,8 @@
             </div>
             <div class="text-2xl font-bold text-purple-600 mb-1">
                 @php
-                    // Comptage approximatif des catégories actives
-                    $categoriesCount = \App\Models\Categorie::whereHas('publications')
-                        ->orWhereHas('actualites')
-                        ->orWhereHas('projets')
-                        ->count();
+                    // Comptage des catégories qui ont des publications
+                    $categoriesCount = \App\Models\Categorie::whereHas('publications')->count();
                 @endphp
                 {{ $categoriesCount }}
             </div>

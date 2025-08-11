@@ -78,11 +78,6 @@ class Actualite extends Model
         return $this->created_at ? $this->created_at->diffForHumans() : 'Date inconnue';
     }
 
-    public function categorie()
-    {
-        return $this->belongsTo(Categorie::class);
-    }
-
     public function service()
     {
         return $this->belongsTo(Service::class);
