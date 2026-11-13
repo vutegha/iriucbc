@@ -37,12 +37,16 @@ class JobOffer extends Model
     }
 
     // Scopes
+    //
+    // La date limite est un jour entier : une offre reste ouverte toute la
+    // journée de sa date limite et n'expire que le lendemain. Les comparaisons
+    // se font donc de date à date (today), pas avec l'heure courante (now).
     public function scopeActive($query)
     {
         return $query->where('status', 'active')
                     ->where(function($q) {
                         $q->whereNull('application_deadline')
-                          ->orWhere('application_deadline', '>=', now());
+                          ->orWhereDate('application_deadline', '>=', today());
                     });
     }
 
@@ -50,7 +54,7 @@ class JobOffer extends Model
     {
         return $query->where('status', 'active')
                     ->whereNotNull('application_deadline')
-                    ->where('application_deadline', '<', now());
+                    ->whereDate('application_deadline', '<', today());
     }
 
     public function scopeFeatured($query)
@@ -66,7 +70,8 @@ class JobOffer extends Model
     // Accessors
     public function getIsExpiredAttribute()
     {
-        return $this->application_deadline && $this->application_deadline->isPast();
+        return $this->application_deadline
+            && $this->application_deadline->copy()->startOfDay()->lt(today());
     }
 
     public function getFormattedSalaryAttribute()
@@ -86,7 +91,9 @@ class JobOffer extends Model
         if (!$this->application_deadline) {
             return null;
         }
-        return now()->diffInDays($this->application_deadline, false);
+        // Nombre entier de jours, de date à date : 0 le jour de la date limite,
+        // négatif une fois celle-ci dépassée.
+        return (int) today()->diffInDays($this->application_deadline->copy()->startOfDay(), false);
     }
 
     // Accesseur pour compatibilité avec la vue
