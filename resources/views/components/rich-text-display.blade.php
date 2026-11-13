@@ -16,7 +16,7 @@
     @endif
     
     <div class="prose prose-lg max-w-none prose-slate prose-img:rounded-lg prose-img:shadow-md prose-headings:text-gray-800 prose-a:text-iri-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-gray-800 prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-blockquote:border-l-4 prose-blockquote:border-iri-primary prose-blockquote:bg-gray-50 prose-blockquote:pl-4">
-        {!! $content !!}
+        {!! \App\Support\Html::clean($content) !!}
     </div>
 </div>
 

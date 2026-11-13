@@ -18,7 +18,7 @@ class ServicePolicy
             return true;
         }
         
-        return $user->hasPermissionTo('view_services', 'web') ||
+        return $user->checkPermissionTo('view_services', 'web') ||
                $user->hasAnyRole(['admin', 'moderator', 'contributeur'], 'web');
     }
 
@@ -32,7 +32,7 @@ class ServicePolicy
             return true;
         }
         
-        return $user->hasPermissionTo('view_services', 'web') ||
+        return $user->checkPermissionTo('view_services', 'web') ||
                $user->hasAnyRole(['admin', 'moderator', 'contributeur'], 'web');
     }
 
@@ -46,7 +46,7 @@ class ServicePolicy
             return true;
         }
         
-        return $user->hasPermissionTo('create_services', 'web') ||
+        return $user->checkPermissionTo('create_services', 'web') ||
                $user->hasAnyRole(['admin', 'contributeur'], 'web');
     }
 
@@ -60,7 +60,7 @@ class ServicePolicy
             return true;
         }
         
-        return $user->hasPermissionTo('update_services', 'web') ||
+        return $user->checkPermissionTo('update_services', 'web') ||
                $user->hasAnyRole(['admin'], 'web');
     }
 
@@ -74,7 +74,7 @@ class ServicePolicy
             return true;
         }
         
-        return $user->hasPermissionTo('delete_services', 'web') ||
+        return $user->checkPermissionTo('delete_services', 'web') ||
                $user->hasAnyRole(['admin'], 'web');
     }
 
@@ -88,7 +88,7 @@ class ServicePolicy
             return true;
         }
         
-        return $user->hasPermissionTo('moderate_services', 'web') ||
+        return $user->checkPermissionTo('moderate_services', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
@@ -102,8 +102,16 @@ class ServicePolicy
             return true;
         }
         
-        return $user->hasPermissionTo('publish_services', 'web') ||
+        return $user->checkPermissionTo('publish_services', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
+    }
+
+    /**
+     * Determine whether the user can unpublish the model.
+     */
+    public function unpublish(User $user, Service $service): bool
+    {
+        return $this->publish($user, $service);
     }
 
 

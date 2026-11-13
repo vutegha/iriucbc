@@ -52,11 +52,11 @@
                             
                             @if($service->contenu)
                                 <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">
-                                    {!! $service->contenu !!}
+                                    {!! \App\Support\Html::clean($service->contenu) !!}
                                 </div>
                             @elseif($service->description)
                                 <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">
-                                    {!! $service->description !!}
+                                    {!! \App\Support\Html::clean($service->description) !!}
                                 </div>
                             @else
                                 <div class="text-gray-700 text-lg leading-relaxed space-y-4">

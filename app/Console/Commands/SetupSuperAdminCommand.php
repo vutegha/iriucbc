@@ -106,13 +106,13 @@ class SetupSuperAdminCommand extends Command
             $user = User::create([
                 'name' => $name,
                 'email' => $email,
-                'password' => Hash::make('password'), // Default password
+                'password' => Hash::make(env('SEED_USER_PASSWORD') ?: \Illuminate\Support\Str::random(32)), // Default password
                 'email_verified_at' => Carbon::now(),
                 'active' => true,
             ]);
             
             $this->line("   ✅ Created new user: {$email}");
-            $this->warn("   ⚠️ Default password set to 'password' - please change it!");
+            $this->line("   Password: taken from SEED_USER_PASSWORD, or random - use the password reset page to set one.");
         }
         
         // Verify user attributes

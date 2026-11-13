@@ -108,6 +108,7 @@ $query = Projet::with('service');
      */
     public function search(Request $request)
     {
+        $this->authorize('viewAny', Projet::class);
         if (!$request->ajax()) {
             abort(404);
         }
@@ -384,7 +385,7 @@ try {
                     }
 
                     // Générer un nom sécurisé avec hash
-                    $extension = $image->getClientOriginalExtension();
+                    $extension = $image->extension();
                     $filename = 'projets/' . hash('sha256', uniqid() . time() . auth()->id()) . '.' . $extension;
                     $path = $image->storeAs('assets/images', $filename, 'public');
                     
@@ -796,7 +797,7 @@ try {
                     }
 
                     // Générer un nom sécurisé
-                    $extension = $image->getClientOriginalExtension();
+                    $extension = $image->extension();
                     $filename = 'projets/' . hash('sha256', uniqid() . time() . auth()->id()) . '.' . $extension;
                     $path = $image->storeAs('assets/images', $filename, 'public');
                     
@@ -1099,6 +1100,7 @@ try {
      */
     public function pendingModeration()
     {
+        $this->authorize('viewAny', Projet::class);
         $projets = Projet::pendingModeration()
                         ->with(['service'])
                         ->latest()

@@ -116,7 +116,7 @@ class ActualiteController extends Controller
                     throw new \Exception('Le fichier image est corrompu ou invalide.');
                 }
                 
-                $filename = uniqid('img_') . '.' . $image->getClientOriginalExtension();
+                $filename = uniqid('img_') . '.' . $image->extension();
                 $path = $image->storeAs('assets/images', $filename, 'public');
                 $validated['image'] = $path;
             }
@@ -217,7 +217,7 @@ class ActualiteController extends Controller
                     Storage::disk('public')->delete($actualite->image);
                 }
 
-                $filename = uniqid('img_') . '.' . $image->getClientOriginalExtension();
+                $filename = uniqid('img_') . '.' . $image->extension();
                 $path = $image->storeAs('assets/images', $filename, 'public');
                 $updateData['image'] = $path;
             }
@@ -403,5 +403,50 @@ class ActualiteController extends Controller
             return redirect()->route('admin.actualite.show', $actualite->slug)
                 ->with('error', 'Erreur lors de la modération : ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Actualités en attente de modération.
+     */
+    public function pendingModeration()
+    {
+        $this->authorize('viewAny', Actualite::class);
+
+        $actualites = Actualite::pendingModeration()
+                               ->latest()
+                               ->paginate(10);
+
+        return view('admin.actualite.pending', compact('actualites'));
+    }
+
+    /**
+     * Mettre à jour les indicateurs « en vedette » et « à la une ».
+     */
+    public function updateFeatures(Request $request, Actualite $actualite)
+    {
+        $this->authorize('update', $actualite);
+
+        $validated = $request->validate([
+            'en_vedette' => 'required|boolean',
+            'a_la_une' => 'required|boolean',
+        ]);
+
+        $actualite->update($validated);
+
+        return back()->with('success', 'Mise en avant de l\'actualité mise à jour.');
+    }
+
+    /**
+     * Basculer l'affichage « à la une ».
+     */
+    public function toggleUne(Actualite $actualite)
+    {
+        $this->authorize('moderate', $actualite);
+
+        $actualite->update(['a_la_une' => !$actualite->a_la_une]);
+
+        return back()->with('success', $actualite->a_la_une
+            ? 'Actualité mise à la une.'
+            : 'Actualité retirée de la une.');
     }
 }

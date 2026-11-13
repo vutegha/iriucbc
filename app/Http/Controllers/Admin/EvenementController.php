@@ -119,7 +119,7 @@ try {
             }
 
             if ($request->hasFile('image')) {
-                $filename = 'evenements/' . uniqid() . '_' . preg_replace('/\s+/', '_', $request->file('image')->getClientOriginalName());
+                $filename = 'evenements/' . uniqid() . '_' . \Illuminate\Support\Str::random(12) . '.' . $request->file('image')->extension();
                 $path = $request->file('image')->storeAs('assets/images', $filename, 'public');
                 $validated['image'] = $path;
             }
@@ -145,21 +145,21 @@ try {
     public function show(Evenement $evenement)
     {
         
-        $this->authorize('view', $Evenement);
+        $this->authorize('view', $evenement);
 return view('admin.evenements.show', compact('evenement'));
     }
 
     public function edit(Evenement $evenement)
     {
         
-        $this->authorize('update', $Evenement);
+        $this->authorize('update', $evenement);
 return view('admin.evenements.edit', compact('evenement'));
     }
 
     public function update(Request $request, Evenement $evenement)
     {
         
-        $this->authorize('update', $Evenement);
+        $this->authorize('update', $evenement);
 try {
             $validated = $request->validate([
                 'titre' => 'required|string|max:255',
@@ -218,7 +218,7 @@ try {
                     Storage::disk('public')->delete($evenement->image);
                 }
 
-                $filename = 'evenements/' . uniqid() . '_' . preg_replace('/\s+/', '_', $request->file('image')->getClientOriginalName());
+                $filename = 'evenements/' . uniqid() . '_' . \Illuminate\Support\Str::random(12) . '.' . $request->file('image')->extension();
                 $path = $request->file('image')->storeAs('assets/images', $filename, 'public');
                 $validated['image'] = $path;
             }
@@ -244,7 +244,7 @@ try {
     public function destroy(Evenement $evenement)
     {
         
-        $this->authorize('delete', $Evenement);
+        $this->authorize('delete', $evenement);
 try {
             // Supprimer l'image associée
             if ($evenement->image && Storage::disk('public')->exists($evenement->image)) {

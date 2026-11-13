@@ -100,7 +100,7 @@ class BasicDataSeeder extends Seeder
             [
                 'name' => 'Administrateur IRI',
                 'email' => 'admin@ucbc.org',
-                'password' => Hash::make('admin123'),
+                'password' => Hash::make(env('SEED_USER_PASSWORD') ?: \Illuminate\Support\Str::random(32)),
                 'active' => true,
                 'email_verified_at' => now()
             ]
@@ -173,7 +173,7 @@ class BasicDataSeeder extends Seeder
         
         $this->command->warn('🔑 ACCÈS ADMINISTRATEUR:');
         $this->command->warn('   Email: admin@ucbc.org');
-        $this->command->warn('   Mot de passe: admin123');
+        $this->command->warn('   Mot de passe: valeur de SEED_USER_PASSWORD, sinon aléatoire (utilisez « mot de passe oublié »)');
         $this->command->warn('   Rôle: super-admin');
     }
 }

@@ -239,17 +239,20 @@
                                 @enderror
                             </div>
 
-                            <!-- Information Notice -->
+                            <!-- Newsletter opt-in (facultatif, décoché par défaut) -->
                             <div class="bg-gradient-to-r from-iri-primary/10 to-iri-secondary/10 border border-iri-primary/20 p-6 rounded-lg">
-                                <div class="flex items-start space-x-3">
-                                    <div class="bg-iri-primary p-2 rounded-full flex-shrink-0">
-                                        <i class="fas fa-info text-white text-sm"></i>
-                                    </div>
-                                    <div class="text-sm text-gray-700">
-                                        <h4 class="font-bold text-iri-primary mb-1">Information importante :</h4>
-                                        <p>En envoyant ce message, votre adresse email sera automatiquement ajoutée à notre liste de diffusion pour recevoir nos actualités et newsletters. Vous pourrez vous désabonner à tout moment.</p>
-                                    </div>
-                                </div>
+                                <label for="newsletter_optin" class="flex items-start space-x-3 cursor-pointer">
+                                    <input type="checkbox"
+                                           id="newsletter_optin"
+                                           name="newsletter_optin"
+                                           value="1"
+                                           class="mt-1 h-4 w-4 rounded border-gray-300 text-iri-primary focus:ring-iri-primary"
+                                           {{ old('newsletter_optin') ? 'checked' : '' }}>
+                                    <span class="text-sm text-gray-700">
+                                        Je souhaite aussi recevoir les actualités et la newsletter par email.
+                                        Vous pourrez vous désabonner à tout moment.
+                                    </span>
+                                </label>
                             </div>
 
                             <!-- Submit Button -->

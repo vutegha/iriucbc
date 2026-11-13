@@ -77,7 +77,7 @@ $query = JobApplication::with(['jobOffer'])
     public function show(JobApplication $application)
     {
         
-        $this->authorize('view', $JobApplication);
+        $this->authorize('view', $application);
 $application->load(['jobOffer', 'reviewer']);
         
         return view('admin.job-applications.show', compact('application'));
@@ -88,6 +88,7 @@ $application->load(['jobOffer', 'reviewer']);
      */
     public function updateStatus(Request $request, JobApplication $application)
     {
+        $this->authorize('update', $application);
         $request->validate([
             'status' => 'required|in:pending,reviewed,shortlisted,accepted,rejected',
             'admin_notes' => 'nullable|string|max:2000',
@@ -117,13 +118,17 @@ $application->load(['jobOffer', 'reviewer']);
      */
     public function downloadCV(JobApplication $application)
     {
-        if (!$application->cv_path || !Storage::disk('public')->exists($application->cv_path)) {
+        $this->authorize('view', $application);
+        $disk = JobApplication::fileDisk($application->cv_path);
+        if (!$disk) {
             return back()->with('error', 'Le fichier CV n\'existe pas.');
         }
 
-        return Storage::disk('public')->download(
+        $extension = pathinfo($application->cv_path, PATHINFO_EXTENSION) ?: 'pdf';
+
+        return Storage::disk($disk)->download(
             $application->cv_path,
-            $application->first_name . '_' . $application->last_name . '_CV.pdf'
+            $application->first_name . '_' . $application->last_name . '_CV.' . $extension
         );
     }
 
@@ -132,13 +137,17 @@ $application->load(['jobOffer', 'reviewer']);
      */
     public function downloadPortfolio(JobApplication $application)
     {
-        if (!$application->portfolio_path || !Storage::disk('public')->exists($application->portfolio_path)) {
+        $this->authorize('view', $application);
+        $disk = JobApplication::fileDisk($application->portfolio_path);
+        if (!$disk) {
             return back()->with('error', 'Le fichier portfolio n\'existe pas.');
         }
 
-        return Storage::disk('public')->download(
+        $extension = pathinfo($application->portfolio_path, PATHINFO_EXTENSION) ?: 'pdf';
+
+        return Storage::disk($disk)->download(
             $application->portfolio_path,
-            $application->first_name . '_' . $application->last_name . '_Portfolio.pdf'
+            $application->first_name . '_' . $application->last_name . '_Portfolio.' . $extension
         );
     }
 
@@ -148,15 +157,10 @@ $application->load(['jobOffer', 'reviewer']);
     public function destroy(JobApplication $application)
     {
         
-        $this->authorize('delete', $JobApplication);
+        $this->authorize('delete', $application);
 // Supprimer les fichiers associés
-        if ($application->cv_path) {
-            Storage::disk('public')->delete($application->cv_path);
-        }
-        
-        if ($application->portfolio_path) {
-            Storage::disk('public')->delete($application->portfolio_path);
-        }
+        JobApplication::deleteFile($application->cv_path);
+        JobApplication::deleteFile($application->portfolio_path);
 
         $application->delete();
 
@@ -169,6 +173,7 @@ $application->load(['jobOffer', 'reviewer']);
      */
     public function export(Request $request)
     {
+        $this->authorize('export', JobApplication::class);
         $query = JobApplication::with(['jobOffer']);
 
         // Appliquer les mêmes filtres que pour l'index
@@ -236,6 +241,7 @@ $application->load(['jobOffer', 'reviewer']);
      */
     public function bulkReview(Request $request)
     {
+        $this->authorize('updateAny', JobApplication::class);
         $request->validate([
             'application_ids' => 'required|array',
             'application_ids.*' => 'exists:job_applications,id',
@@ -259,6 +265,7 @@ $application->load(['jobOffer', 'reviewer']);
      */
     public function statistics()
     {
+        $this->authorize('viewAny', JobApplication::class);
         $stats = [
             'total_applications' => JobApplication::count(),
             'pending_applications' => JobApplication::where('status', 'pending')->count(),

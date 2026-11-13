@@ -194,8 +194,8 @@ try {
     public function show($slug)
     {
         
-        $this->authorize('view', $JobOffer);
-$jobOffer = JobOffer::findBySlug($slug);
+        $jobOffer = JobOffer::findBySlug($slug);
+        $this->authorize('view', $jobOffer);
         
         $jobOffer->load(['applications' => function($query) {
             $query->orderBy('created_at', 'desc');
@@ -219,8 +219,8 @@ $jobOffer = JobOffer::findBySlug($slug);
     public function edit($slug)
     {
         
-        $this->authorize('update', $JobOffer);
-$jobOffer = JobOffer::findBySlug($slug);
+        $jobOffer = JobOffer::findBySlug($slug);
+        $this->authorize('update', $jobOffer);
         return view('admin.job-offers.edit', compact('jobOffer'));
     }
 
@@ -230,8 +230,8 @@ $jobOffer = JobOffer::findBySlug($slug);
     public function update(Request $request, $slug)
     {
         
-        $this->authorize('update', $JobOffer);
-$jobOffer = JobOffer::findBySlug($slug);
+        $jobOffer = JobOffer::findBySlug($slug);
+        $this->authorize('update', $jobOffer);
         
         try {
             // Log des données reçues pour diagnostic
@@ -406,7 +406,7 @@ $jobOffer = JobOffer::findBySlug($slug);
                     }
                     
                     $file = $request->file('partner_logo');
-                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $filename = time() . '_' . \Illuminate\Support\Str::random(12) . '.' . $file->extension();
                     $path = $file->storeAs('assets/partner-logos', $filename, 'public');
                     $validated['partner_logo'] = $path;
                     \Log::info('UPDATE - Nouveau logo sauvegardé:', ['path' => $path]);
@@ -501,17 +501,13 @@ $jobOffer = JobOffer::findBySlug($slug);
     public function destroy($slug)
     {
         
-        $this->authorize('delete', $JobOffer);
-$jobOffer = JobOffer::findBySlug($slug);
+        $jobOffer = JobOffer::findBySlug($slug);
+        $this->authorize('delete', $jobOffer);
         
         // Supprimer les fichiers associés aux candidatures
         foreach ($jobOffer->applications as $application) {
-            if ($application->cv_path) {
-                Storage::disk('public')->delete($application->cv_path);
-            }
-            if ($application->portfolio_path) {
-                Storage::disk('public')->delete($application->portfolio_path);
-            }
+            \App\Models\JobApplication::deleteFile($application->cv_path);
+            \App\Models\JobApplication::deleteFile($application->portfolio_path);
         }
 
         // Supprimer le logo du partenaire s'il existe
@@ -536,6 +532,7 @@ $jobOffer = JobOffer::findBySlug($slug);
     public function duplicate($slug)
     {
         $jobOffer = JobOffer::findBySlug($slug);
+        $this->authorize('create', JobOffer::class);
         
         $newJobOffer = $jobOffer->replicate();
         $newJobOffer->title = $jobOffer->title . ' (Copie)';
@@ -556,6 +553,7 @@ $jobOffer = JobOffer::findBySlug($slug);
     public function changeStatus(Request $request, $slug)
     {
         $jobOffer = JobOffer::findBySlug($slug);
+        $this->authorize('update', $jobOffer);
         
         $request->validate([
             'status' => 'required|in:draft,active,paused,closed'
@@ -572,6 +570,7 @@ $jobOffer = JobOffer::findBySlug($slug);
     public function toggleFeatured($slug)
     {
         $jobOffer = JobOffer::findBySlug($slug);
+        $this->authorize('update', $jobOffer);
         
         $jobOffer->update(['is_featured' => !$jobOffer->is_featured]);
 
@@ -585,6 +584,7 @@ $jobOffer = JobOffer::findBySlug($slug);
      */
     public function statistics()
     {
+        $this->authorize('viewAny', JobOffer::class);
         $stats = [
             'total_offers' => JobOffer::count(),
             'active_offers' => JobOffer::active()->count(),

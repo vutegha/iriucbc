@@ -81,14 +81,14 @@ try {
     public function edit(Categorie $categorie)
     {
         
-        $this->authorize('update', $Categorie);
+        $this->authorize('update', $categorie);
 return view('admin.categorie.edit', compact('categorie'));
     }
 
     public function update(Request $request, Categorie $categorie)
     {
         
-        $this->authorize('update', $Categorie);
+        $this->authorize('update', $categorie);
 $validated = $request->validate([
             'nom' => ['required', 'string', 'max:255', Rule::unique('categories')->ignore($categorie->id)],
             'description' => 'nullable|string|max:1000',
@@ -103,7 +103,7 @@ $validated = $request->validate([
     public function destroy(Categorie $categorie)
     {
         
-        $this->authorize('delete', $Categorie);
+        $this->authorize('delete', $categorie);
 try {
             $categorie->delete();
 
@@ -120,6 +120,7 @@ try {
      */
     public function storeAjax(Request $request)
     {
+        $this->authorize('create', Categorie::class);
         try {
             $validated = $request->validate([
                 'nom' => 'required|string|max:255|unique:categories,nom',

@@ -391,13 +391,13 @@ public function convertirImageUnique(\App\Models\Publication $publication)
         }
 
         // Succès
-        return back()->with('alert', "<span class='alert alert-success'>Image générée avec succès pour : {$publication->titre}</span>");
+        return back()->with('alert', "<span class='alert alert-success'>Image générée avec succès pour : " . e($publication->titre) . "</span>");
 
     } catch (\Exception $e) {
         // Log en plus pour dev / production
         \Log::error("Erreur génération thumbnail PDF (ID {$publication->id}): " . $e->getMessage());
 
-        return back()->with('alert', "<span class='alert alert-danger'>Erreur lors de la génération : {$e->getMessage()}</span>");
+        return back()->with('alert', "<span class='alert alert-danger'>Erreur lors de la génération de l'image. Consultez les journaux.</span>");
     }
 }
 
@@ -470,12 +470,20 @@ public function publications(Request $request)
 public function search(Request $request)
 {
     $start = microtime(true);
-    $query = $request->input('q', $request->input('search')); // Support des deux paramètres
+    $query = trim((string) $request->input('q', $request->input('search'))); // Support des deux paramètres
+    $query = mb_substr($query, 0, 100);
+    $term = '%' . addcslashes($query, '%_\\') . '%';
+    // Une recherche vide ne doit rien renvoyer (et ne pas charger toute la base)
+    $hasQuery = $query !== '';
 
+    // Seuls les contenus publiés sont recherchables par le public.
     // Publications
-    $publications = Publication::with('categorie', 'auteurs')
-        ->where('titre', 'like', "%{$query}%")
-        ->orWhere('resume', 'like', "%{$query}%")
+    $publications = Publication::published()->with('categorie', 'auteurs')
+        ->whereRaw($hasQuery ? '1 = 1' : '1 = 0')
+        ->where(function ($q) use ($term) {
+            $q->where('titre', 'like', $term)
+              ->orWhere('resume', 'like', $term);
+        })
         ->get()
         ->map(function($item) {
             $item->type_global = 'Publication';
@@ -484,9 +492,13 @@ public function search(Request $request)
         });
 
     // Actualités (titre, resume, texte)
-    $actualites = Actualite::where('titre', 'like', "%{$query}%")
-        ->orWhere('resume', 'like', "%{$query}%")
-        ->orWhere('texte', 'like', "%{$query}%")
+    $actualites = Actualite::published()
+        ->whereRaw($hasQuery ? '1 = 1' : '1 = 0')
+        ->where(function ($q) use ($term) {
+            $q->where('titre', 'like', $term)
+              ->orWhere('resume', 'like', $term)
+              ->orWhere('texte', 'like', $term);
+        })
         ->get()
         ->map(function($item) {
             $item->type_global = 'Actualité';
@@ -495,8 +507,12 @@ public function search(Request $request)
         });
 
     // Rapports
-    $rapports = Rapport::where('titre', 'like', "%{$query}%")
-        ->orWhere('description', 'like', "%{$query}%")
+    $rapports = Rapport::published()
+        ->whereRaw($hasQuery ? '1 = 1' : '1 = 0')
+        ->where(function ($q) use ($term) {
+            $q->where('titre', 'like', $term)
+              ->orWhere('description', 'like', $term);
+        })
         ->get()
         ->map(function($item) {
             $item->type_global = 'Rapport';
@@ -505,10 +521,13 @@ public function search(Request $request)
         });
 
     // Projets
-    $projets = \App\Models\Projet::with('service')
-        ->where('nom', 'like', "%{$query}%")
-        ->orWhere('description', 'like', "%{$query}%")
-        ->orWhere('resume', 'like', "%{$query}%")
+    $projets = \App\Models\Projet::published()->with('service')
+        ->whereRaw($hasQuery ? '1 = 1' : '1 = 0')
+        ->where(function ($q) use ($term) {
+            $q->where('nom', 'like', $term)
+              ->orWhere('description', 'like', $term)
+              ->orWhere('resume', 'like', $term);
+        })
         ->get()
         ->map(function($item) {
             $item->type_global = 'Projet';
@@ -752,8 +771,10 @@ public function storeContact(ContactRequest $request)
                 'statut' => 'nouveau'
             ]);
 
-            // 2. Ajouter automatiquement l'email à la newsletter (si pas déjà présent)
-            $newsletter = Newsletter::firstOrCreate(['email' => $request->email]);
+            // 2. Ajouter l'email à la newsletter uniquement si la personne l'a demandé
+            if ($request->boolean('newsletter_optin')) {
+                Newsletter::firstOrCreate(['email' => $request->email]);
+            }
 
             // 3. Envoyer les emails avec le système de copie
             $emailResult = ContactMessageWithCopy::sendToConfiguredEmails($contact);
@@ -764,8 +785,8 @@ public function storeContact(ContactRequest $request)
         if ($emailResult && $emailResult['success']) {
             $successMessage = 'Votre message a été envoyé avec succès ! ' .
                             'Nous vous répondrons dans les plus brefs délais. ' .
-                            'Un email de confirmation vous a été envoyé. ' .
-                            'Vous avez également été ajouté à notre liste de diffusion.';
+                            'Un email de confirmation vous a été envoyé.' .
+                            ($request->boolean('newsletter_optin') ? ' Vous avez également été ajouté à notre liste de diffusion.' : '');
                             
             // Log du succès pour le suivi
             Log::info('Message de contact envoyé avec succès', [
@@ -775,8 +796,8 @@ public function storeContact(ContactRequest $request)
         } else {
             $successMessage = 'Votre message a été enregistré avec succès ! ' .
                             'Cependant, il y a eu un problème avec l\'envoi automatique des emails. ' .
-                            'Nous vous contacterons directement. ' .
-                            'Vous avez été ajouté à notre liste de diffusion.';
+                            'Nous vous contacterons directement.' .
+                            ($request->boolean('newsletter_optin') ? ' Vous avez été ajouté à notre liste de diffusion.' : '');
                             
             // Log de l'erreur pour investigation
             Log::warning('Échec partiel envoi email contact', [
@@ -1174,12 +1195,13 @@ private function storeFileSecurely($file, $type, $jobId, $lastName)
         }
 
         // Générer un nom de fichier cryptographiquement sécurisé
-        $extension = $file->getClientOriginalExtension();
+        // L'extension vient du contenu réel du fichier, pas du nom envoyé par le client
+        $extension = $file->extension() ?: 'bin';
         $hash = hash('sha256', $file->getContent() . time() . random_bytes(16));
         $fileName = $hash . '_' . $type . '_' . $jobId . '.' . $extension;
-        
-        // Stocker dans un répertoire privé (non accessible publiquement)
-        $path = $file->storeAs('private/job-applications/' . $type, $fileName);
+
+        // Stocker sur le disque privé (non accessible publiquement)
+        $path = $file->storeAs('job-applications/' . $type, $fileName, 'local');
         
         return $path;
         
@@ -1223,7 +1245,8 @@ private function isFileSecure($file)
         '<!DOCTYPE html', // HTML
         '<script', // JavaScript
         '<?php', // PHP
-        'PK', // ZIP potentiel avec exécutable
+        // Pas de 'PK' ici : c'est la signature de tous les fichiers ZIP et DOCX,
+        // qui sont des formats autorisés ci-dessus.
     ];
     
     foreach ($dangerousSignatures as $signature) {

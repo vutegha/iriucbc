@@ -17,17 +17,19 @@ class SearchHelper
     public static function extractAndHighlight($text, $keyword, $length = 150)
     {
         // Nettoyer le texte d'entrée
-        $text = strip_tags($text);
-        $keyword = trim($keyword);
-        
+        // Texte brut : balises retirées, entités décodées (ré-échappé à la sortie)
+        $text = html_entity_decode(strip_tags((string) $text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $keyword = trim((string) $keyword);
+
+        // Le résultat est affiché avec {!! !!} : toujours échapper
         if (!$keyword || !$text) {
-            return Str::limit($text, $length);
+            return e(Str::limit($text, $length));
         }
 
         // Trouver la position du mot-clé (insensible à la casse)
         $pos = stripos($text, $keyword);
         if ($pos === false) {
-            return Str::limit($text, $length);
+            return e(Str::limit($text, $length));
         }
 
         // Calculer le début du snippet en centrant sur le mot-clé

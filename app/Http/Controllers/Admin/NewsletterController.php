@@ -59,7 +59,7 @@ $query = Newsletter::query(); // Retirer with('preferences') car c'est un attrib
     public function show(Newsletter $newsletter)
     {
         
-        $this->authorize('view', $Newsletter);
+        $this->authorize('view', $newsletter);
 // Types de préférences disponibles
         $preferenceTypes = [
             'actualites' => 'Actualités',
@@ -75,6 +75,7 @@ $query = Newsletter::query(); // Retirer with('preferences') car c'est un attrib
     
     public function toggle(Newsletter $newsletter)
     {
+        $this->authorize('update', $newsletter);
         $newsletter->update(['actif' => !$newsletter->actif]);
         
         $status = $newsletter->actif ? 'activé' : 'désactivé';
@@ -84,6 +85,7 @@ $query = Newsletter::query(); // Retirer with('preferences') car c'est un attrib
     
     public function export(Request $request)
     {
+        $this->authorize('export', Newsletter::class);
         $query = Newsletter::query(); // Retirer with('preferences') car c'est un attribut JSON
         
         // Appliquer les mêmes filtres que l'index
@@ -130,11 +132,72 @@ $query = Newsletter::query(); // Retirer with('preferences') car c'est un attrib
     public function destroy(Newsletter $newsletter)
     {
         
-        $this->authorize('delete', $Newsletter);
+        $this->authorize('delete', $newsletter);
 // Les preferences sont un attribut JSON, pas une relation
         $newsletter->delete();
         
         return redirect()->route('admin.newsletter.index')
                         ->with('success', 'Abonné supprimé avec succès.');
+    }
+
+    /**
+     * Formulaire d'ajout manuel d'un abonné.
+     */
+    public function create()
+    {
+        $this->authorize('create', Newsletter::class);
+
+        return view('admin.newsletter.create');
+    }
+
+    /**
+     * Enregistrer un abonné ajouté manuellement.
+     */
+    public function store(Request $request)
+    {
+        $this->authorize('create', Newsletter::class);
+
+        $validated = $request->validate([
+            'email' => ['required', 'email', 'max:255', Rule::unique('newsletters', 'email')],
+        ], [
+            'email.unique' => 'Cette adresse est déjà abonnée.',
+        ]);
+
+        Newsletter::create([
+            'email' => strtolower(trim($validated['email'])),
+            'actif' => true,
+        ]);
+
+        return redirect()->route('admin.newsletter.index')
+                        ->with('success', 'Abonné ajouté avec succès.');
+    }
+
+    /**
+     * Formulaire de modification d'un abonné.
+     */
+    public function edit(Newsletter $newsletter)
+    {
+        $this->authorize('update', $newsletter);
+
+        return view('admin.newsletter.edit', compact('newsletter'));
+    }
+
+    /**
+     * Mettre à jour l'adresse d'un abonné.
+     */
+    public function update(Request $request, Newsletter $newsletter)
+    {
+        $this->authorize('update', $newsletter);
+
+        $validated = $request->validate([
+            'email' => ['required', 'email', 'max:255', Rule::unique('newsletters', 'email')->ignore($newsletter->id)],
+        ], [
+            'email.unique' => 'Cette adresse est déjà abonnée.',
+        ]);
+
+        $newsletter->update(['email' => strtolower(trim($validated['email']))]);
+
+        return redirect()->route('admin.newsletter.index')
+                        ->with('success', 'Abonné mis à jour avec succès.');
     }
 }

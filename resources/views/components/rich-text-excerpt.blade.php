@@ -32,5 +32,5 @@
 @endphp
 
 <div class="{{ $class }}">
-    {!! $displayContent !!}
+    {!! \App\Support\Html::clean($displayContent) !!}
 </div>

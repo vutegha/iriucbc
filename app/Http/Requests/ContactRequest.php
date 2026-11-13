@@ -26,6 +26,7 @@ class ContactRequest extends FormRequest
             'email' => ['required', 'email', 'max:255'],
             'sujet' => ['required', 'string', 'max:255'],
             'message' => ['required', 'string', 'min:10', 'max:2000'],
+            'newsletter_optin' => ['nullable', 'boolean'],
         ];
     }
 

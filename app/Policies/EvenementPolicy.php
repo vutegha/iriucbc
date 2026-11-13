@@ -18,7 +18,7 @@ class EvenementPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('view_evenements', 'web') ||
+        return $user->checkPermissionTo('view_evenements', 'web') ||
                $user->hasAnyRole(['admin', 'moderator', 'contributeur'], 'web');
     }
 
@@ -32,7 +32,7 @@ class EvenementPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('view_evenements', 'web') ||
+        return $user->checkPermissionTo('view_evenements', 'web') ||
                $user->hasAnyRole(['admin', 'moderator', 'contributeur'], 'web');
     }
 
@@ -46,7 +46,7 @@ class EvenementPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('create_evenements', 'web') ||
+        return $user->checkPermissionTo('create_evenements', 'web') ||
                $user->hasAnyRole(['admin', 'contributeur'], 'web');
     }
 
@@ -60,7 +60,7 @@ class EvenementPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('update_evenements', 'web') ||
+        return $user->checkPermissionTo('update_evenements', 'web') ||
                $user->hasAnyRole(['admin'], 'web');
     }
 
@@ -74,7 +74,7 @@ class EvenementPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('delete_evenements', 'web') ||
+        return $user->checkPermissionTo('delete_evenements', 'web') ||
                $user->hasAnyRole(['admin'], 'web');
     }
 
@@ -88,7 +88,7 @@ class EvenementPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('moderate_evenements', 'web') ||
+        return $user->checkPermissionTo('moderate_evenements', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
@@ -102,7 +102,7 @@ class EvenementPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('publish_evenements', 'web') ||
+        return $user->checkPermissionTo('publish_evenements', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 

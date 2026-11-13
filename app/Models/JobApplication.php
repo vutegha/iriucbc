@@ -137,4 +137,34 @@ class JobApplication extends Model
             'admin_notes' => $notes
         ]);
     }
+
+    /**
+     * Name of the storage disk that holds an uploaded application file.
+     * Uploads go to the private "local" disk; older records may still
+     * point at the "public" disk. Returns null when the file is missing.
+     */
+    public static function fileDisk(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        foreach (['local', 'public'] as $disk) {
+            if (\Illuminate\Support\Facades\Storage::disk($disk)->exists($path)) {
+                return $disk;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Delete an uploaded application file from whichever disk holds it.
+     */
+    public static function deleteFile(?string $path): void
+    {
+        if ($disk = static::fileDisk($path)) {
+            \Illuminate\Support\Facades\Storage::disk($disk)->delete($path);
+        }
+    }
 }

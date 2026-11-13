@@ -99,6 +99,12 @@ return [
 
     'key' => env('APP_KEY'),
 
+    /*
+    | Public self-registration (/register). Off by default: accounts are
+    | created by an administrator in Administration > Utilisateurs.
+    */
+    'registration_enabled' => (bool) env('REGISTRATION_ENABLED', false),
+
     'previous_keys' => [
         ...array_filter(
             explode(',', env('APP_PREVIOUS_KEYS', ''))

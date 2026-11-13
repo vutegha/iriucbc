@@ -133,7 +133,7 @@
                             
                             @if($actualite->texte)
                             <div class="text-iri-dark leading-relaxed prose prose-lg max-w-none prose-headings:text-iri-primary prose-links:text-iri-secondary prose-strong:text-iri-dark prose-ul:text-iri-dark prose-ol:text-iri-dark">
-                                {!! $actualite->texte !!}
+                                {!! \App\Support\Html::clean($actualite->texte) !!}
                             </div>
                             @endif
                         </div>

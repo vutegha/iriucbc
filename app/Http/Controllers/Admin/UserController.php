@@ -199,6 +199,8 @@ $validated = $request->validate([
      */
     public function managePermissions(User $user)
     {
+        $this->authorize('managePermissions', User::class);
+
         $roles = Role::with('permissions')->get();
         $permissions = Permission::all();
         $user->load('roles', 'permissions');
@@ -211,9 +213,19 @@ $validated = $request->validate([
      */
     public function updatePermissions(Request $request, User $user)
     {
+        $this->authorize('managePermissions', User::class);
+
+        // Personne ne modifie ses propres rôles : cela évite qu'un compte
+        // s'accorde des droits ou se retire l'accès par erreur.
+        if ($user->is($request->user())) {
+            return back()->with('error', 'Vous ne pouvez pas modifier vos propres rôles et permissions.');
+        }
+
         $validated = $request->validate([
             'roles' => 'array',
-            'permissions' => 'array'
+            'roles.*' => 'integer',
+            'permissions' => 'array',
+            'permissions.*' => 'integer',
         ]);
 
 

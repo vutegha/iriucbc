@@ -403,4 +403,39 @@ class AuteurController extends Controller
                 ->withErrors(['general' => 'Échec de l\'exportation des données.']);
         }
     }
+
+    /**
+     * Recherche d'auteurs (AJAX) pour le formulaire de publication.
+     * Renvoie un tableau JSON : id, nom, email, institution.
+     */
+    public function search(Request $request)
+    {
+        $this->authorize('viewAny', Auteur::class);
+
+        $query = mb_substr(trim((string) $request->query('q', '')), 0, 100);
+
+        if (mb_strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $term = '%' . addcslashes($query, '%_\\') . '%';
+
+        $auteurs = Auteur::query()
+            ->where(function ($q) use ($term) {
+                $q->where('nom', 'like', $term)
+                  ->orWhere('prenom', 'like', $term)
+                  ->orWhere('email', 'like', $term)
+                  ->orWhere('institution', 'like', $term);
+            })
+            ->orderBy('nom')
+            ->limit(20)
+            ->get(['id', 'nom', 'prenom', 'email', 'institution']);
+
+        return response()->json($auteurs->map(fn ($auteur) => [
+            'id' => $auteur->id,
+            'nom' => trim(($auteur->prenom ? $auteur->prenom . ' ' : '') . $auteur->nom),
+            'email' => $auteur->email,
+            'institution' => $auteur->institution,
+        ])->values());
+    }
 }

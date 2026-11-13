@@ -89,7 +89,7 @@ class User extends Authenticatable
             return true;
         }
         
-        return $this->hasPermissionTo('view_admin_dashboard') ||
+        return $this->checkPermissionTo('view_admin_dashboard') ||
                $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'editor', 'contributor', 'gestionnaire_projets']);
     }
 
@@ -103,7 +103,7 @@ class User extends Authenticatable
             return true;
         }
         
-        return $this->hasPermissionTo('manage users') ||
+        return $this->checkPermissionTo('manage users') ||
                $this->hasAnyRole(['super-admin', 'admin']);
     }
 
@@ -114,7 +114,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('view_projets') ||
+        return $this->checkPermissionTo('view_projets') ||
                $this->hasAnyRole(['super-admin', 'admin', 'gestionnaire_projets']);
     }
 
@@ -122,7 +122,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('create_projet') ||
+        return $this->checkPermissionTo('create_projet') ||
                $this->hasAnyRole(['super-admin', 'admin', 'gestionnaire_projets']);
     }
 
@@ -130,7 +130,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('update_projet') ||
+        return $this->checkPermissionTo('update_projet') ||
                $this->hasAnyRole(['super-admin', 'admin', 'gestionnaire_projets']);
     }
 
@@ -138,7 +138,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('delete_projet') ||
+        return $this->checkPermissionTo('delete_projet') ||
                $this->hasAnyRole(['super-admin', 'admin', 'gestionnaire_projets']);
     }
 
@@ -146,7 +146,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('moderate_projet') ||
+        return $this->checkPermissionTo('moderate_projet') ||
                $this->hasAnyRole(['super-admin', 'admin', 'gestionnaire_projets']);
     }
 
@@ -157,7 +157,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('view actualites') ||
+        return $this->checkPermissionTo('view actualites') ||
                $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'editor', 'contributor', 'gestionnaire_projets']);
     }
 
@@ -165,7 +165,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('create actualites') ||
+        return $this->checkPermissionTo('create actualites') ||
                $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'editor', 'contributor', 'gestionnaire_projets']);
     }
 
@@ -173,7 +173,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('update actualites') ||
+        return $this->checkPermissionTo('update actualites') ||
                $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'gestionnaire_projets']);
     }
 
@@ -181,7 +181,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('delete actualites') ||
+        return $this->checkPermissionTo('delete actualites') ||
                $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'gestionnaire_projets']);
     }
 
@@ -192,7 +192,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('view services') ||
+        return $this->checkPermissionTo('view services') ||
                $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'editor', 'contributor']);
     }
 
@@ -200,7 +200,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('create services') ||
+        return $this->checkPermissionTo('create services') ||
                $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'editor', 'contributor']);
     }
 
@@ -208,7 +208,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('update services') ||
+        return $this->checkPermissionTo('update services') ||
                $this->hasAnyRole(['super-admin', 'admin', 'moderator']);
     }
 
@@ -216,7 +216,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('delete services') ||
+        return $this->checkPermissionTo('delete services') ||
                $this->hasAnyRole(['super-admin', 'admin', 'moderator']);
     }
 
@@ -227,7 +227,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('view_partenaires') ||
+        return $this->checkPermissionTo('view_partenaires') ||
                $this->hasAnyRole(['super-admin', 'admin', 'moderator', 'editor', 'contributor']);
     }
 
@@ -235,7 +235,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('create_partenaires') ||
+        return $this->checkPermissionTo('create_partenaires') ||
                $this->hasAnyRole(['super-admin', 'admin', 'moderator']);
     }
 
@@ -243,7 +243,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('update_partenaires') ||
+        return $this->checkPermissionTo('update_partenaires') ||
                $this->hasAnyRole(['super-admin', 'admin', 'moderator']);
     }
 
@@ -251,7 +251,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('delete_partenaires') ||
+        return $this->checkPermissionTo('delete_partenaires') ||
                $this->hasAnyRole(['super-admin', 'admin']);
     }
 
@@ -259,7 +259,7 @@ class User extends Authenticatable
     {
         if ($this->isSuperAdmin()) return true;
         
-        return $this->hasPermissionTo('moderate_partenaires') ||
+        return $this->checkPermissionTo('moderate_partenaires') ||
                $this->hasAnyRole(['super-admin', 'admin', 'moderator']);
     }
 

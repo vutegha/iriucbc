@@ -18,7 +18,7 @@ class PublicationPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('view_publications', 'web') ||
+        return $user->checkPermissionTo('view_publications', 'web') ||
                $user->hasAnyRole(['admin', 'moderator', 'contributeur'], 'web');
     }
 
@@ -32,7 +32,7 @@ class PublicationPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('view_publications', 'web') ||
+        return $user->checkPermissionTo('view_publications', 'web') ||
                $user->hasAnyRole(['admin', 'moderator', 'contributeur'], 'web');
     }
 
@@ -46,7 +46,7 @@ class PublicationPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('create_publications', 'web') ||
+        return $user->checkPermissionTo('create_publications', 'web') ||
                $user->hasAnyRole(['admin', 'contributeur'], 'web');
     }
 
@@ -60,7 +60,7 @@ class PublicationPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('update_publications', 'web') ||
+        return $user->checkPermissionTo('update_publications', 'web') ||
                $user->hasAnyRole(['admin'], 'web');
     }
 
@@ -74,7 +74,7 @@ class PublicationPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('delete_publications', 'web') ||
+        return $user->checkPermissionTo('delete_publications', 'web') ||
                $user->hasAnyRole(['admin'], 'web');
     }
 
@@ -88,7 +88,7 @@ class PublicationPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('moderate_publications', 'web') ||
+        return $user->checkPermissionTo('moderate_publications', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
@@ -102,7 +102,7 @@ class PublicationPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('publish_publications', 'web') ||
+        return $user->checkPermissionTo('publish_publications', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
@@ -116,7 +116,7 @@ class PublicationPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('unpublish_publications', 'web') ||
+        return $user->checkPermissionTo('unpublish_publications', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 

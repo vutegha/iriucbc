@@ -19,7 +19,13 @@ class RapportController extends Controller
 $categories = Categorie::all();
         $annees = Rapport::selectRaw('YEAR(date_publication) as annee')->distinct()->orderByDesc('annee')->pluck('annee')->toArray();
 
+        // Le champ « search » du formulaire de filtres
+        $search = mb_substr(trim((string) $request->input('search', '')), 0, 100);
+        $term = '%' . addcslashes($search, '%_\\') . '%';
+
         $rapports = Rapport::query()
+                            ->when($search !== '', fn($q) => $q->where(fn($w) => $w->where('titre', 'like', $term)
+                                                                                 ->orWhere('description', 'like', $term)))
                             ->when($request->categorie, fn($q) => $q->where('categorie_id', $request->categorie))
                             ->when($request->annee, fn($q) => $q->whereYear('date_publication', $request->annee))
                             ->latest()
@@ -62,7 +68,7 @@ try {
             // Enregistrement du fichier
             if ($request->hasFile('fichier')) {
                 $filename = uniqid() . '_' . Str::slug(pathinfo($request->file('fichier')->getClientOriginalName(), PATHINFO_FILENAME));
-                $extension = $request->file('fichier')->getClientOriginalExtension();
+                $extension = $request->file('fichier')->extension();
                 $path = $request->file('fichier')->storeAs('assets/rapports', "$filename.$extension", 'public');
                 $validated['fichier'] = $path;
             }
@@ -82,7 +88,7 @@ try {
     public function edit(Rapport $rapport)
     {
         
-        $this->authorize('update', $Rapport);
+        $this->authorize('update', $rapport);
 $categories = Categorie::all();
         return view('admin.rapports.edit', compact('rapport', 'categories'));
     }
@@ -90,7 +96,7 @@ $categories = Categorie::all();
     public function update(Request $request, Rapport $rapport)
     {
         
-        $this->authorize('update', $Rapport);
+        $this->authorize('update', $rapport);
 try {
             $validated = $request->validate([
                 'titre' => 'required|string|max:255',
@@ -130,7 +136,7 @@ try {
                 }
 
                 $filename = uniqid() . '_' . Str::slug(pathinfo($request->file('fichier')->getClientOriginalName(), PATHINFO_FILENAME));
-                $extension = $request->file('fichier')->getClientOriginalExtension();
+                $extension = $request->file('fichier')->extension();
                 $path = $request->file('fichier')->storeAs('assets/rapports', "$filename.$extension", 'public');
                 $validated['fichier'] = $path;
             }
@@ -150,14 +156,14 @@ try {
     public function show(Rapport $rapport)
     {
         
-        $this->authorize('view', $Rapport);
+        $this->authorize('view', $rapport);
 return view('admin.rapports.show', compact('rapport'));
     }
 
     public function destroy(Rapport $rapport)
     {
         
-        $this->authorize('delete', $Rapport);
+        $this->authorize('delete', $rapport);
 if ($rapport->fichier && Storage::disk('public')->exists($rapport->fichier)) {
             Storage::disk('public')->delete($rapport->fichier);
         }
@@ -173,6 +179,7 @@ if ($rapport->fichier && Storage::disk('public')->exists($rapport->fichier)) {
      */
     public function publish(Request $request, Rapport $rapport)
     {
+        $this->authorize('publish', $rapport);
         try {
             $rapport->publish(auth()->user(), $request->input('comment'));
             
@@ -209,6 +216,7 @@ if ($rapport->fichier && Storage::disk('public')->exists($rapport->fichier)) {
      */
     public function unpublish(Request $request, Rapport $rapport)
     {
+        $this->authorize('unpublish', $rapport);
         try {
             $rapport->unpublish($request->input('comment'));
             
@@ -230,6 +238,7 @@ if ($rapport->fichier && Storage::disk('public')->exists($rapport->fichier)) {
      */
     public function pendingModeration()
     {
+        $this->authorize('viewAny', Rapport::class);
         $rapports = Rapport::pendingModeration()
                           ->with(['categorie'])
                           ->latest()
@@ -243,6 +252,7 @@ if ($rapport->fichier && Storage::disk('public')->exists($rapport->fichier)) {
      */
     public function deleteMultiple(Request $request)
     {
+        $this->authorize('deleteAny', Rapport::class);
         try {
             $validated = $request->validate([
                 'ids' => 'required|array',
@@ -279,6 +289,7 @@ if ($rapport->fichier && Storage::disk('public')->exists($rapport->fichier)) {
      */
     public function export(Request $request)
     {
+        $this->authorize('viewAny', Rapport::class);
         try {
             $ids = explode(',', $request->get('ids', ''));
             $rapports = Rapport::whereIn('id', $ids)->with('categorie')->get();
@@ -328,6 +339,7 @@ if ($rapport->fichier && Storage::disk('public')->exists($rapport->fichier)) {
      */
     public function downloadZip(Request $request)
     {
+        $this->authorize('viewAny', Rapport::class);
         try {
             $ids = explode(',', $request->get('ids', ''));
             $rapports = Rapport::whereIn('id', $ids)->get();
@@ -360,5 +372,66 @@ if ($rapport->fichier && Storage::disk('public')->exists($rapport->fichier)) {
         } catch (\Exception $e) {
             return back()->with('error', 'Erreur lors de la création du ZIP: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Recherche de rapports : même liste que l'index, filtrée.
+     */
+    public function search(Request $request)
+    {
+        return $this->index($request);
+    }
+
+    /**
+     * Rapports d'une catégorie : même liste que l'index, filtrée.
+     */
+    public function byCategory(Request $request, $categorieId = null)
+    {
+        if ($categorieId !== null) {
+            $request->merge(['categorie' => (int) $categorieId]);
+        }
+
+        return $this->index($request);
+    }
+
+    /**
+     * Télécharger le fichier d'un rapport.
+     */
+    public function download(Rapport $rapport)
+    {
+        $this->authorize('view', $rapport);
+
+        if (!$rapport->fichier || !Storage::disk('public')->exists($rapport->fichier)) {
+            return back()->with('error', 'Le fichier de ce rapport est introuvable.');
+        }
+
+        $extension = pathinfo($rapport->fichier, PATHINFO_EXTENSION) ?: 'pdf';
+
+        return Storage::disk('public')->download(
+            $rapport->fichier,
+            (Str::slug($rapport->titre) ?: 'rapport') . '.' . $extension
+        );
+    }
+
+    /**
+     * Afficher le fichier d'un rapport dans le navigateur (aperçu).
+     */
+    public function preview(Rapport $rapport)
+    {
+        $this->authorize('view', $rapport);
+
+        if (!$rapport->fichier || !Storage::disk('public')->exists($rapport->fichier)) {
+            abort(404, 'Le fichier de ce rapport est introuvable.');
+        }
+
+        // Seuls les PDF s'affichent dans le navigateur ; les autres formats sont téléchargés.
+        if (strtolower(pathinfo($rapport->fichier, PATHINFO_EXTENSION)) !== 'pdf') {
+            return $this->download($rapport);
+        }
+
+        return response()->file(Storage::disk('public')->path($rapport->fichier), [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . (Str::slug($rapport->titre) ?: 'rapport') . '.pdf"',
+        ]);
     }
 }

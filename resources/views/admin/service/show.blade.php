@@ -116,7 +116,7 @@
                 </div>
                 <div class="p-6">
                     <div class="prose max-w-none text-gray-700">
-                        {!! $service->description !!}
+                        {!! \App\Support\Html::clean($service->description) !!}
                     </div>
                 </div>
             </div>

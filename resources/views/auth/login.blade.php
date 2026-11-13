@@ -433,6 +433,7 @@
                     @endif
                 </form>
 
+                @if(config('app.registration_enabled'))
                 <!-- Divider -->
                 <div class="divider">
                     <span>Ou</span>
@@ -440,12 +441,13 @@
 
                 <!-- Actions alternatives -->
                 <div class="space-y-4">
-                    <a href="{{ route('register') }}" 
+                    <a href="{{ route('register') }}"
                        class="w-full flex items-center justify-center gap-3 px-6 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 font-medium hover:border-iri-primary hover:text-iri-primary transition-all duration-300 group">
                         <i class="fas fa-user-plus group-hover:text-iri-accent transition-colors duration-300"></i>
                         Créer un nouveau compte
                     </a>
                 </div>
+                @endif
             </div>
 
             <!-- Footer -->

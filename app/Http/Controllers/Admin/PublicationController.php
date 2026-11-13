@@ -183,7 +183,7 @@ class PublicationController extends Controller
                 
                 // Générer nom de fichier sécurisé
                 $titre_clean = $this->sanitizeFilename($validated['titre']);
-                $filename = $titre_clean . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $filename = $titre_clean . '_' . time() . '.' . $file->extension();
                 
                 try {
                     // Méthode simple et fiable
@@ -230,7 +230,7 @@ class PublicationController extends Controller
             Log::info('Publication créée avec succès', ['id' => $publication->id, 'fichier' => $validated['fichier_pdf']]);
 
             return redirect()->route('admin.publication.index')
-                ->with('alert', '<span class="alert alert-success">Publication enregistrée avec succès. Fichier: ' . basename($validated['fichier_pdf']) . '</span>');
+                ->with('alert', '<span class="alert alert-success">Publication enregistrée avec succès. Fichier: ' . e(basename($validated['fichier_pdf'])) . '</span>');
                 
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Erreur de validation', ['errors' => $e->errors()]);
@@ -247,7 +247,7 @@ class PublicationController extends Controller
             
             return redirect()
                 ->back()
-                ->with('alert', '<span class="alert alert-danger">Une erreur est survenue : ' . $e->getMessage() . '</span>')
+                ->with('alert', '<span class="alert alert-danger">Une erreur est survenue : ' . e($e->getMessage()) . '</span>')
                 ->withInput();
         }
     }
@@ -318,7 +318,7 @@ class PublicationController extends Controller
 
                 // Générer nom de fichier sécurisé
                 $titre_clean = $this->sanitizeFilename($validated['titre']);
-                $filename = $titre_clean . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $filename = $titre_clean . '_' . time() . '.' . $file->extension();
                 
                 try {
                     $path = $file->storeAs('assets', $filename, 'public');
@@ -383,13 +383,14 @@ class PublicationController extends Controller
             ]);
             
             return redirect()->back()
-                ->with('alert', '<span class="alert alert-danger">Une erreur est survenue : ' . $e->getMessage() . '</span>')
+                ->with('alert', '<span class="alert alert-danger">Une erreur est survenue : ' . e($e->getMessage()) . '</span>')
                 ->withInput();
         }
     }
 
     public function updateFeatures(Request $request, Publication $publication)
     {
+        $this->authorize('update', $publication);
         $validated = $request->validate([
             'en_vedette' => 'required|boolean',
             'a_la_une' => 'required|boolean',
@@ -425,7 +426,7 @@ class PublicationController extends Controller
                 ->with('alert', '<span class="alert alert-success">Publication supprimée avec succès.</span>');
         } catch (\Exception $e) {
             return redirect()->route('admin.publication.index')
-                ->with('alert', '<span class="alert alert-danger">Erreur lors de la suppression : ' . $e->getMessage() . '</span>');
+                ->with('alert', '<span class="alert alert-danger">Erreur lors de la suppression : ' . e($e->getMessage()) . '</span>');
         }
     }
 
@@ -509,7 +510,7 @@ class PublicationController extends Controller
             }
 
             return redirect()->back()
-                ->with('alert', '<span class="alert alert-danger">Erreur lors de la publication : ' . $e->getMessage() . '</span>');
+                ->with('alert', '<span class="alert alert-danger">Erreur lors de la publication : ' . e($e->getMessage()) . '</span>');
         }
     }
 
@@ -546,7 +547,36 @@ class PublicationController extends Controller
             }
 
             return redirect()->back()
-                ->with('alert', '<span class="alert alert-danger">Erreur lors de la dépublication : ' . $e->getMessage() . '</span>');
+                ->with('alert', '<span class="alert alert-danger">Erreur lors de la dépublication : ' . e($e->getMessage()) . '</span>');
         }
+    }
+
+    /**
+     * Publications en attente de modération.
+     */
+    public function pendingModeration()
+    {
+        $this->authorize('viewAny', Publication::class);
+
+        $publications = Publication::pendingModeration()
+                                   ->with('categorie')
+                                   ->latest()
+                                   ->paginate(10);
+
+        return view('admin.publication.pending', compact('publications'));
+    }
+
+    /**
+     * Basculer l'affichage « à la une ».
+     */
+    public function toggleUne(Publication $publication)
+    {
+        $this->authorize('update', $publication);
+
+        $publication->update(['a_la_une' => !$publication->a_la_une]);
+
+        return back()->with('success', $publication->a_la_une
+            ? 'Publication mise à la une.'
+            : 'Publication retirée de la une.');
     }
 }

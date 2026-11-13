@@ -48,7 +48,10 @@ class AuthController extends Controller
         $credentials['email'] = strtolower(trim($credentials['email']));
 
         // Protection contre les attaques par force brute
-        $key = 'login_attempts_' . $request->ip();
+        // Compteur par couple email + IP : un utilisateur qui se trompe ne bloque
+        // pas ses collègues derrière la même adresse IP. La limite globale par
+        // IP est assurée par le middleware throttle de la route.
+        $key = 'login_attempts_' . sha1($credentials['email'] . '|' . $request->ip());
         $attempts = cache()->get($key, 0);
         
         if ($attempts >= 5) {

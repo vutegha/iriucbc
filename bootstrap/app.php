@@ -16,7 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'can_moderate' => \App\Http\Middleware\CanModerate::class,
             'permission' => \App\Http\Middleware\PermissionMiddleware::class,
             'verified.admin' => \App\Http\Middleware\EnsureEmailIsVerifiedForAdmins::class,
+            'admin.access' => \App\Http\Middleware\EnsureAdminAccess::class,
+            'registration.enabled' => \App\Http\Middleware\EnsureRegistrationEnabled::class,
         ]);
+
+        // En-têtes de sécurité sur toutes les réponses (y compris redirections et erreurs)
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
 
         // Appliquer le middleware de vérification email pour les admins sur les routes admin
         $middleware->group('admin', [

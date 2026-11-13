@@ -15,8 +15,8 @@ class AuteurPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->hasPermissionTo('view_auteurs', 'web') ||
-               $user->hasPermissionTo('manage_auteurs', 'web');
+        return $user->checkPermissionTo('view_auteurs', 'web') ||
+               $user->checkPermissionTo('manage_auteurs', 'web');
     }
 
     /**
@@ -24,8 +24,8 @@ class AuteurPolicy
      */
     public function view(User $user, Auteur $auteur)
     {
-        return $user->hasPermissionTo('view_auteurs', 'web') ||
-               $user->hasPermissionTo('manage_auteurs', 'web');
+        return $user->checkPermissionTo('view_auteurs', 'web') ||
+               $user->checkPermissionTo('manage_auteurs', 'web');
     }
 
     /**
@@ -33,8 +33,8 @@ class AuteurPolicy
      */
     public function create(User $user)
     {
-        return $user->hasPermissionTo('create_auteurs', 'web') ||
-               $user->hasPermissionTo('manage_auteurs', 'web');
+        return $user->checkPermissionTo('create_auteurs', 'web') ||
+               $user->checkPermissionTo('manage_auteurs', 'web');
     }
 
     /**
@@ -42,8 +42,8 @@ class AuteurPolicy
      */
     public function update(User $user, Auteur $auteur)
     {
-        return $user->hasPermissionTo('update_auteurs', 'web') ||
-               $user->hasPermissionTo('manage_auteurs', 'web');
+        return $user->checkPermissionTo('update_auteurs', 'web') ||
+               $user->checkPermissionTo('manage_auteurs', 'web');
     }
 
     /**
@@ -51,8 +51,8 @@ class AuteurPolicy
      */
     public function delete(User $user, Auteur $auteur)
     {
-        return $user->hasPermissionTo('delete_auteurs', 'web') ||
-               $user->hasPermissionTo('manage_auteurs', 'web');
+        return $user->checkPermissionTo('delete_auteurs', 'web') ||
+               $user->checkPermissionTo('manage_auteurs', 'web');
     }
 
     /**
@@ -60,8 +60,8 @@ class AuteurPolicy
      */
     public function export(User $user)
     {
-        return $user->hasPermissionTo('export_auteurs', 'web') ||
-               $user->hasPermissionTo('manage_auteurs', 'web');
+        return $user->checkPermissionTo('export_auteurs', 'web') ||
+               $user->checkPermissionTo('manage_auteurs', 'web');
     }
 
     /**
@@ -69,6 +69,6 @@ class AuteurPolicy
      */
     public function manage(User $user)
     {
-        return $user->hasPermissionTo('manage_auteurs', 'web');
+        return $user->checkPermissionTo('manage_auteurs', 'web');
     }
 }

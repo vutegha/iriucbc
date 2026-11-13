@@ -19,7 +19,7 @@ class AdminUserSeeder extends Seeder
             ['email' => 'admin@iriucbc.com'],
             [
                 'name' => 'Administrateur IRI-UCBC',
-                'password' => Hash::make('admin123'),
+                'password' => Hash::make(env('SEED_USER_PASSWORD') ?: \Illuminate\Support\Str::random(32)),
                 'email_verified_at' => Carbon::now(),
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
@@ -34,7 +34,7 @@ class AdminUserSeeder extends Seeder
             ['email' => 'moderator@iriucbc.com'],
             [
                 'name' => 'Modérateur Test',
-                'password' => Hash::make('moderator123'),
+                'password' => Hash::make(env('SEED_USER_PASSWORD') ?: \Illuminate\Support\Str::random(32)),
                 'email_verified_at' => Carbon::now(),
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
@@ -46,7 +46,7 @@ class AdminUserSeeder extends Seeder
             ['email' => 'editor@iriucbc.com'],
             [
                 'name' => 'Éditeur Test',
-                'password' => Hash::make('editor123'),
+                'password' => Hash::make(env('SEED_USER_PASSWORD') ?: \Illuminate\Support\Str::random(32)),
                 'email_verified_at' => Carbon::now(),
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
@@ -58,7 +58,7 @@ class AdminUserSeeder extends Seeder
             ['email' => 'user@iriucbc.com'],
             [
                 'name' => 'Utilisateur Test',
-                'password' => Hash::make('user123'),
+                'password' => Hash::make(env('SEED_USER_PASSWORD') ?: \Illuminate\Support\Str::random(32)),
                 'email_verified_at' => Carbon::now(),
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),

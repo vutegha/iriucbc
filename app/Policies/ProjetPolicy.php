@@ -18,7 +18,7 @@ class ProjetPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('view_projets', 'web') ||
+        return $user->checkPermissionTo('view_projets', 'web') ||
                $user->hasAnyRole(['admin', 'moderator', 'contributeur'], 'web');
     }
 
@@ -32,7 +32,7 @@ class ProjetPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('view_projets', 'web') ||
+        return $user->checkPermissionTo('view_projets', 'web') ||
                $user->hasAnyRole(['admin', 'moderator', 'contributeur'], 'web');
     }
 
@@ -46,7 +46,7 @@ class ProjetPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('create_projets', 'web') ||
+        return $user->checkPermissionTo('create_projets', 'web') ||
                $user->hasAnyRole(['admin', 'contributeur'], 'web');
     }
 
@@ -60,7 +60,7 @@ class ProjetPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('update_projets', 'web') ||
+        return $user->checkPermissionTo('update_projets', 'web') ||
                $user->hasAnyRole(['admin'], 'web');
     }
 
@@ -74,7 +74,7 @@ class ProjetPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('delete_projets', 'web') ||
+        return $user->checkPermissionTo('delete_projets', 'web') ||
                $user->hasAnyRole(['admin'], 'web');
     }
 
@@ -88,7 +88,7 @@ class ProjetPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('moderate_projets', 'web') ||
+        return $user->checkPermissionTo('moderate_projets', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
@@ -102,7 +102,7 @@ class ProjetPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('publish_projets', 'web') ||
+        return $user->checkPermissionTo('publish_projets', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
@@ -116,7 +116,7 @@ class ProjetPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('unpublish_projets', 'web') ||
+        return $user->checkPermissionTo('unpublish_projets', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 

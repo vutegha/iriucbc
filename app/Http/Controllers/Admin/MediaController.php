@@ -83,7 +83,7 @@ public function index(Request $request)
     public function show(Media $media)
     {
         
-        $this->authorize('view', $Media);
+        $this->authorize('view', $media);
 Gate::authorize('view', $media);
         
         $media->load(['creator', 'moderator', 'projet']);
@@ -134,7 +134,7 @@ $validated = $request->validate([
     public function edit(Media $media)
     {
         
-        $this->authorize('update', $Media);
+        $this->authorize('update', $media);
 $projets = \App\Models\Projet::all();
         return view('admin.media.edit', ['media' => $media, 'projets' => $projets]);
     }
@@ -142,7 +142,7 @@ $projets = \App\Models\Projet::all();
 public function update(Request $request, Media $media)
 {
     
-        $this->authorize('update', $Media);
+        $this->authorize('update', $media);
 $validated = $request->validate([
         'type' => 'nullable|string|max:255',
         'titre' => 'nullable|string|max:255',
@@ -178,7 +178,7 @@ $validated = $request->validate([
 public function destroy(Media $media)
 {
     
-        $this->authorize('delete', $Media);
+        $this->authorize('delete', $media);
 try {
         if ($media->medias && Storage::disk('public')->exists($media->medias)) {
             Storage::disk('public')->delete($media->medias);
@@ -199,6 +199,7 @@ try {
  */
 public function list()
 {
+        $this->authorize('viewAny', Media::class);
     $medias = Media::where(function($query) {
                        $query->where('type', 'image')
                              ->orWhere('medias', 'like', '%.jpg')
@@ -226,6 +227,7 @@ public function list()
  */
 public function upload(Request $request)
 {
+        $this->authorize('create', Media::class);
     $request->validate([
         'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240'
     ]);

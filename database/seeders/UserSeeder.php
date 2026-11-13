@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
             'email' => 'admin@iriucbc.com'
         ], [
             'name' => 'Admin Test',
-            'password' => Hash::make('password123'),
+            'password' => Hash::make(env('SEED_USER_PASSWORD') ?: \Illuminate\Support\Str::random(32)),
             'email_verified_at' => now(),
         ]);
 
@@ -27,7 +27,7 @@ class UserSeeder extends Seeder
             'email' => 'moderator@iriucbc.com'
         ], [
             'name' => 'Modérateur Test',
-            'password' => Hash::make('password123'),
+            'password' => Hash::make(env('SEED_USER_PASSWORD') ?: \Illuminate\Support\Str::random(32)),
             'email_verified_at' => now(),
         ]);
 

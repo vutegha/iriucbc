@@ -13,7 +13,7 @@ class PartenairePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('view_partenaires', 'web') ||
+        return $user->checkPermissionTo('view_partenaires', 'web') ||
                $user->hasAnyRole(['super-admin', 'admin', 'moderator', 'editor', 'contributor']);
     }
 
@@ -22,7 +22,7 @@ class PartenairePolicy
      */
     public function view(User $user, Partenaire $partenaire): bool
     {
-        return $user->hasPermissionTo('view_partenaires', 'web') ||
+        return $user->checkPermissionTo('view_partenaires', 'web') ||
                $user->hasAnyRole(['super-admin', 'admin', 'moderator', 'editor', 'contributor']);
     }
 
@@ -31,7 +31,7 @@ class PartenairePolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('create_partenaires', 'web') ||
+        return $user->checkPermissionTo('create_partenaires', 'web') ||
                $user->hasAnyRole(['super-admin', 'admin', 'moderator']);
     }
 
@@ -46,7 +46,7 @@ class PartenairePolicy
         }
 
         // Vérifier les permissions générales
-        return $user->hasPermissionTo('update_partenaires', 'web') ||
+        return $user->checkPermissionTo('update_partenaires', 'web') ||
                $user->hasAnyRole(['super-admin', 'admin', 'moderator']);
     }
 
@@ -61,7 +61,7 @@ class PartenairePolicy
         }
 
         // Seuls les admins et super-admins peuvent supprimer
-        return $user->hasPermissionTo('delete_partenaires', 'web') ||
+        return $user->checkPermissionTo('delete_partenaires', 'web') ||
                $user->hasAnyRole(['super-admin', 'admin']);
     }
 
@@ -86,7 +86,7 @@ class PartenairePolicy
      */
     public function moderate(User $user, Partenaire $partenaire): bool
     {
-        return $user->hasPermissionTo('moderate_partenaires', 'web') ||
+        return $user->checkPermissionTo('moderate_partenaires', 'web') ||
                $user->hasAnyRole(['super-admin', 'admin', 'moderator']);
     }
 
@@ -95,7 +95,7 @@ class PartenairePolicy
      */
     public function manageLogo(User $user, Partenaire $partenaire): bool
     {
-        return $user->hasPermissionTo('update_partenaires', 'web') ||
+        return $user->checkPermissionTo('update_partenaires', 'web') ||
                $user->hasAnyRole(['super-admin', 'admin', 'moderator']);
     }
 
@@ -104,7 +104,7 @@ class PartenairePolicy
      */
     public function changeVisibility(User $user, Partenaire $partenaire): bool
     {
-        return $user->hasPermissionTo('moderate_partenaires', 'web') ||
+        return $user->checkPermissionTo('moderate_partenaires', 'web') ||
                $user->hasAnyRole(['super-admin', 'admin', 'moderator']);
     }
 }

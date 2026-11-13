@@ -29,17 +29,20 @@ use App\Http\Controllers\Admin\SocialLinkController;
 Route::middleware(['guest'])->group(function () {
     // Connexion
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
-    
-    // Inscription
-    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->name('register.post');
-    
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login.post');
+
+    // Inscription : désactivée par défaut (REGISTRATION_ENABLED=true pour l'ouvrir).
+    // Les comptes se créent depuis Administration > Utilisateurs.
+    Route::middleware('registration.enabled')->group(function () {
+        Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+        Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,10')->name('register.post');
+    });
+
     // Réinitialisation de mot de passe
     Route::get('/password/reset', [AuthController::class, 'showLinkRequestForm'])->name('password.request');
-    Route::post('/password/email', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::post('/password/email', [AuthController::class, 'sendResetLinkEmail'])->middleware('throttle:5,10')->name('password.email');
     Route::get('/password/reset/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
-    Route::post('/password/reset', [AuthController::class, 'reset'])->name('password.update');
+    Route::post('/password/reset', [AuthController::class, 'reset'])->middleware('throttle:5,10')->name('password.update');
 });
 
 // Route de déconnexion (utilisateurs authentifiés) - Reste dans l'espace admin
@@ -69,7 +72,10 @@ Route::get('/projet/{slug}', [SiteController::class, 'projetShow'])->name('site.
 // Publications
 Route::get('/publications', [SiteController::class, 'publications'])->name('site.publications');
 Route::get('/publications/{slug}', [SiteController::class, 'publicationShow'])->name('publication.show');
-Route::get('/convert-image/{publication}', [SiteController::class, 'convertirImageUnique'])->name('publications.convert.single');
+// Outil interne de génération de vignettes : réservé aux comptes de l'administration
+Route::get('/convert-image/{publication}', [SiteController::class, 'convertirImageUnique'])
+    ->middleware(['auth', 'admin.access', 'can:update,publication'])
+    ->name('publications.convert.single');
 
 // Actualités
 Route::get('/actualites', [SiteController::class, 'actualites'])->name('site.actualites');
@@ -86,7 +92,7 @@ Route::get('/a-propos', fn() => redirect()->route('site.about'));
 
 // Contact
 Route::get('/contact', [SiteController::class, 'contact'])->name('site.contact');
-Route::post('/contact', [SiteController::class, 'storeContact'])->name('site.contact.store');
+Route::post('/contact', [SiteController::class, 'storeContact'])->middleware('throttle:5,10')->name('site.contact.store');
 
 // Travaillez avec nous et emploi (redirections)
 Route::get('/work-with-us', [SiteController::class, 'workWithUs'])->name('site.work-with-us');
@@ -101,21 +107,23 @@ Route::get('/carrieres', fn() => redirect()->route('site.work-with-us'));
 
 // Candidatures d'emploi
 Route::get('/jobs/{job}/apply', [SiteController::class, 'showJobApplication'])->name('site.job.apply');
-Route::post('/jobs/{job}/apply', [SiteController::class, 'submitJobApplication'])->name('site.job.apply.submit');
+Route::post('/jobs/{job}/apply', [SiteController::class, 'submitJobApplication'])->middleware('throttle:10,60')->name('site.job.apply.submit');
 Route::get('/jobs/{job}/download', [SiteController::class, 'downloadJobDocument'])->name('site.job.download');
 
 // Autres pages
 Route::get('/partenariats', [SiteController::class, 'partenariats'])->name('site.partenariats');
 Route::get('/recherche', [SiteController::class, 'search'])->name('site.search');
-Route::get('/convert', [SiteController::class, 'convertirImage'])->name('site.convert');
+Route::get('/convert', [SiteController::class, 'convertirImage'])
+    ->middleware(['auth', 'admin.access', 'can:viewAny,App\Models\Publication'])
+    ->name('site.convert');
 
 // Newsletter publique
-Route::post('/newsletter-subscribe', [SiteController::class, 'subscribeNewsletter'])->name('site.newsletter.subscribe');
+Route::post('/newsletter-subscribe', [SiteController::class, 'subscribeNewsletter'])->middleware('throttle:5,10')->name('site.newsletter.subscribe');
 
 // Routes Newsletter publiques détaillées
 Route::prefix('newsletter')->name('newsletter.')->group(function () {
     Route::get('/subscribe', [PublicNewsletterController::class, 'showSubscribeForm'])->name('subscribe');
-    Route::post('/subscribe', [PublicNewsletterController::class, 'subscribe'])->name('subscribe.post');
+    Route::post('/subscribe', [PublicNewsletterController::class, 'subscribe'])->middleware('throttle:5,10')->name('subscribe.post');
     Route::get('/preferences/{token}', [PublicNewsletterController::class, 'preferences'])->name('preferences');
     Route::put('/preferences/{token}', [PublicNewsletterController::class, 'updatePreferences'])->name('preferences.update');
     Route::get('/unsubscribe/{token}', [PublicNewsletterController::class, 'unsubscribe'])->name('unsubscribe');
@@ -127,7 +135,7 @@ Route::prefix('newsletter')->name('newsletter.')->group(function () {
 // ROUTES ADMIN (PROTÉGÉES PAR AUTHENTIFICATION)
 // ====================================================================
 
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin.access'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard principal
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
@@ -179,6 +187,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/', [PublicationController::class, 'index'])->name('index');
         Route::get('/create', [PublicationController::class, 'create'])->name('create');
         Route::post('/', [PublicationController::class, 'store'])->name('store');
+        // Avant /{publication}, sinon "pending-moderation" est pris pour une publication
+        Route::get('/pending-moderation', [PublicationController::class, 'pendingModeration'])
+            ->middleware(['can_moderate'])->name('pending');
         Route::get('/{publication}', [PublicationController::class, 'show'])->name('show');
         Route::get('/{publication}/edit', [PublicationController::class, 'edit'])->name('edit');
         Route::put('/{publication}', [PublicationController::class, 'update'])->name('update');
@@ -190,7 +201,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::middleware(['can_moderate'])->group(function () {
             Route::post('/{publication}/publish', [PublicationController::class, 'publish'])->name('publish');
             Route::post('/{publication}/unpublish', [PublicationController::class, 'unpublish'])->name('unpublish');
-            Route::get('/pending-moderation', [PublicationController::class, 'pendingModeration'])->name('pending');
         });
     });
 
@@ -305,6 +315,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/category/{categorieId?}', [RapportController::class, 'byCategory'])->name('category');
         Route::get('/create', [RapportController::class, 'create'])->name('create');
         Route::post('/', [RapportController::class, 'store'])->name('store');
+        // Routes fixes : avant /{rapport}, sinon elles sont prises pour un rapport
+        Route::get('/export', [RapportController::class, 'export'])->name('export');
+        Route::get('/download-zip', [RapportController::class, 'downloadZip'])->name('download-zip');
+        Route::get('/pending-moderation', [RapportController::class, 'pendingModeration'])->name('pending');
         // Rediriger vers publication.show pour l'affichage des rapports
         Route::get('/{rapport}', function($rapport) {
             return redirect()->route('publication.show', ['slug' => $rapport]);
@@ -317,13 +331,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         
         // Routes pour les actions rapides
         Route::post('/delete-multiple', [RapportController::class, 'deleteMultiple'])->name('delete-multiple');
-        Route::get('/export', [RapportController::class, 'export'])->name('export');
-        Route::get('/download-zip', [RapportController::class, 'downloadZip'])->name('download-zip');
-        
+
         // Routes de modération (conservées pour compatibilité)
         Route::post('/{rapport}/publish', [RapportController::class, 'publish'])->name('publish');
         Route::post('/{rapport}/unpublish', [RapportController::class, 'unpublish'])->name('unpublish');
-        Route::get('/pending-moderation', [RapportController::class, 'pendingModeration'])->name('pending');
     });
 
     // ================================
@@ -334,6 +345,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/search', [ProjetController::class, 'search'])->name('search');
         Route::get('/create', [ProjetController::class, 'create'])->name('create');
         Route::post('/', [ProjetController::class, 'store'])->name('store');
+        // Avant /{projet}, sinon "pending-moderation" est pris pour un projet
+        Route::get('/pending-moderation', [ProjetController::class, 'pendingModeration'])->name('pending');
         Route::get('/{projet}', [ProjetController::class, 'show'])->name('show');
         Route::get('/{projet}/edit', [ProjetController::class, 'edit'])->name('edit');
         Route::put('/{projet}', [ProjetController::class, 'update'])->name('update');
@@ -342,7 +355,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         // Routes de modération
         Route::post('/{projet}/publish', [ProjetController::class, 'publish'])->name('publish');
         Route::post('/{projet}/unpublish', [ProjetController::class, 'unpublish'])->name('unpublish');
-        Route::get('/pending-moderation', [ProjetController::class, 'pendingModeration'])->name('pending');
     });
 
     // ================================
@@ -387,14 +399,15 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // ================================
     Route::prefix('job-applications')->name('job-applications.')->group(function () {
         Route::get('/', [JobApplicationController::class, 'index'])->name('index');
+        // Routes fixes : avant /{application}, sinon elles sont prises pour une candidature
+        Route::get('/export', [JobApplicationController::class, 'export'])->name('export');
+        Route::get('/statistics', [JobApplicationController::class, 'statistics'])->name('statistics');
         Route::get('/{application}', [JobApplicationController::class, 'show'])->name('show');
         Route::patch('/{application}/status', [JobApplicationController::class, 'updateStatus'])->name('update-status');
         Route::get('/{application}/download-cv', [JobApplicationController::class, 'downloadCV'])->name('download-cv');
         Route::get('/{application}/download-portfolio', [JobApplicationController::class, 'downloadPortfolio'])->name('download-portfolio');
         Route::delete('/{application}', [JobApplicationController::class, 'destroy'])->name('destroy');
-        Route::get('/export', [JobApplicationController::class, 'export'])->name('export');
         Route::post('/bulk-review', [JobApplicationController::class, 'bulkReview'])->name('bulk-review');
-        Route::get('/statistics', [JobApplicationController::class, 'statistics'])->name('statistics');
     });
 
     // ================================

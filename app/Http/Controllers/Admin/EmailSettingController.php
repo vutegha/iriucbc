@@ -89,6 +89,7 @@ class EmailSettingController extends Controller
      */
     public function testEmail(Request $request)
     {
+        $this->authorize('manage_email_settings');
         \Log::info('Test email request received', $request->all());
         
         $validation = $request->validate([
@@ -163,6 +164,7 @@ class EmailSettingController extends Controller
      */
     public function addEmail(Request $request, EmailSetting $emailSetting)
     {
+        $this->authorize('manage_email_settings');
         $request->validate([
             'email' => 'required|email|max:255'
         ]);
@@ -192,6 +194,7 @@ class EmailSettingController extends Controller
      */
     public function removeEmail(Request $request, EmailSetting $emailSetting)
     {
+        $this->authorize('manage_email_settings');
         $request->validate([
             'email' => 'required|email'
         ]);

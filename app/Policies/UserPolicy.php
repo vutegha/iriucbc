@@ -14,7 +14,7 @@ class UserPolicy
      */
     public function viewAny(User $user)
     {
-        return $user->hasPermissionTo('view_users');
+        return $user->checkPermissionTo('view_users');
     }
 
     /**
@@ -22,7 +22,7 @@ class UserPolicy
      */
     public function view(User $user, User $model)
     {
-        return $user->hasPermissionTo('view_users') || $user->id === $model->id;
+        return $user->checkPermissionTo('view_users') || $user->id === $model->id;
     }
 
     /**
@@ -30,7 +30,7 @@ class UserPolicy
      */
     public function create(User $user)
     {
-        return $user->hasPermissionTo('create_users');
+        return $user->checkPermissionTo('create_users');
     }
 
     /**
@@ -38,7 +38,7 @@ class UserPolicy
      */
     public function update(User $user, User $model)
     {
-        return $user->hasPermissionTo('update_users') || $user->id === $model->id;
+        return $user->checkPermissionTo('update_users') || $user->id === $model->id;
     }
 
     /**
@@ -46,7 +46,7 @@ class UserPolicy
      */
     public function delete(User $user, User $model)
     {
-        return $user->hasPermissionTo('delete_users') && $user->id !== $model->id;
+        return $user->checkPermissionTo('delete_users') && $user->id !== $model->id;
     }
 
     /**
@@ -54,7 +54,7 @@ class UserPolicy
      */
     public function export(User $user)
     {
-        return $user->hasPermissionTo('export_users');
+        return $user->checkPermissionTo('export_users');
     }
 
     /**
@@ -62,7 +62,7 @@ class UserPolicy
      */
     public function manage(User $user)
     {
-        return $user->hasPermissionTo('manage_users');
+        return $user->checkPermissionTo('manage_users');
     }
 
     /**
@@ -70,7 +70,7 @@ class UserPolicy
      */
     public function assignRoles(User $user)
     {
-        return $user->hasPermissionTo('assign_roles');
+        return $user->checkPermissionTo('assign_roles');
     }
 
     /**
@@ -78,6 +78,8 @@ class UserPolicy
      */
     public function managePermissions(User $user)
     {
-        return $user->hasPermissionTo('manage_permissions');
+        // Attribuer des rôles est l'action la plus sensible : super admin,
+        // ou permission explicite.
+        return $user->isSuperAdmin() || $user->hasRole('super-admin') ||$user->checkPermissionTo('manage_permissions');
     }
 }

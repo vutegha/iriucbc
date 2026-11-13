@@ -1232,42 +1232,66 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        let html = '';
+        // Les lignes sont construites avec des éléments DOM et textContent :
+        // un nom contenant une apostrophe, un guillemet ou du HTML s'affiche
+        // tel quel et ne peut ni casser le bouton ni injecter du code.
+        const makeLine = (className, text) => {
+            const line = document.createElement('div');
+            line.className = className;
+            line.textContent = text;
+            return line;
+        };
+
+        authorSearchResults.innerHTML = '';
+
         authors.forEach(author => {
             const isSelected = Array.from(auteursSelect.selectedOptions).some(option => option.value == author.id);
-            html += `
-                <div class="flex items-center justify-between p-3 border-b border-gray-100 hover:bg-gray-50">
-                    <div class="flex-1">
-                        <div class="font-medium text-gray-900">${author.nom}</div>
-                        ${author.email ? `<div class="text-sm text-gray-500">${author.email}</div>` : ''}
-                        ${author.institution ? `<div class="text-xs text-gray-400">${author.institution}</div>` : ''}
-                    </div>
-                    <button type="button" 
-                            onclick="toggleAuthorSelection(${author.id}, '${author.nom}', this)"
-                            class="px-3 py-1 text-xs font-medium rounded-md ${isSelected ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-iri-primary text-white hover:bg-iri-secondary'}">
-                        ${isSelected ? 'Retirer' : 'Sélectionner'}
-                    </button>
-                </div>
-            `;
+
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between p-3 border-b border-gray-100 hover:bg-gray-50';
+
+            const details = document.createElement('div');
+            details.className = 'flex-1';
+            details.appendChild(makeLine('font-medium text-gray-900', author.nom || ''));
+            if (author.email) {
+                details.appendChild(makeLine('text-sm text-gray-500', author.email));
+            }
+            if (author.institution) {
+                details.appendChild(makeLine('text-xs text-gray-400', author.institution));
+            }
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'px-3 py-1 text-xs font-medium rounded-md ' + (isSelected ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-iri-primary text-white hover:bg-iri-secondary');
+            button.textContent = isSelected ? 'Retirer' : 'Sélectionner';
+            button.addEventListener('click', () => toggleAuthorSelection(author.id, author.nom || '', button));
+
+            row.appendChild(details);
+            row.appendChild(button);
+            authorSearchResults.appendChild(row);
         });
-        
-        authorSearchResults.innerHTML = html;
     }
-    
+
     // Fonction globale pour toggle la sélection d'auteur
     window.toggleAuthorSelection = function(authorId, authorName, button) {
-        const option = auteursSelect.querySelector(`option[value="${authorId}"]`);
-        
-        if (option) {
-            if (option.selected) {
-                option.selected = false;
-                button.textContent = 'Sélectionner';
-                button.className = 'px-3 py-1 text-xs font-medium rounded-md bg-iri-primary text-white hover:bg-iri-secondary';
-            } else {
-                option.selected = true;
-                button.textContent = 'Retirer';
-                button.className = 'px-3 py-1 text-xs font-medium rounded-md bg-red-100 text-red-700 hover:bg-red-200';
-            }
+        let option = Array.from(auteursSelect.options).find(candidate => candidate.value == authorId);
+
+        // Auteur absent de la liste (créé depuis le chargement de la page) : on l'ajoute.
+        if (!option) {
+            option = document.createElement('option');
+            option.value = authorId;
+            option.textContent = authorName;
+            auteursSelect.appendChild(option);
+        }
+
+        if (option.selected) {
+            option.selected = false;
+            button.textContent = 'Sélectionner';
+            button.className = 'px-3 py-1 text-xs font-medium rounded-md bg-iri-primary text-white hover:bg-iri-secondary';
+        } else {
+            option.selected = true;
+            button.textContent = 'Retirer';
+            button.className = 'px-3 py-1 text-xs font-medium rounded-md bg-red-100 text-red-700 hover:bg-red-200';
         }
     };
     
@@ -1543,10 +1567,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         '<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>'
                     }
                 </svg>
-                <span class="text-sm font-medium">${message}</span>
+                <span class="text-sm font-medium"></span>
             </div>
         `;
-        
+        // Le message peut venir du serveur : inséré comme texte, jamais comme HTML
+        notification.querySelector('span').textContent = message;
+
         document.body.appendChild(notification);
         
         // Animer l'entrée

@@ -45,6 +45,10 @@ class AuthServiceProvider extends ServiceProvider
         Partenaire::class => PartenairePolicy::class,
         SocialLink::class => SocialLinkPolicy::class,
         Contact::class => ContactPolicy::class,
+        \App\Models\JobApplication::class => \App\Policies\JobApplicationPolicy::class,
+        \App\Models\JobOffer::class => \App\Policies\JobOfferPolicy::class,
+        \App\Models\Categorie::class => \App\Policies\CategoriePolicy::class,
+        \App\Models\Newsletter::class => \App\Policies\NewsletterPolicy::class,
     ];
 
     /**

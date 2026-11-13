@@ -18,7 +18,7 @@ class ActualitePolicy
             return true;
         }
         
-        return $user->hasPermissionTo('view_actualites', 'web') ||
+        return $user->checkPermissionTo('view_actualites', 'web') ||
                $user->hasAnyRole(['admin', 'moderator', 'contributeur'], 'web');
     }
 
@@ -32,7 +32,7 @@ class ActualitePolicy
             return true;
         }
         
-        return $user->hasPermissionTo('view_actualites', 'web') ||
+        return $user->checkPermissionTo('view_actualites', 'web') ||
                $user->hasAnyRole(['admin', 'moderator', 'contributeur'], 'web');
     }
 
@@ -46,7 +46,7 @@ class ActualitePolicy
             return true;
         }
         
-        return $user->hasPermissionTo('create_actualites', 'web') ||
+        return $user->checkPermissionTo('create_actualites', 'web') ||
                $user->hasAnyRole(['admin', 'contributeur'], 'web');
     }
 
@@ -60,7 +60,7 @@ class ActualitePolicy
             return true;
         }
         
-        return $user->hasPermissionTo('update_actualites', 'web') ||
+        return $user->checkPermissionTo('update_actualites', 'web') ||
                $user->hasAnyRole(['admin'], 'web');
     }
 
@@ -74,7 +74,7 @@ class ActualitePolicy
             return true;
         }
         
-        return $user->hasPermissionTo('delete_actualites', 'web') ||
+        return $user->checkPermissionTo('delete_actualites', 'web') ||
                $user->hasAnyRole(['admin'], 'web');
     }
 
@@ -88,7 +88,7 @@ class ActualitePolicy
             return true;
         }
         
-        return $user->hasPermissionTo('moderate_actualites', 'web') ||
+        return $user->checkPermissionTo('moderate_actualites', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
@@ -102,7 +102,7 @@ class ActualitePolicy
             return true;
         }
         
-        return $user->hasPermissionTo('publish_actualites', 'web') ||
+        return $user->checkPermissionTo('publish_actualites', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
@@ -116,7 +116,7 @@ class ActualitePolicy
             return true;
         }
         
-        return $user->hasPermissionTo('unpublish_actualites', 'web') ||
+        return $user->checkPermissionTo('unpublish_actualites', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 

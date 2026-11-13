@@ -18,7 +18,7 @@ class ContactPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('view_contacts', 'web') ||
+        return $user->checkPermissionTo('view_contacts', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
@@ -32,7 +32,7 @@ class ContactPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('view_contacts', 'web') ||
+        return $user->checkPermissionTo('view_contacts', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
@@ -46,7 +46,7 @@ class ContactPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('create_contacts', 'web') ||
+        return $user->checkPermissionTo('create_contacts', 'web') ||
                $user->hasAnyRole(['admin'], 'web');
     }
 
@@ -60,7 +60,7 @@ class ContactPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('update_contacts', 'web') ||
+        return $user->checkPermissionTo('update_contacts', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 
@@ -74,7 +74,7 @@ class ContactPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('delete_contacts', 'web') ||
+        return $user->checkPermissionTo('delete_contacts', 'web') ||
                $user->hasAnyRole(['admin'], 'web');
     }
 
@@ -88,7 +88,7 @@ class ContactPolicy
             return true;
         }
         
-        return $user->hasPermissionTo('respond_contacts', 'web') ||
+        return $user->checkPermissionTo('respond_contacts', 'web') ||
                $user->hasAnyRole(['admin', 'moderator'], 'web');
     }
 }

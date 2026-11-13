@@ -62,7 +62,7 @@ $this->authorize('create', Service::class);
     public function edit(Service $service)
     {
         
-        $this->authorize('update', $Service);
+        $this->authorize('update', $service);
 $this->authorize('update', $service);
         
         return view('admin.service.edit', compact('service'));
@@ -71,7 +71,7 @@ $this->authorize('update', $service);
     public function show(Service $service)
     {
         
-        $this->authorize('view', $Service);
+        $this->authorize('view', $service);
 $this->authorize('view', $service);
         
         return view('admin.service.show', compact('service'));
@@ -80,7 +80,7 @@ $this->authorize('view', $service);
     public function update(Request $request, Service $service)
     {
         
-        $this->authorize('update', $Service);
+        $this->authorize('update', $service);
 $this->authorize('update', $service);
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
@@ -109,7 +109,7 @@ $this->authorize('update', $service);
     public function destroy(Service $service)
     {
         
-        $this->authorize('delete', $Service);
+        $this->authorize('delete', $service);
 $this->authorize('delete', $service);
         
         if ($service->image) {
@@ -187,7 +187,7 @@ $this->authorize('delete', $service);
             }
 
             return redirect()->back()
-                ->with('alert', '<span class="alert alert-danger">Erreur lors de la publication : ' . $e->getMessage() . '</span>');
+                ->with('alert', '<span class="alert alert-danger">Erreur lors de la publication : ' . e($e->getMessage()) . '</span>');
         }
     }
 
@@ -224,7 +224,7 @@ $this->authorize('delete', $service);
             }
 
             return redirect()->back()
-                ->with('alert', '<span class="alert alert-danger">Erreur lors de la dépublication : ' . $e->getMessage() . '</span>');
+                ->with('alert', '<span class="alert alert-danger">Erreur lors de la dépublication : ' . e($e->getMessage()) . '</span>');
         }
     }
 
@@ -266,6 +266,7 @@ $this->authorize('delete', $service);
      */
     public function toggleMenu(Request $request, Service $service)
     {
+        $this->authorize('update', $service);
         // Vérifier les permissions (temporairement désactivé)
         // if (!auth()->user()->can('moderate-services')) {
         //     return redirect()->back()->with('error', 'Vous n\'avez pas les permissions pour gérer l\'affichage des services dans le menu.');
@@ -303,6 +304,7 @@ $this->authorize('delete', $service);
      */
     public function pendingModeration()
     {
+        $this->authorize('viewAny', Service::class);
         $services = Service::pendingModeration()
                           ->latest()
                           ->paginate(10);
