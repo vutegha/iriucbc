@@ -15,7 +15,9 @@ class MarkExpiredJobOffers extends Command
     {
         $expiredCount = JobOffer::where('status', 'active')
             ->whereNotNull('application_deadline')
-            ->where('application_deadline', '<', Carbon::now())
+            // La date limite est un jour entier : l'offre reste ouverte ce jour-là
+            // et n'expire que le lendemain.
+            ->whereDate('application_deadline', '<', Carbon::today())
             ->update(['status' => 'expired']);
 
         $this->info("Nombre d'offres marquées comme expirées : {$expiredCount}");

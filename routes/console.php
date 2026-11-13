@@ -8,6 +8,12 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
+// Offres d'emploi : passer en « expirée » celles dont la date limite est dépassée
+Schedule::command('jobs:mark-expired')
+    ->dailyAt('00:05')
+    ->appendOutputTo(storage_path('logs/job_offers_expiry.log'))
+    ->description('Mark job offers past their application deadline as expired');
+
 // 🔒 SÉCURITÉ: Audit quotidien des permissions
 Schedule::command('security:audit')
     ->daily()
